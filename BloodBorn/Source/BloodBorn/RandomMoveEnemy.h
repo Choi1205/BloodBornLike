@@ -65,6 +65,14 @@ public:
 		void OnDealDamageOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 		//플레이어가 공격 가능 범위에 있고, 공격 행동의 충돌판정에 맞았을때. 데미지를 입어야 하나, 지금은 메세지만 출력함.
 
+		UPROPERTY(EditAnywhere)
+		class UAnimMontage* EnemyAttackAnimation;
+
+		class UAnimInstance* AnimInstance;
+
+		UFUNCTION(BlueprintCallable)
+		void AttackAnimationEnded();
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

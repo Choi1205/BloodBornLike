@@ -8,6 +8,8 @@
 #include "RandomMoveEnemyAIController.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "AITypes.h"
+#include "Animation/AnimInstance.h"
+#include "Animation/AnimMontage.h"
 
 // Sets default values
 ARandomMoveEnemy::ARandomMoveEnemy()
@@ -26,7 +28,7 @@ ARandomMoveEnemy::ARandomMoveEnemy()
 	PlayerAttackCollisionDetection->SetupAttachment(RootComponent);//생성한 스피어 콜리전 컴포넌트를 루트에 붙인다.
 
 	DamageCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("Damage Collision"));//박스 콜리전 컴포넌트를 생성하여 DamageCollision이름으로 생성한다.
-	DamageCollision->SetupAttachment(RootComponent);//생성한 박스 콜리전 컴포넌트를 루트에 붙인다.
+	DamageCollision->SetupAttachment(GetMesh(), TEXT("RightHandAttackSocket"));//생성한 박스 콜리전 컴포넌트를 매쉬에 붙인다.
 
 }
 
@@ -44,6 +46,9 @@ void ARandomMoveEnemy::BeginPlay()
 	PlayerAttackCollisionDetection->OnComponentEndOverlap.AddDynamic(this, &ARandomMoveEnemy::OnPlayerAttackOverlapEnd);
 	DamageCollision->OnComponentBeginOverlap.AddDynamic(this, &ARandomMoveEnemy::OnDealDamageOverlapBegin);
 	//위 오버랩 이밴트들이 발생하면 ()안의 함수가 실행되도록 바인딩 함.
+
+	AnimInstance = GetMesh()->GetAnimInstance();
+	//애니메이션 인스턴스를 초기화
 }
 
 // Called every frame
@@ -67,7 +72,7 @@ void ARandomMoveEnemy::OnAIMoveCompleted(FAIRequestID RequestID, const FPathFoll
 	else if (PlayerDetected && CanAttackPlayer) {//플레이어가 감지범위에 있고, 공격범위 안에도 있으면
 		StopSeekingPlayer();//추적을 중지하고
 
-		UE_LOG(LogTemp, Warning, TEXT("Player ATTACKED"));//플레이어에게 공격 행동을 한다
+		AnimInstance->Montage_Play(EnemyAttackAnimation);//플레이어에게 공격 행동을 한다
 	}
 }
 
@@ -115,6 +120,9 @@ void ARandomMoveEnemy::OnPlayerAttackOverlapEnd(class UPrimitiveComponent* Overl
 	PlayerREF = Cast<ABloodBornCharacter>(OtherActor);//빠져나간 액터가 플레이어인지 확인
 	if (PlayerREF) {//플레이어면
 		CanAttackPlayer = false;//공격 가능 변수를 false로
+
+		AnimInstance->Montage_Stop(0.0f, EnemyAttackAnimation);
+		//재생중이던 공격 애니메이션을 즉시(0.0f) 정지함
 		SeekPlayer();//그리고 추적을 시작함
 	}
 }
@@ -123,5 +131,13 @@ void ARandomMoveEnemy::OnDealDamageOverlapBegin(class UPrimitiveComponent* Overl
 	PlayerREF = Cast<ABloodBornCharacter>(OtherActor);//들어온 액터가 플레이어인지 확인
 	if (PlayerREF && CanDealDamage) {//플레이어이고, 공격도 가능하다면
 		UE_LOG(LogTemp, Warning, TEXT("Player Damaged"));//플레이어는 데미지를 입었다.
+	}
+}
+
+void ARandomMoveEnemy::AttackAnimationEnded()
+{
+	if (CanAttackPlayer) {//플레이어가 아직 공격 범위에 있을 경우
+		AnimInstance->Montage_Play(EnemyAttackAnimation);
+		//공격 애니메이션을 다시 재생한다.
 	}
 }
