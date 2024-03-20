@@ -19,4 +19,27 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	class UBehaviorTree* BehaverTree;
+
+	ABTAIController();
+
+	UPROPERTY(EditAnywhere)
+	class UPawnSensingComponent* PawnSensing;
+
+	UFUNCTION()
+	void OnSeePawn(APawn* PlayerPawn);
+
+	UFUNCTION()
+	void SetCanSeePlayer(bool SeePlayer, class UObject* Player);
+
+	FTimerHandle RetriggerableTimerHandle;
+	FTimerDelegate FunctionDelegate;
+	void RunRetriggerableTimer();
+
+	UFUNCTION()
+	void RandomPatrol();//랜덤이동 함수
+
+private:
+	class UNavigationSystemV1* NavArea;//길찾기 범위. 프로젝트명.Build.cs 파일도 참조할 것
+
+	FVector RandomLocation;//다음 랜덤한 위치를 가리키는 백터
 };
