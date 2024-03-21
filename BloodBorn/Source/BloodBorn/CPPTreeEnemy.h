@@ -21,6 +21,9 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 	bool CanDealDamage;//블루프린트에서도 수정 가능. 플레이어가 공격 범위에 들어올 시 true
 
+	UPROPERTY(BlueprintReadWrite)
+	bool CanParryed;//블루프린트에서도 수정 가능. 페리 가능 타이밍일때 true
+
 	class ABloodBornCharacter* PlayerREF;//플레이어 캐릭터를 저장. 클래스명은 A+프로젝트명+Charactor
 	/*
 	UPROPERTY(EditAnywhere)
