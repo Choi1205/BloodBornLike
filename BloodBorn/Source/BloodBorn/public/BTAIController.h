@@ -17,10 +17,14 @@ class BLOODBORN_API ABTAIController : public AAIController
 public:
 	void BeginPlay() override;
 
+	ABTAIController();
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	class UBehaviorTree* BehaverTree;
 
-	ABTAIController();
+	UPROPERTY(EditAnywhere)
+	float TrackingPlayer = 2.0f;
+
 
 	UPROPERTY(EditAnywhere)
 	class UPawnSensingComponent* PawnSensing;

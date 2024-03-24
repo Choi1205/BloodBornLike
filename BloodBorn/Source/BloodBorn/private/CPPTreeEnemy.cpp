@@ -5,7 +5,8 @@
 #include "BloodBornCharacter.h"
 #include "Components/SphereComponent.h"
 #include "Components/BoxComponent.h"
-//#include "BTAIController.h"
+#include "BTAIController.h"
+#include "BehaviorTree/BlackboardComponent.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "AITypes.h"
 #include "Animation/AnimInstance.h"
@@ -33,9 +34,9 @@ ACPPTreeEnemy::ACPPTreeEnemy()
 void ACPPTreeEnemy::BeginPlay()
 {
 	Super::BeginPlay();
-	/*
-	BTAIController = Cast<ABTAIController>(GetController());//AI컨트롤러를 참조하여 사용하기 위해 변수 초기화
 	
+	BTAIController = Cast<ABTAIController>(GetController());//AI컨트롤러를 참조하여 사용하기 위해 변수 초기화
+	/*
 	BTAIController->GetPathFollowingComponent()->OnRequestFinished.AddUObject(this, &ACPPTreeEnemy::OnAIMoveCompleted);//컨트롤러의 행동이 종료된 것을 받아옴(?)
 	
 	PlayerCollisionDetection->OnComponentBeginOverlap.AddDynamic(this, &ACPPTreeEnemy::OnPlayerDetectedOverlapBegin);
@@ -45,7 +46,7 @@ void ACPPTreeEnemy::BeginPlay()
 	*/
 	DamageCollision->OnComponentBeginOverlap.AddDynamic(this, &ACPPTreeEnemy::OnDealDamageOverlapBegin);
 	
-	//AnimInstance = GetMesh()->GetAnimInstance();
+	AnimInstance = GetMesh()->GetAnimInstance();
 }
 
 // Called every frame
@@ -53,6 +54,14 @@ void ACPPTreeEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	if (BTAIController->GetBlackboardComponent()->GetValueAsBool(FName("InStun"))) {
+		stunTimer += DeltaTime;
+	}
+
+	if (stunTimer > 3.0f) {
+		BTAIController->GetBlackboardComponent()->SetValueAsBool(FName("InStun"), false);
+		stunTimer = 0.0f;
+	}
 }
 
 // Called to bind functionality to input
@@ -162,7 +171,15 @@ void ACPPTreeEnemy::GotParryAttackCPP(float Damage)
 {
 	//일단 데미지가 들어감...서순은 천천히 생각하기
 	GotDamagedCPP(Damage);
-
+	
+	if (CanParryed) {
+		if (AnimInstance->Montage_IsPlaying(NULL)) {
+			AnimInstance->Montage_Stop(NULL);
+		}
+		CanParryed = false;
+		BTAIController->GetBlackboardComponent()->SetValueAsBool(FName("InStun"), true);
+		
+	}
 	//패리판정 및 스턴판정이 들어감
 	UE_LOG(LogTemp, Warning, TEXT("Gun Attack Damage : %.0f"), Damage);
 }

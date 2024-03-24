@@ -34,9 +34,9 @@ public:
 	*/
 	UPROPERTY(EditAnywhere)
 	class UBoxComponent* DamageCollision;//공격범위
-	/*
-	class ABTAIController* BTAIController;//AI컨트롤러의 기능을 사용하기 위해 컨트롤러에 대한 참조가 필요하다.
 	
+	class ABTAIController* BTAIController;//AI컨트롤러의 기능을 사용하기 위해 컨트롤러에 대한 참조가 필요하다.
+	/*
 	void OnAIMoveCompleted(struct FAIRequestID RequsetID, const struct FPathFollowingResult& Result);//AI가 이동을 끝냈을때 알려줌.
 
 	UPROPERTY(EditAnywhere)
@@ -76,7 +76,9 @@ public:
 	UPROPERTY(EditAnywhere)
 	float healthPoint = 1000.0f;
 
-	//class UAnimInstance* AnimInstance;
+	float stunTimer = 0.0f;
+
+	class UAnimInstance* AnimInstance;
 	/*
 	UFUNCTION(BlueprintCallable)
 	void AttackAnimationEnded();
