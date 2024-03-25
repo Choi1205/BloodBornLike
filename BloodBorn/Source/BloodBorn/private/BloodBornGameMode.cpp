@@ -1,7 +1,7 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "BloodBornGameMode.h"
-#include "BloodBornCharacter.h"
+#include "BloodBorn/BloodBornCharacter.h"
 #include "UObject/ConstructorHelpers.h"
 
 ABloodBornGameMode::ABloodBornGameMode()

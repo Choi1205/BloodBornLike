@@ -4,7 +4,7 @@
 #include "LongRangeEnemy.h"
 #include "Perception/PawnSensingComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
-#include "BloodBornCharacter.h"
+#include "BloodBorn/BloodBornCharacter.h"
 #include "Components/SceneComponent.h"
 #include "BulletActor.h"
 

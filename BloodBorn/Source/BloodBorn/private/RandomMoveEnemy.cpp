@@ -2,7 +2,7 @@
 
 
 #include "RandomMoveEnemy.h"
-#include "BloodBornCharacter.h"
+#include "BloodBorn/BloodBornCharacter.h"
 #include "Components/SphereComponent.h"
 #include "Components/BoxComponent.h"
 #include "RandomMoveEnemyAIController.h"

@@ -5,10 +5,13 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "DamageSystem.h"
+#include "Interfaces/HitInterface.h"
 #include "CPPTreeEnemy.generated.h"
 
+class UAttributeComponent;
+
 UCLASS()
-class BLOODBORN_API ACPPTreeEnemy : public ACharacter, public IDamageSystem
+class BLOODBORN_API ACPPTreeEnemy : public ACharacter, public IDamageSystem, public IHitInterface
 {
 	GENERATED_BODY()
 
@@ -99,4 +102,10 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual void GotParryAttackCPP(float Damage) override;
 
+	virtual void GetHit(const FVector& ImpactPoint) override;
+
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
+private:
+	UPROPERTY(VisibleAnywhere)
+	UAttributeComponent* Attributes;
 };

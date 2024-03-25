@@ -2,7 +2,7 @@
 
 
 #include "BulletActor.h"
-#include "BloodBornCharacter.h"
+#include "BloodBorn/BloodBornCharacter.h"
 #include "Components/SphereComponent.h"
 #include "Components/StaticMeshComponent.h"
 
