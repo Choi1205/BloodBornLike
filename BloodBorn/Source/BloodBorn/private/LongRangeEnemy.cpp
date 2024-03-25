@@ -7,6 +7,8 @@
 #include "BloodBorn/BloodBornCharacter.h"
 #include "Components/SceneComponent.h"
 #include "BulletActor.h"
+#include "Components/AttributeComponent.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 // Sets default values
 ALongRangeEnemy::ALongRangeEnemy()
@@ -23,6 +25,7 @@ ALongRangeEnemy::ALongRangeEnemy()
 	bulletFirePoint->SetupAttachment(RootComponent);
 	bulletFirePoint->SetRelativeLocation(FVector(60.0f, 10.0f, 50.0f));
 
+	Attributes = CreateDefaultSubobject< UAttributeComponent>(TEXT("Attributes"));
 }
 
 // Called when the game starts or when spawned
@@ -56,6 +59,21 @@ void ALongRangeEnemy::Tick(float DeltaTime)
 		FireBullet();
 		AimmingTime = 0.0f;
 	}
+
+	//플레이어를 조준중인 경우
+	if (CanSeePlayer) {
+		//플레이어 놓침 타이머가 돌아간다.
+		lostPlayerTimer += DeltaTime;
+		//플레이어를 놓치고 5초가 지나면 
+		if (lostPlayerTimer > 5.0f) {
+			//타이머를 리셋하고
+			lostPlayerTimer = 0.0f;
+			//조준 타이머도 리셋하고
+			AimmingTime = 0.0f;
+			//플레이어 조준을 해제한다.
+			SetCanSeePlayer(false, nullptr);
+		}
+	}
 }
 
 // Called to bind functionality to input
@@ -74,19 +92,6 @@ void ALongRangeEnemy::OnSeePawn(APawn* PlayerPawn)
 	if (Player) {
 		//SetCanSeePlayer를 실행
 		SetCanSeePlayer(true, Player);
-		//RunRetriggerableTimer();
-		//넣으면 페이탈. 안넣으면 마지막 목격지점으로 총을 계속 쏜다
-		/*페이탈 내용
-		Fatal error: [File:D:\build\++UE5\Sync\Engine\Source\Runtime\CoreUObject\Private\UObject\ScriptCore.cpp] [Line: 1459] Failed to find function SetCanSeePlayer in BP_LongRangeEnemy_C /Game/Choi/Level/UEDPIE_0_EnemyLevel.EnemyLevel:PersistentLevel.BP_LongRangeEnemy_C_1
-
-		UnrealEditor_CoreUObject
-		UnrealEditor_BloodBorn_0111!ALongRangeEnemy::RunRetriggerableTimer() [C:\Users\Choi\Documents\Unreal Projects\BloodBorn\Source\BloodBorn\private\LongRangeEnemy.cpp:75]
-
-		UnrealEditor_BloodBorn_0111!ALongRangeEnemy::OnSeePawn() [C:\Users\Choi\Documents\Unreal Projects\BloodBorn\Source\BloodBorn\private\LongRangeEnemy.cpp:58]
-
-		UnrealEditor_BloodBorn_0111!ALongRangeEnemy::execOnSeePawn() [C:\Users\Choi\Documents\Unreal Projects\BloodBorn\Intermediate\Build\Win64\UnrealEditor\Inc\BloodBorn\UHT\LongRangeEnemy.gen.cpp:26]
-		내용으로 미루어 볼 때 델리게이트로 연결한 함수명을 찾지 못하는 것으로 보임. 그런데 함수명은 일치함. 질문하여 확인 필요.
-		*/
 	}
 }
 
@@ -94,6 +99,8 @@ void ALongRangeEnemy::SetCanSeePlayer(bool SeePlayer, UObject* Player)
 {
 	//시야에 플레이어가 들어왔으면
 	if (SeePlayer) {
+		//시야에 플레이어가 있는동안 타이머 리셋
+		lostPlayerTimer = 0.0f;
 		//CanSeePlayer는 스테이트 머신의 조준 애니메이션 발동 트리거
 		CanSeePlayer = SeePlayer;
 		//플레이어로 캐스팅
@@ -104,23 +111,9 @@ void ALongRangeEnemy::SetCanSeePlayer(bool SeePlayer, UObject* Player)
 		SetActorRotation(FRotator(GetActorRotation().Pitch, towardPlayer.Rotation().Yaw, towardPlayer.Rotation().Roll));
 	}
 	else {
-		//현재 미작동. RunRetriggerableTimer()를 고쳐야함
-		UE_LOG(LogTemp, Warning, TEXT("Exit aim?"));
+		//플레이어 조준 트리거를 해제
 		CanSeePlayer = SeePlayer;
 	}
-}
-
-void ALongRangeEnemy::RunRetriggerableTimer()
-{
-	//시야에서 벗어난 후 플레이어를 추적하는 타이머를 리셋
-	//플레이어가 시야에 있으면 계속 이 함수가 호출되서 타이머가 계속 리셋된다.
-	GetWorld()->GetTimerManager().ClearTimer(RetriggerableTimerHandle);
-
-	//타이머 종료 후 SetCanSeePlayer()를 실행하도록 바인딩
-	FunctionDelegate.BindUFunction(this, FName("SetCanSeePlayer"), false, nullptr);
-
-	//지정된 시간(PawnSensing->SensingInterval * TrackingPlayer)이 경과하면 바인딩된 함수가 실행됨
-	GetWorld()->GetTimerManager().SetTimer(RetriggerableTimerHandle, FunctionDelegate, PawnSensing->SensingInterval * TrackingPlayer, false);
 }
 
 void ALongRangeEnemy::FireBullet()
@@ -153,6 +146,49 @@ void ALongRangeEnemy::GotDamagedCPP(float Damage)
 
 void ALongRangeEnemy::GotParryAttackCPP(float Damage)
 {
+	//패리되는 공격이 없으므로 데미지 처리만 호출
 	GotDamagedCPP(Damage);
+}
+
+void ALongRangeEnemy::GetHit(const FVector& ImpactPoint)
+{
+	UE_LOG(LogTemp, Warning, TEXT("ImpactPoint"));
+
+	// 여긴 걍 Dot 관련 지금은 적 애니메이션도 없고 나중에 필요할지 아닐지도 모르겠음
+	// 흠 지금은 애니메이션이 없어서 Theta 각도가 다 0인건가 
+	const FVector Forward = GetActorForwardVector();
+	// Lower Impact Point to the Enemy's Actor Location Z
+	const FVector ImpactLowered(ImpactPoint.X, ImpactPoint.Y, GetActorLocation().Z);
+	const FVector ToHit = (ImpactLowered - GetActorLocation().GetSafeNormal());
+
+	// Forward * ToHit = | Forward | | ToHit | * cos(theta), | Forward | | ToHit | : normalized벡터
+	// | Forward | = 1,  | ToHit | = 1, 그러므로 Forward * ToHit = cos(theta)
+	const double CosTheta = FVector::DotProduct(Forward, ToHit);
+	// Take the inverse cosine (arc-cosine) of cos(theta) to get theta
+	double Theta = FMath::Acos(CosTheta);
+	// convert from radians to degrees
+	Theta = FMath::RadiansToDegrees(Theta);
+
+	if (GEngine)
+	{
+		GEngine->AddOnScreenDebugMessage(1, 5.f, FColor::Green, FString::Printf(TEXT("Theta: %f"), Theta));
+	}
+	UKismetSystemLibrary::DrawDebugArrow(this, GetActorLocation(), GetActorLocation() + Forward * 60.f, 5.f, FColor::Red, 5.f);  //Forward 노멀라이즈해서 길이 1이라 60 곱함
+	UKismetSystemLibrary::DrawDebugArrow(this, GetActorLocation(), GetActorLocation() + ToHit * 60.f, 5.f, FColor::Green, 5.f);
+}
+
+float ALongRangeEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	if (Attributes)
+	{
+		Attributes->ReceiveDamage(DamageAmount);
+		UE_LOG(LogTemp, Warning, TEXT("Damage"));
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(1, 5.f, FColor::Blue, FString::Printf(TEXT("%f"), DamageAmount));
+		}
+		// 여기에 체력바(?)
+	}
+	return DamageAmount;
 }
 

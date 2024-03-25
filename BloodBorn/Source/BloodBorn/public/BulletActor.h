@@ -30,8 +30,6 @@ public:
 	void CallHit(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 private:
-	float lifeTime = 5.0f;
-	float lifeTimeStack = 0.0f;
 
 	float damage = 20.0f;
 

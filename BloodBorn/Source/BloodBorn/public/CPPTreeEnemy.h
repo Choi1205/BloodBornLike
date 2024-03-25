@@ -77,6 +77,9 @@ public:
 	class UAnimMontage* EnemyAttackAnimation;
 
 	UPROPERTY(EditAnywhere)
+	class UAnimMontage* EnemyDyingAnimation;
+
+	UPROPERTY(EditAnywhere)
 	float healthPoint = 1000.0f;
 
 	float stunTimer = 0.0f;
@@ -102,10 +105,15 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual void GotParryAttackCPP(float Damage) override;
 
+	UFUNCTION(BlueprintCallable)
+	void DyingAnimEnd();
+
 	virtual void GetHit(const FVector& ImpactPoint) override;
 
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 private:
 	UPROPERTY(VisibleAnywhere)
 	UAttributeComponent* Attributes;
+
+	bool bIsDead = false;
 };

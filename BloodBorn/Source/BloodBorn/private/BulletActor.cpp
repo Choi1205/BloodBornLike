@@ -29,17 +29,13 @@ void ABulletActor::BeginPlay()
 
 	bulletBody->OnComponentBeginOverlap.AddDynamic(this, &ABulletActor::CallHit);
 	
+	SetLifeSpan(5.0f);
 }
 
 // Called every frame
 void ABulletActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	lifeTimeStack += DeltaTime;
-	if (lifeTimeStack > lifeTime) {
-		Destroy();
-	}
 
 	SetActorLocation(GetActorLocation() + GetActorForwardVector() * bulletSpeed * DeltaTime);
 

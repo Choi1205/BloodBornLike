@@ -28,30 +28,30 @@ EBTNodeResult::Type UTaskAttackPlayer::ExecuteTask(UBehaviorTreeComponent& Owner
 	
 	if(AnimInstance->Montage_IsPlaying(NULL)){
 		//공격모션 재생중일때
-		UE_LOG(LogTemp, Warning, TEXT("IS waiting"));
+		//UE_LOG(LogTemp, Warning, TEXT("IS waiting"));
 		//return EBTNodeResult::InProgress;
 	}
 	else if (!AnimInstance->Montage_IsPlaying(NULL) && AnimPlaying) {
 		//공격모션이 재생중이 아니고, InAttackAnim이 트루(공격 애님에 재생명령이 떨어진 상태)일떄
 		//재생명령이 떨어지고 애님 재생이 끝나면 실행
-		UE_LOG(LogTemp, Warning, TEXT("IS AnimEnd"));
+		//UE_LOG(LogTemp, Warning, TEXT("IS AnimEnd"));
 		AnimPlaying = false;
 		AIOwner->GetBlackboardComponent()->SetValueAsBool(FName("CanSeePlayer"), false);
 		return EBTNodeResult::Succeeded;
 	}
 	else {
 		AnimInstance->Montage_Play(Enemy->EnemyAttackAnimation);//조종중인 폰의 애님 인스턴스를 통하여 조종중인 폰의 몽타주를 재생
-		UE_LOG(LogTemp, Warning, TEXT("IS AnimPlayStart"));
+		//UE_LOG(LogTemp, Warning, TEXT("IS AnimPlayStart"));
 		AnimPlaying = true;
 		//return EBTNodeResult::InProgress;
 	}
 
 	if (AnimPlaying) {
-		UE_LOG(LogTemp, Warning, TEXT("InProgress"));
+		//UE_LOG(LogTemp, Warning, TEXT("InProgress"));
 		return EBTNodeResult::InProgress;
 	}
 	else {
-		UE_LOG(LogTemp, Warning, TEXT("Completed!"));
+		//UE_LOG(LogTemp, Warning, TEXT("Completed!"));
 		return EBTNodeResult::Succeeded;
 	}
 }

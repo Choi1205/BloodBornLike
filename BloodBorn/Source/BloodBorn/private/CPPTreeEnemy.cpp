@@ -3,6 +3,7 @@
 
 #include "CPPTreeEnemy.h"
 #include "BloodBorn/BloodBornCharacter.h"
+#include "Components/CapsuleComponent.h"
 #include "Components/SphereComponent.h"
 #include "Components/BoxComponent.h"
 #include "BTAIController.h"
@@ -13,6 +14,21 @@
 #include "Animation/AnimMontage.h"
 #include "Components/AttributeComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "GameFramework/Character.h"
+
+/*
+플레이어를 인식한 상태에서 죽으면 발생하는 에러.
+죽기전에 폰 센싱을 꺼주고, 폰 센싱 부분에 켜져있는지 체크하는 if문을 넣으면 안전하다?
+Unhandled Exception: EXCEPTION_ACCESS_VIOLATION reading address 0x00000000000004a8
+
+UnrealEditor_BloodBorn_0046!UE::CoreUObject::Private::ResolveObjectHandle() [C:\Program Files\Epic Games\UE_5.3\Engine\Source\Runtime\CoreUObject\Public\UObject\ObjectHandle.h:217]
+UnrealEditor_BloodBorn_0046!ABTAIController::SetCanSeePlayer() [C:\Users\Choi\Documents\Unreal Projects\BloodBorn\Source\BloodBorn\Private\BTAIController.cpp:59]
+UnrealEditor_BloodBorn_0046!ABTAIController::execSetCanSeePlayer() [C:\Users\Choi\Documents\Unreal Projects\BloodBorn\Intermediate\Build\Win64\UnrealEditor\Inc\BloodBorn\UHT\BTAIController.gen.cpp:36]
+UnrealEditor_CoreUObject
+UnrealEditor_CoreUObject
+UnrealEditor_Engine
+UnrealEditor_BloodBorn_0046!TBaseUFunctionDelegateInstance<ABTAIController,void __cdecl(void),FNotThreadSafeNotCheckedDelegateUserPolicy,bool,APawn *>::Execute() [C:\Program Files\Epic Games\UE_5.3\Engine\Source\Runtime\Core\Public\Delegates\DelegateInstancesImpl.h:154]
+*/
 
 // Sets default values
 ACPPTreeEnemy::ACPPTreeEnemy()
@@ -227,5 +243,29 @@ float ACPPTreeEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEv
 		}
 		// 여기에 체력바(?)
 	}
+
+	UE_LOG(LogTemp, Warning, TEXT("Damage : %f"), DamageAmount);
+	healthPoint -= DamageAmount;
+	UE_LOG(LogTemp, Warning, TEXT("Remain HP : %f"), healthPoint);
+	UE_LOG(LogTemp, Warning, TEXT("Health P : %f"), Attributes->GetHealthPercent());
+
+	if (healthPoint <= 0 && !bIsDead) {
+		if (AnimInstance->Montage_IsPlaying(NULL)) {
+			AnimInstance->Montage_Stop(NULL);
+			bIsDead = true;
+		}
+		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		AnimInstance->Montage_Play(EnemyDyingAnimation);
+		BTAIController->UnPossess();
+	}
+	
 	return DamageAmount;
+}
+
+void ACPPTreeEnemy::DyingAnimEnd()
+{
+	AnimInstance->Montage_Pause();
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	GetMesh()->SetCollisionProfileName(TEXT("Ragdoll"));
+	GetMesh()->SetSimulatePhysics(true);
 }
