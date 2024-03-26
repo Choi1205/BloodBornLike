@@ -6,9 +6,12 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "BloodBorn/BloodBornCharacter.h"
 #include "Components/SceneComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "BulletActor.h"
 #include "Components/AttributeComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "GameFramework/Character.h"
+#include "GameFramework/MovementComponent.h"
 
 // Sets default values
 ALongRangeEnemy::ALongRangeEnemy()
@@ -43,35 +46,37 @@ void ALongRangeEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	
-	//플레이어를 보면 조준시간을 계산
-	if (CanSeePlayer) {
-		AimmingTime += DeltaTime;
-	}
+	if (health > 0) {
+		//플레이어를 보면 조준시간을 계산
+		if (CanSeePlayer) {
+			AimmingTime += DeltaTime;
+		}
 
-	//애님블루프린트에서 SetFireGun을 초기화할 방법을 찾을 수 없어, 적당한 시점에 초기화 실시.
-	if (SetFireGun && AimmingTime > 1.0f) {
-		SetFireGun = false;
-	}
+		//애님블루프린트에서 SetFireGun을 초기화할 방법을 찾을 수 없어, 적당한 시점에 초기화 실시.
+		if (SetFireGun && AimmingTime > 1.0f) {
+			SetFireGun = false;
+		}
 
-	//3초 후 탄환을 발사한다.
-	if (AimmingTime > 3.0f) {
-		SetFireGun = true;
-		FireBullet();
-		AimmingTime = 0.0f;
-	}
-
-	//플레이어를 조준중인 경우
-	if (CanSeePlayer) {
-		//플레이어 놓침 타이머가 돌아간다.
-		lostPlayerTimer += DeltaTime;
-		//플레이어를 놓치고 5초가 지나면 
-		if (lostPlayerTimer > 5.0f) {
-			//타이머를 리셋하고
-			lostPlayerTimer = 0.0f;
-			//조준 타이머도 리셋하고
+		//3초 후 탄환을 발사한다.
+		if (AimmingTime > 3.0f) {
+			SetFireGun = true;
+			FireBullet();
 			AimmingTime = 0.0f;
-			//플레이어 조준을 해제한다.
-			SetCanSeePlayer(false, nullptr);
+		}
+
+		//플레이어를 조준중인 경우
+		if (CanSeePlayer) {
+			//플레이어 놓침 타이머가 돌아간다.
+			lostPlayerTimer += DeltaTime;
+			//플레이어를 놓치고 5초가 지나면 
+			if (lostPlayerTimer > 5.0f) {
+				//타이머를 리셋하고
+				lostPlayerTimer = 0.0f;
+				//조준 타이머도 리셋하고
+				AimmingTime = 0.0f;
+				//플레이어 조준을 해제한다.
+				SetCanSeePlayer(false, nullptr);
+			}
 		}
 	}
 }
@@ -85,34 +90,38 @@ void ALongRangeEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 
 void ALongRangeEnemy::OnSeePawn(APawn* PlayerPawn)
 {
-	//시야에 플레이어가 들어올때만 Player가 Nullptr이 아니다
-	ABloodBornCharacter* Player = Cast<ABloodBornCharacter>(PlayerPawn);
+	if (health > 0) {
+		//시야에 플레이어가 들어올때만 Player가 Nullptr이 아니다
+		ABloodBornCharacter* Player = Cast<ABloodBornCharacter>(PlayerPawn);
 
-	//시야에 플레이어가 들어오면
-	if (Player) {
-		//SetCanSeePlayer를 실행
-		SetCanSeePlayer(true, Player);
+		//시야에 플레이어가 들어오면
+		if (Player) {
+			//SetCanSeePlayer를 실행
+			SetCanSeePlayer(true, Player);
+		}
 	}
 }
 
 void ALongRangeEnemy::SetCanSeePlayer(bool SeePlayer, UObject* Player)
 {
-	//시야에 플레이어가 들어왔으면
-	if (SeePlayer) {
-		//시야에 플레이어가 있는동안 타이머 리셋
-		lostPlayerTimer = 0.0f;
-		//CanSeePlayer는 스테이트 머신의 조준 애니메이션 발동 트리거
-		CanSeePlayer = SeePlayer;
-		//플레이어로 캐스팅
-		PlayerREF = Cast<ABloodBornCharacter>(Player);
-		//플레이어를 향한 백터를 계산. 목적지 - 출발지
-		FVector towardPlayer= PlayerREF->GetActorLocation() - GetActorLocation();
-		//플레이어를 바라보게 해서 조준하는 것 처럼 보이게 함. Pitch방향은 위아래 방향이므로 액터의 원래 Pitch로 유지
-		SetActorRotation(FRotator(GetActorRotation().Pitch, towardPlayer.Rotation().Yaw, towardPlayer.Rotation().Roll));
-	}
-	else {
-		//플레이어 조준 트리거를 해제
-		CanSeePlayer = SeePlayer;
+	if (health > 0) {
+		//시야에 플레이어가 들어왔으면
+		if (SeePlayer) {
+			//시야에 플레이어가 있는동안 타이머 리셋
+			lostPlayerTimer = 0.0f;
+			//CanSeePlayer는 스테이트 머신의 조준 애니메이션 발동 트리거
+			CanSeePlayer = SeePlayer;
+			//플레이어로 캐스팅
+			PlayerREF = Cast<ABloodBornCharacter>(Player);
+			//플레이어를 향한 백터를 계산. 목적지 - 출발지
+			FVector towardPlayer = PlayerREF->GetActorLocation() - GetActorLocation();
+			//플레이어를 바라보게 해서 조준하는 것 처럼 보이게 함. Pitch방향은 위아래 방향이므로 액터의 원래 Pitch로 유지
+			SetActorRotation(FRotator(GetActorRotation().Pitch, towardPlayer.Rotation().Yaw, towardPlayer.Rotation().Roll));
+		}
+		else {
+			//플레이어 조준 트리거를 해제
+			CanSeePlayer = SeePlayer;
+		}
 	}
 }
 
@@ -125,7 +134,7 @@ void ALongRangeEnemy::FireBullet()
 	//탄환을 발사한다
 	GetWorld()->SpawnActor<ABulletActor>(bulletFactory, bulletFirePoint->GetComponentLocation(), GetActorRotation(), params);
 }
-
+/*
 void ALongRangeEnemy::GotDamagedCPP(float Damage)
 {
 	//플레이어 HP UI 대응용 -HP방지
@@ -149,7 +158,7 @@ void ALongRangeEnemy::GotParryAttackCPP(float Damage)
 	//패리되는 공격이 없으므로 데미지 처리만 호출
 	GotDamagedCPP(Damage);
 }
-
+*/
 void ALongRangeEnemy::GetHit(const FVector& ImpactPoint)
 {
 	UE_LOG(LogTemp, Warning, TEXT("ImpactPoint"));
@@ -189,6 +198,18 @@ float ALongRangeEnemy::TakeDamage(float DamageAmount, FDamageEvent const& Damage
 		}
 		// 여기에 체력바(?)
 	}
+
+	UE_LOG(LogTemp, Warning, TEXT("Damage : %f"), DamageAmount);
+	health -= DamageAmount;
+	UE_LOG(LogTemp, Warning, TEXT("Remain HP : %f"), health);
+	UE_LOG(LogTemp, Warning, TEXT("Health P : %f"), Attributes->GetHealthPercent());
+
+	if (health <= 0) {
+		PawnSensing->Deactivate();
+		AimmingTime = 0.0f;
+		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	}
+
 	return DamageAmount;
 }
 

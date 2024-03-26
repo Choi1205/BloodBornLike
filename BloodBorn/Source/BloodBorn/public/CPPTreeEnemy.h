@@ -11,7 +11,7 @@
 class UAttributeComponent;
 
 UCLASS()
-class BLOODBORN_API ACPPTreeEnemy : public ACharacter, public IDamageSystem, public IHitInterface
+class BLOODBORN_API ACPPTreeEnemy : public ACharacter, public IHitInterface
 {
 	GENERATED_BODY()
 
@@ -99,11 +99,6 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
-	UFUNCTION(BlueprintCallable)
-	virtual void GotDamagedCPP(float Damage) override;
-	UFUNCTION(BlueprintCallable)
-	virtual void GotParryAttackCPP(float Damage) override;
 
 	UFUNCTION(BlueprintCallable)
 	void DyingAnimEnd();

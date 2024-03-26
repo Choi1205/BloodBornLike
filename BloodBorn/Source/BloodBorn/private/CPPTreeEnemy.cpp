@@ -6,6 +6,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/SphereComponent.h"
 #include "Components/BoxComponent.h"
+#include "Perception/PawnSensingComponent.h"
 #include "BTAIController.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Navigation/PathFollowingComponent.h"
@@ -15,20 +16,6 @@
 #include "Components/AttributeComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "GameFramework/Character.h"
-
-/*
-플레이어를 인식한 상태에서 죽으면 발생하는 에러.
-죽기전에 폰 센싱을 꺼주고, 폰 센싱 부분에 켜져있는지 체크하는 if문을 넣으면 안전하다?
-Unhandled Exception: EXCEPTION_ACCESS_VIOLATION reading address 0x00000000000004a8
-
-UnrealEditor_BloodBorn_0046!UE::CoreUObject::Private::ResolveObjectHandle() [C:\Program Files\Epic Games\UE_5.3\Engine\Source\Runtime\CoreUObject\Public\UObject\ObjectHandle.h:217]
-UnrealEditor_BloodBorn_0046!ABTAIController::SetCanSeePlayer() [C:\Users\Choi\Documents\Unreal Projects\BloodBorn\Source\BloodBorn\Private\BTAIController.cpp:59]
-UnrealEditor_BloodBorn_0046!ABTAIController::execSetCanSeePlayer() [C:\Users\Choi\Documents\Unreal Projects\BloodBorn\Intermediate\Build\Win64\UnrealEditor\Inc\BloodBorn\UHT\BTAIController.gen.cpp:36]
-UnrealEditor_CoreUObject
-UnrealEditor_CoreUObject
-UnrealEditor_Engine
-UnrealEditor_BloodBorn_0046!TBaseUFunctionDelegateInstance<ABTAIController,void __cdecl(void),FNotThreadSafeNotCheckedDelegateUserPolicy,bool,APawn *>::Execute() [C:\Program Files\Epic Games\UE_5.3\Engine\Source\Runtime\Core\Public\Delegates\DelegateInstancesImpl.h:154]
-*/
 
 // Sets default values
 ACPPTreeEnemy::ACPPTreeEnemy()
@@ -168,7 +155,7 @@ void ACPPTreeEnemy::AttackAnimationEnded()
 		//공격 애니메이션을 다시 재생한다.
 	}
 }*/
-
+/*
 void ACPPTreeEnemy::GotDamagedCPP(float Damage)
 {
 	//플레이어 HP UI 대응용 -HP방지
@@ -203,7 +190,7 @@ void ACPPTreeEnemy::GotParryAttackCPP(float Damage)
 	//패리판정 및 스턴판정이 들어감
 	UE_LOG(LogTemp, Warning, TEXT("Gun Attack Damage : %.0f"), Damage);
 }
-
+*/
 void ACPPTreeEnemy::GetHit(const FVector& ImpactPoint)
 {
 	UE_LOG(LogTemp, Warning, TEXT("ImpactPoint"));
@@ -254,6 +241,7 @@ float ACPPTreeEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEv
 			AnimInstance->Montage_Stop(NULL);
 			bIsDead = true;
 		}
+		BTAIController->PawnSensing->Deactivate();
 		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		AnimInstance->Montage_Play(EnemyDyingAnimation);
 		BTAIController->UnPossess();

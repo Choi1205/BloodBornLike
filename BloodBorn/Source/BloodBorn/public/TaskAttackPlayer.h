@@ -13,22 +13,8 @@ UCLASS()
 class BLOODBORN_API UTaskAttackPlayer : public UBTTaskNode
 {
 	GENERATED_BODY()
-	
-public:
-	UTaskAttackPlayer();
-
-	class UAnimInstance* AnimInstance;
-
-	class AAIController* AIOwner;
-
-	class ACPPTreeEnemy* Enemy;
-
-	bool AnimPlaying = false;
 
 private:
 
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
-
-	void TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaTime);
-
 };

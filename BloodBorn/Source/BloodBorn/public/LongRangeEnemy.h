@@ -11,7 +11,7 @@
 class UAttributeComponent;
 
 UCLASS()
-class BLOODBORN_API ALongRangeEnemy : public ACharacter, public IDamageSystem, public IHitInterface
+class BLOODBORN_API ALongRangeEnemy : public ACharacter, public IHitInterface
 {
 	GENERATED_BODY()
 
@@ -42,14 +42,11 @@ public:
 	UPROPERTY(BlueprintReadOnly)
 	bool SetFireGun = false;
 
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float health = 500.0f;
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class ABulletActor> bulletFactory;
-
-	UPROPERTY(EditAnywhere)
-	float healthPoint = 500.0f;
 
 protected:
 	// Called when the game starts or when spawned
@@ -69,11 +66,6 @@ public:
 
 	UFUNCTION()
 	void FireBullet();
-
-	UFUNCTION(BlueprintCallable)
-	virtual void GotDamagedCPP(float Damage) override;
-	UFUNCTION(BlueprintCallable)
-	virtual void GotParryAttackCPP(float Damage) override;
 
 	virtual void GetHit(const FVector& ImpactPoint) override;
 

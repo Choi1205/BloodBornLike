@@ -62,9 +62,11 @@ void ABTAIController::SetCanSeePlayer(bool SeePlayer, UObject* Player)
 
 void ABTAIController::RunRetriggerableTimer()
 {
-	GetWorld()->GetTimerManager().ClearTimer(RetriggerableTimerHandle);
+	if (PawnSensing->IsActive()) {
+		GetWorld()->GetTimerManager().ClearTimer(RetriggerableTimerHandle);
 
-	FunctionDelegate.BindUFunction(this, FName("SetCanSeePlayer"), false, GetPawn());
+		FunctionDelegate.BindUFunction(this, FName("SetCanSeePlayer"), false, GetPawn());
 
-	GetWorld()->GetTimerManager().SetTimer(RetriggerableTimerHandle, FunctionDelegate, PawnSensing->SensingInterval * TrackingPlayer, false);
+		GetWorld()->GetTimerManager().SetTimer(RetriggerableTimerHandle, FunctionDelegate, PawnSensing->SensingInterval * TrackingPlayer, false);
+	}
 }

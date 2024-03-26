@@ -23,7 +23,7 @@ public:
 	class UBehaviorTree* BehaverTree;
 
 	UPROPERTY(EditAnywhere)
-	float TrackingPlayer = 2.0f;
+	float TrackingPlayer = 25.0f;
 
 
 	UPROPERTY(EditAnywhere)
