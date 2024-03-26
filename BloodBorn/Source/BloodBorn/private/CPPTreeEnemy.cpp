@@ -236,15 +236,21 @@ float ACPPTreeEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEv
 	UE_LOG(LogTemp, Warning, TEXT("Remain HP : %f"), healthPoint);
 	UE_LOG(LogTemp, Warning, TEXT("Health P : %f"), Attributes->GetHealthPercent());
 
-	if (healthPoint <= 0 && !bIsDead) {
+	if (healthPoint <= 0) {
 		if (AnimInstance->Montage_IsPlaying(NULL)) {
 			AnimInstance->Montage_Stop(NULL);
-			bIsDead = true;
 		}
 		BTAIController->PawnSensing->Deactivate();
 		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		AnimInstance->Montage_Play(EnemyDyingAnimation);
 		BTAIController->UnPossess();
+	}
+	else {
+		if (AnimInstance->Montage_IsPlaying(NULL)) {
+			AnimInstance->Montage_Stop(NULL);
+		}
+		BTAIController->GetBlackboardComponent()->SetValueAsBool(FName("TakingHit"), true);
+		AnimInstance->Montage_Play(EnemyHitAnimation);
 	}
 	
 	return DamageAmount;
@@ -256,4 +262,9 @@ void ACPPTreeEnemy::DyingAnimEnd()
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetMesh()->SetCollisionProfileName(TEXT("Ragdoll"));
 	GetMesh()->SetSimulatePhysics(true);
+}
+
+void ACPPTreeEnemy::HitAnimEnd()
+{
+	BTAIController->GetBlackboardComponent()->SetValueAsBool(FName("TakingHit"), false);
 }

@@ -78,6 +78,16 @@ void ALongRangeEnemy::Tick(float DeltaTime)
 				SetCanSeePlayer(false, nullptr);
 			}
 		}
+
+		if (takeHit) {
+			hitTimer += DeltaTime;
+			if (hitTimer > 2.0f) {
+				hitTimer = 0.0f;
+				AimmingTime = 0.0f;
+				takeHit = false;
+			}
+		}
+
 	}
 }
 
@@ -208,6 +218,9 @@ float ALongRangeEnemy::TakeDamage(float DamageAmount, FDamageEvent const& Damage
 		PawnSensing->Deactivate();
 		AimmingTime = 0.0f;
 		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	}
+	else {
+		takeHit = true;
 	}
 
 	return DamageAmount;

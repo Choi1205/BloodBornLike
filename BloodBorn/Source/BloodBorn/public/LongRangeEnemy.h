@@ -48,6 +48,9 @@ public:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class ABulletActor> bulletFactory;
 
+	UPROPERTY(BlueprintReadOnly)
+	bool takeHit = false;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -75,4 +78,6 @@ private:
 	UAttributeComponent* Attributes;
 
 	float lostPlayerTimer = 0.0f;
+
+	float hitTimer = 0.0f;
 };
