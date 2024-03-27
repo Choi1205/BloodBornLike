@@ -17,7 +17,5 @@ class BLOODBORN_API UTaskRandomMoveAfterAttack : public UBTTaskNode
 private:
 	class UNavigationSystemV1* NavArea;
 
-	FVector RandomLocation;
-
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 };

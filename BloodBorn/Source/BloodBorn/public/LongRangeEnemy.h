@@ -73,6 +73,12 @@ public:
 	virtual void GetHit(const FVector& ImpactPoint) override;
 
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
+
+	void GotDamage(float damage);
+
+	UFUNCTION(BlueprintCallable)
+	virtual void GotParryAttackCPP(float damage) override;
+
 private:
 	UPROPERTY(VisibleAnywhere)
 	UAttributeComponent* Attributes;

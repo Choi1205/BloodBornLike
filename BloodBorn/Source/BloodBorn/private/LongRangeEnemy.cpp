@@ -145,24 +145,6 @@ void ALongRangeEnemy::FireBullet()
 	GetWorld()->SpawnActor<ABulletActor>(bulletFactory, bulletFirePoint->GetComponentLocation(), GetActorRotation(), params);
 }
 /*
-void ALongRangeEnemy::GotDamagedCPP(float Damage)
-{
-	//플레이어 HP UI 대응용 -HP방지
-	healthPoint -= Damage;
-	if (healthPoint < 0) {
-		healthPoint = 0;
-	}
-
-	//데미지를 받아 경직이 들어가야한다.
-	//경직치 처리는 보류
-	UE_LOG(LogTemp, Warning, TEXT("Remain HP : %.0f"), healthPoint);
-
-	if (healthPoint == 0) {
-		//사망처리부분. 애니메이션 재생 필요
-		//Destroy();
-	}
-}
-
 void ALongRangeEnemy::GotParryAttackCPP(float Damage)
 {
 	//패리되는 공격이 없으므로 데미지 처리만 호출
@@ -209,8 +191,20 @@ float ALongRangeEnemy::TakeDamage(float DamageAmount, FDamageEvent const& Damage
 		// 여기에 체력바(?)
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("Damage : %f"), DamageAmount);
-	health -= DamageAmount;
+	GotDamage(DamageAmount);
+
+	return DamageAmount;
+}
+
+void ALongRangeEnemy::GotParryAttackCPP(float damage)
+{
+	GotDamage(damage);
+}
+
+void ALongRangeEnemy::GotDamage(float damage)
+{
+	UE_LOG(LogTemp, Warning, TEXT("Damage : %f"), damage);
+	health -= damage;
 	UE_LOG(LogTemp, Warning, TEXT("Remain HP : %f"), health);
 	UE_LOG(LogTemp, Warning, TEXT("Health P : %f"), Attributes->GetHealthPercent());
 
@@ -222,7 +216,4 @@ float ALongRangeEnemy::TakeDamage(float DamageAmount, FDamageEvent const& Damage
 	else {
 		takeHit = true;
 	}
-
-	return DamageAmount;
 }
-

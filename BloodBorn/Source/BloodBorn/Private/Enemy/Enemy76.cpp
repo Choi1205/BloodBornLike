@@ -86,3 +86,7 @@ float AEnemy76::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, 
 	return DamageAmount;
 }
 
+void AEnemy76::GotParryAttackCPP(float damage)
+{
+}
+

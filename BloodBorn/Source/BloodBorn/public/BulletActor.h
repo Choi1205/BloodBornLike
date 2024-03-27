@@ -31,6 +31,7 @@ public:
 
 private:
 
+	UPROPERTY(EditAnywhere)
 	float damage = 20.0f;
 
 protected:

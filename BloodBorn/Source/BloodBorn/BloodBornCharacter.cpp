@@ -144,7 +144,6 @@ void ABloodBornCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 		//Dodge
 		EnhancedInputComponent->BindAction(DodgeAction, ETriggerEvent::Triggered, this, &ABloodBornCharacter::Dodge);
 
-
 	}
 	else
 	{
@@ -298,3 +297,10 @@ void ABloodBornCharacter::AttackEnd()
 	ActionState = EActionState::EAS_Unoccupied;
 }
 
+float ABloodBornCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	
+	UE_LOG(LogTemp, Warning, TEXT("Player Hit! : %f"), DamageAmount);
+
+	return DamageAmount;
+}

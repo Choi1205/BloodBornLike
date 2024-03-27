@@ -70,6 +70,8 @@ public:
 	
 	int32 Selection = 0;
 
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
+
 protected:
 
 	/** 

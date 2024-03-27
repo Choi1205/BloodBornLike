@@ -9,6 +9,8 @@
 #include "Animation/AnimInstance.h"
 #include "Animation/AnimMontage.h"
 #include "BTAIController.h"
+#include "Kismet/GameplayStatics.h"
+#include "NavigationSystem.h"
 
 EBTNodeResult::Type UTaskAttackPlayer::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
@@ -26,5 +28,26 @@ EBTNodeResult::Type UTaskAttackPlayer::ExecuteTask(UBehaviorTreeComponent& Owner
 	//조종중인 폰의 애님 인스턴스를 통하여 조종중인 폰의 몽타주를 재생
 	AnimInstance->Montage_Play(Enemy->EnemyAttackAnimation);
 	
+	//랜덤한 시간동안 플레이어 주변을 어물거리는 시간
+	float randomTime = FMath::FRandRange(2.0f, 4.0f);
+	//랜덤 시간을 블랙보드에 입력
+	OwnerComp.GetBlackboardComponent()->SetValueAsFloat(FName("RandomTime"), randomTime);
+
+	//서있는 내비매쉬 범위를 획득
+	UNavigationSystemV1* NavArea = FNavigationSystem::GetCurrent<UNavigationSystemV1>(UGameplayStatics::GetPlayerPawn(GetWorld(), 0));
+
+	if (NavArea) {
+		FVector RandomLocation;
+		//적 자신을 중심으로 한 1500.0f범위의 랜덤 위치를 지정
+		NavArea->K2_GetRandomReachablePointInRadius(GetWorld(), Enemy->GetActorLocation(), RandomLocation, 400.0f);
+		//랜덤 패트롤 위치로 지정
+		OwnerComp.GetBlackboardComponent()->SetValueAsVector(FName("RandomPatrolLocation"), RandomLocation);
+	}
+	else {
+		return EBTNodeResult::Failed;
+	}
+	
+	AIOwner->GetBlackboardComponent()->SetValueAsBool(FName("AttackedPlayer"), true);
+
 	return EBTNodeResult::Succeeded;
 }
