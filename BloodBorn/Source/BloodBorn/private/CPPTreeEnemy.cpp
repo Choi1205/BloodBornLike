@@ -72,24 +72,7 @@ void ACPPTreeEnemy::OnDealDamageOverlapBegin(class UPrimitiveComponent* Overlapp
 		UGameplayStatics::ApplyDamage(PlayerREF, Damage, GetInstigator()->GetController(), this, UDamageType::StaticClass());
 	}
 }
-/*
-void ACPPTreeEnemy::GotParryAttackCPP(float Damage)
-{
-	//일단 데미지가 들어감...서순은 천천히 생각하기
-	GotDamagedCPP(Damage);
-	
-	if (CanParryed) {
-		if (AnimInstance->Montage_IsPlaying(NULL)) {
-			AnimInstance->Montage_Stop(NULL);
-		}
-		CanParryed = false;
-		BTAIController->GetBlackboardComponent()->SetValueAsBool(FName("InStun"), true);
-		
-	}
-	//패리판정 및 스턴판정이 들어감
-	UE_LOG(LogTemp, Warning, TEXT("Gun Attack Damage : %.0f"), Damage);
-}
-*/
+
 void ACPPTreeEnemy::GetHit(const FVector& ImpactPoint)
 {
 	UE_LOG(LogTemp, Warning, TEXT("ImpactPoint"));
