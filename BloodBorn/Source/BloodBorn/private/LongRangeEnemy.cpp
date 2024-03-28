@@ -115,9 +115,18 @@ void ALongRangeEnemy::OnSeePawn(APawn* PlayerPawn)
 
 void ALongRangeEnemy::OnHearNoise(APawn* PlayerPawn, const FVector& Location, float Volume)
 {
-	if (Player == nullptr) {
-		FRotator toWard = (Location - GetActorLocation()).Rotation();
-		SetActorRotation(toWard);
+	ABloodBornCharacter* tempPlayer = Cast<ABloodBornCharacter>(PlayerPawn);
+
+	if (tempPlayer != nullptr) {
+		FRotator toward = (Location - GetActorLocation()).Rotation();
+		SetActorRotation(toward);
+	}
+	else {
+		if (!noiseCheaker) {
+			noiseCheaker = true;
+			FRotator toward = (Location - GetActorLocation()).Rotation();
+			SetActorRotation(toward);
+		}
 	}
 }
 
@@ -151,7 +160,7 @@ void ALongRangeEnemy::FireBullet()
 	params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
 	//탄환을 발사한다
-	GetWorld()->SpawnActor<ABulletActor>(bulletFactory, bulletFirePoint->GetComponentLocation(), GetActorRotation(), params);
+	GetWorld()->SpawnActor<ABulletActor>(bulletFactory, bulletFirePoint->GetComponentLocation(), (PlayerREF->GetActorLocation() - GetActorLocation()).Rotation(), params);
 }
 /*
 void ALongRangeEnemy::GotParryAttackCPP(float Damage)

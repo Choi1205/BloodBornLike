@@ -91,4 +91,8 @@ private:
 	float lostPlayerTimer = 0.0f;
 
 	float hitTimer = 0.0f;
+
+	float noiseTimer = 0.0f;
+
+	bool noiseCheaker = false;
 };
