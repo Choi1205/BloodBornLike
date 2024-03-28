@@ -7,6 +7,7 @@
 #include "Perception/PawnSensingComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "GameFramework/Character.h"
 #include "BloodBorn/BloodBornCharacter.h"
@@ -19,6 +20,7 @@ void ABTStayAIController::BeginPlay() {
 	Super::BeginPlay();
 
 	PawnSensing->OnSeePawn.AddDynamic(this, &ABTStayAIController::OnSeePawn);
+	PawnSensing->OnHearNoise.AddDynamic(this, &ABTStayAIController::OnHearNoise);
 
 	RunBehaviorTree(BehaverTree);
 
@@ -28,19 +30,31 @@ void ABTStayAIController::BeginPlay() {
 
 void ABTStayAIController::OnSeePawn(APawn* PlayerPawn)
 {
-	ABloodBornCharacter* Player = Cast<ABloodBornCharacter>(PlayerPawn);
+	Player = Cast<ABloodBornCharacter>(PlayerPawn);
 
 	if (Player) {
+		Cast<ACharacter>(GetPawn())->MakeNoise(1.0f, Cast<ACharacter>(GetPawn()), GetPawn()->GetActorLocation());
 		SetCanSeePlayer(true, Player);
 		RunRetriggerableTimer();
 	}
 }
 
-void ABTStayAIController::SetCanSeePlayer(bool SeePlayer, UObject* Player)
+void ABTStayAIController::OnHearNoise(APawn* PlayerPawn, const FVector& Location, float Volume)
+{
+	UE_LOG(LogTemp, Warning, TEXT("HEARED!!!"));
+	if (Player == nullptr) {
+		UE_LOG(LogTemp, Warning, TEXT("Where???!!!"));
+		ACharacter* enemyChar = Cast<ACharacter>(GetPawn());
+		FRotator toWard = (Location - enemyChar->GetActorLocation()).Rotation();
+		enemyChar->SetActorRotation(toWard);
+	}
+}
+
+void ABTStayAIController::SetCanSeePlayer(bool SeePlayer, UObject* isPlayer)
 {
 	if (SeePlayer) {
 		GetBlackboardComponent()->SetValueAsBool(FName("CanSeePlayer"), SeePlayer);
-		GetBlackboardComponent()->SetValueAsObject(FName("PlayerTarget"), Player);
+		GetBlackboardComponent()->SetValueAsObject(FName("PlayerTarget"), isPlayer);
 	}
 	else {
 		GetBlackboardComponent()->SetValueAsBool(FName("CanSeePlayer"), SeePlayer);

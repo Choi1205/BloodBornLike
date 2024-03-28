@@ -65,6 +65,9 @@ public:
 	UFUNCTION()
 	void OnSeePawn(APawn* PlayerPawn);
 
+	UFUNCTION()
+	void OnHearNoise(APawn* PlayerPawn, const FVector &Location, float Volume);
+
 	void SetCanSeePlayer(bool SeePlayer, UObject* Player);
 
 	UFUNCTION()
@@ -82,6 +85,8 @@ public:
 private:
 	UPROPERTY(VisibleAnywhere)
 	UAttributeComponent* Attributes;
+
+	ABloodBornCharacter* Player;
 
 	float lostPlayerTimer = 0.0f;
 

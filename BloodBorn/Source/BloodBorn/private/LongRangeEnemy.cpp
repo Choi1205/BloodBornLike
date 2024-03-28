@@ -38,7 +38,7 @@ void ALongRangeEnemy::BeginPlay()
 	
 	//시야에 들어온 폰이 있으면 OnSeePawn이 작동하도록 바인딩
 	PawnSensing->OnSeePawn.AddDynamic(this, &ALongRangeEnemy::OnSeePawn);
-
+	PawnSensing->OnHearNoise.AddDynamic(this, &ALongRangeEnemy::OnHearNoise);
 }
 
 // Called every frame
@@ -102,17 +102,26 @@ void ALongRangeEnemy::OnSeePawn(APawn* PlayerPawn)
 {
 	if (health > 0) {
 		//시야에 플레이어가 들어올때만 Player가 Nullptr이 아니다
-		ABloodBornCharacter* Player = Cast<ABloodBornCharacter>(PlayerPawn);
+		Player = Cast<ABloodBornCharacter>(PlayerPawn);
 
 		//시야에 플레이어가 들어오면
 		if (Player) {
+			MakeNoise(1.0f, this, GetActorLocation());
 			//SetCanSeePlayer를 실행
 			SetCanSeePlayer(true, Player);
 		}
 	}
 }
 
-void ALongRangeEnemy::SetCanSeePlayer(bool SeePlayer, UObject* Player)
+void ALongRangeEnemy::OnHearNoise(APawn* PlayerPawn, const FVector& Location, float Volume)
+{
+	if (Player == nullptr) {
+		FRotator toWard = (Location - GetActorLocation()).Rotation();
+		SetActorRotation(toWard);
+	}
+}
+
+void ALongRangeEnemy::SetCanSeePlayer(bool SeePlayer, UObject* isPlayer)
 {
 	if (health > 0) {
 		//시야에 플레이어가 들어왔으면
@@ -122,7 +131,7 @@ void ALongRangeEnemy::SetCanSeePlayer(bool SeePlayer, UObject* Player)
 			//CanSeePlayer는 스테이트 머신의 조준 애니메이션 발동 트리거
 			CanSeePlayer = SeePlayer;
 			//플레이어로 캐스팅
-			PlayerREF = Cast<ABloodBornCharacter>(Player);
+			PlayerREF = Cast<ABloodBornCharacter>(isPlayer);
 			//플레이어를 향한 백터를 계산. 목적지 - 출발지
 			FVector towardPlayer = PlayerREF->GetActorLocation() - GetActorLocation();
 			//플레이어를 바라보게 해서 조준하는 것 처럼 보이게 함. Pitch방향은 위아래 방향이므로 액터의 원래 Pitch로 유지

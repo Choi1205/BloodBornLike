@@ -48,13 +48,15 @@ void ACPPTreeStayEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (BTStayAIController->GetBlackboardComponent()->GetValueAsBool(FName("InStun"))) {
-		stunTimer += DeltaTime;
-	}
+	if (BTStayAIController != nullptr) {
+		if (BTStayAIController->GetBlackboardComponent()->GetValueAsBool(FName("InStun"))) {
+			stunTimer += DeltaTime;
+		}
 
-	if (stunTimer > 3.0f) {
-		BTStayAIController->GetBlackboardComponent()->SetValueAsBool(FName("InStun"), false);
-		stunTimer = 0.0f;
+		if (stunTimer > 3.0f) {
+			BTStayAIController->GetBlackboardComponent()->SetValueAsBool(FName("InStun"), false);
+			stunTimer = 0.0f;
+		}
 	}
 }
 
@@ -143,23 +145,25 @@ void ACPPTreeStayEnemy::GotDamage(float damage)
 	UE_LOG(LogTemp, Warning, TEXT("Remain HP : %f"), healthPoint);
 	UE_LOG(LogTemp, Warning, TEXT("Health P : %f"), Attributes->GetHealthPercent());
 
-	if (healthPoint <= 0) {
-		if (AnimInstance->Montage_IsPlaying(NULL)) {
-			AnimInstance->Montage_Stop(NULL);
-		}
-		BTStayAIController->PawnSensing->Deactivate();
-		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		AnimInstance->Montage_Play(EnemyDyingAnimation);
-		BTStayAIController->UnPossess();
-		BTStayAIController = nullptr;
-	}
-	else {
-		if (!BTStayAIController->GetBlackboardComponent()->GetValueAsBool(FName("InStun"))) {
+	if (BTStayAIController != nullptr) {
+		if (healthPoint <= 0) {
 			if (AnimInstance->Montage_IsPlaying(NULL)) {
 				AnimInstance->Montage_Stop(NULL);
 			}
-			BTStayAIController->GetBlackboardComponent()->SetValueAsBool(FName("TakingHit"), true);
-			AnimInstance->Montage_Play(EnemyHitAnimation);
+			BTStayAIController->PawnSensing->Deactivate();
+			GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+			AnimInstance->Montage_Play(EnemyDyingAnimation);
+			BTStayAIController->UnPossess();
+			BTStayAIController = nullptr;
+		}
+		else {
+			if (!BTStayAIController->GetBlackboardComponent()->GetValueAsBool(FName("InStun"))) {
+				if (AnimInstance->Montage_IsPlaying(NULL)) {
+					AnimInstance->Montage_Stop(NULL);
+				}
+				BTStayAIController->GetBlackboardComponent()->SetValueAsBool(FName("TakingHit"), true);
+				AnimInstance->Montage_Play(EnemyHitAnimation);
+			}
 		}
 	}
 }
@@ -168,8 +172,8 @@ void ACPPTreeStayEnemy::DyingAnimEnd()
 {
 	AnimInstance->Montage_Pause();
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	GetMesh()->SetCollisionProfileName(TEXT("Ragdoll"));
-	GetMesh()->SetSimulatePhysics(true);
+	//GetMesh()->SetCollisionProfileName(TEXT("Ragdoll"));
+	//GetMesh()->SetSimulatePhysics(true);
 }
 
 void ACPPTreeStayEnemy::HitAnimEnd()

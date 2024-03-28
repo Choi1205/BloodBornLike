@@ -19,6 +19,7 @@ void ABTAIController::BeginPlay() {
 	Super::BeginPlay();
 
 	PawnSensing->OnSeePawn.AddDynamic(this, &ABTAIController::OnSeePawn);
+	PawnSensing->OnHearNoise.AddDynamic(this, &ABTAIController::OnHearNoise);
 
 	RunBehaviorTree(BehaverTree);
 
@@ -38,19 +39,29 @@ void ABTAIController::RandomPatrol() {
 
 void ABTAIController::OnSeePawn(APawn* PlayerPawn)
 {
-	ABloodBornCharacter* Player = Cast<ABloodBornCharacter>(PlayerPawn);
+	Player = Cast<ABloodBornCharacter>(PlayerPawn);
 
 	if (Player) {
+		Cast<ACharacter>(GetPawn())->MakeNoise(1.0f, Cast<ACharacter>(GetPawn()), GetPawn()->GetActorLocation());
 		SetCanSeePlayer(true, Player);
 		RunRetriggerableTimer();
 	}
 }
 
-void ABTAIController::SetCanSeePlayer(bool SeePlayer, UObject* Player)
+void ABTAIController::OnHearNoise(APawn* PlayerPawn, const FVector& Location, float Volume)
+{
+	if (Player == nullptr) {
+		ACharacter* enemyChar = Cast<ACharacter>(GetPawn());
+		FRotator toWard = (Location - enemyChar->GetActorLocation()).Rotation();
+		enemyChar->SetActorRotation(toWard);
+	}
+}
+
+void ABTAIController::SetCanSeePlayer(bool SeePlayer, UObject* isPlayer)
 {
 	if (SeePlayer) {
 		GetBlackboardComponent()->SetValueAsBool(FName("CanSeePlayer"), SeePlayer);
-		GetBlackboardComponent()->SetValueAsObject(FName("PlayerTarget"), Player);
+		GetBlackboardComponent()->SetValueAsObject(FName("PlayerTarget"), isPlayer);
 	}
 	else {
 		GetBlackboardComponent()->SetValueAsBool(FName("CanSeePlayer"), SeePlayer);

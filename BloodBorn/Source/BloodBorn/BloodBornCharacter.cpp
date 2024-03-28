@@ -240,6 +240,7 @@ void ABloodBornCharacter::NormalAttack()
 	// bool ABloodBornCharacter::CanAttack(){return 	ActionState == EActionState::EAS_Unoccupied && CharacterState != EcharacterState::ECS_Unequipped;}
 	if (ActionState == EActionState::EAS_Unoccupied)   // 맨손 공격 안하려면 주석으로 쓰기
 	{
+
 		PlayNormalAttackMontage();
 		ActionState = EActionState::EAS_NormalAttacking;
 	}        
@@ -271,6 +272,7 @@ void ABloodBornCharacter::PlayNormalAttackMontage()
 		Selection %= 2;
 		AnimInstance->Montage_JumpToSection(SectionName, NormalAttackMontage);
 	}
+	MakeNoise(1.0f);
 }
 
 void ABloodBornCharacter::StrongAttack()
@@ -290,6 +292,7 @@ void ABloodBornCharacter::PlayStrongAttackMontage()
 		AnimInstance->Montage_Play(StrongAttackMontage);  // 나머지 파라미터들은 기본설정으로 일단 할거라 안 씀
 		AnimInstance->Montage_JumpToSection("Attack3", StrongAttackMontage);
 	}
+	MakeNoise(1.0f);
 }
 
 void ABloodBornCharacter::AttackEnd()
