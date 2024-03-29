@@ -11,6 +11,9 @@ UENUM(BlueprintType)
 enum class EActionState : uint8
 {
 	EAS_Unoccupied UMETA(DisplayName = "Unoccupied"),
+	EAS_HitReaction UMETA(DisplayName = "HitReaction"),
 	EAS_NormalAttacking UMETA(DisplayName = "NormalAttacking"),   // 이렇게 하면 강공격이랑 록온도 여기 들어가나?
-	EAS_StrongAttacking UMETA(DisplayName = "StrongAttacking")
+	EAS_StrongAttacking UMETA(DisplayName = "StrongAttacking"),
+	EAS_Dodge UMETA(DisplayName = "Dodge"),
+	EAS_Dead UMETA(DisplayName = "Dead")
 };

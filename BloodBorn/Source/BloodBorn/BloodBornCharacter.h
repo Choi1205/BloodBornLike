@@ -16,6 +16,7 @@ struct FInputActionValue;
 class UAnimMontage;
 class AItem;
 class AWeapon;
+class UAttributeComponent;
 
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
@@ -91,6 +92,8 @@ protected:
 
 	void Dodge();
 
+	void Die();
+
 	/**
 	* Play Montage Function
 	*/
@@ -101,9 +104,15 @@ protected:
 	// animmontage 안 쓸거면 지울 부분 중 하나~
 	void PlayDodgeMontage();
 
+	void PlayHitReactMontage();
+
+	void PlayDeathMontage();
+
 	UFUNCTION(BlueprintCallable)
 	void AttackEnd();
 
+	UFUNCTION(BlueprintCallable)
+	void HitReactEnd();
 
 protected:
 	// APawn interface
@@ -112,6 +121,10 @@ protected:
 	// To add mapping context
 	virtual void BeginPlay();
 
+	//UPROPERTY(EditDefaultsOnly, Category = "Character Movement")
+	//float AttackMaxWalkSpeed = 100.0f;
+
+	//float OriginWalkSpeed;
 
 public:
 	/** Returns CameraBoom subobject **/
@@ -125,10 +138,22 @@ public:
 
 	// FORCEINLINE EActionState GetActionState() const { return ActionState; }
 
+	UPROPERTY(BlueprintReadWrite)
+	bool bIsInvincible = false;
+
+	UPROPERTY(EditAnywhere)
+	float health = 100.0f;
+
 private:
+	
+
 	void PlayMontageSection(UAnimMontage* Montage, const FName& sectionName);
 
 	ECharacterState CharacterState = ECharacterState::ECS_Unequipped;
+
+	UPROPERTY(VisibleAnywhere)
+	UAttributeComponent* Attributes;
+
 
 	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	EActionState ActionState = EActionState::EAS_Unoccupied;
@@ -151,6 +176,11 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = Combat)
 	UAnimMontage* DodgeMontage;
 
+	UPROPERTY(EditDefaultsOnly, Category = Combat)
+	UAnimMontage* HitReactMontage;
+
+	UPROPERTY(EditDefaultsOnly, Category = Combat)
+	UAnimMontage* DeathMontage;
 
 };
 
