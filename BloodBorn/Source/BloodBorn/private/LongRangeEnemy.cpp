@@ -156,7 +156,7 @@ void ALongRangeEnemy::FireBullet()
 	params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
 	//탄환을 발사한다
-	GetWorld()->SpawnActor<ABulletActor>(bulletFactory, bulletFirePoint->GetComponentLocation(), (PlayerREF->GetActorLocation() - GetActorLocation()).Rotation(), params);
+	GetWorld()->SpawnActor<ABulletActor>(bulletFactory, bulletFirePoint->GetComponentLocation(), (PlayerREF->GetActorLocation() - bulletFirePoint->GetComponentLocation()).Rotation(), params);
 }
 /*
 void ALongRangeEnemy::GotParryAttackCPP(float Damage)

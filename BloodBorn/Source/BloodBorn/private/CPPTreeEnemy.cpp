@@ -18,6 +18,9 @@
 #include "GameFramework/Character.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "GameFramework/Character.h"
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraComponent.h"
 
 // Sets default values
 ACPPTreeEnemy::ACPPTreeEnemy()
@@ -28,6 +31,10 @@ ACPPTreeEnemy::ACPPTreeEnemy()
 	DamageCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("Damage Collision"));//박스 콜리전 컴포넌트를 생성하여 DamageCollision이름으로 생성한다.
 	DamageCollision->SetupAttachment(GetMesh(), TEXT("RightHandAttackSocket"));//생성한 박스 콜리전 컴포넌트를 매쉬에 붙인다.
 
+	bleeding = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Bleeding Comp"));
+	bleeding->SetupAttachment(RootComponent);
+	bleeding->bAutoActivate = false;
+	
 	Attributes = CreateDefaultSubobject< UAttributeComponent>(TEXT("Attributes"));
 
 	GetCharacterMovement()->MaxWalkSpeed = 100.0f;
@@ -41,7 +48,14 @@ void ACPPTreeEnemy::BeginPlay()
 	BTAIController = Cast<ABTAIController>(GetController());//AI컨트롤러를 참조하여 사용하기 위해 변수 초기화
 
 	DamageCollision->OnComponentBeginOverlap.AddDynamic(this, &ACPPTreeEnemy::OnDealDamageOverlapBegin);
-	
+
+	if (NiaSys) {
+		bleeding = UNiagaraFunctionLibrary::SpawnSystemAttached(NiaSys, GetRootComponent(), "", GetActorLocation(), GetActorRotation(), EAttachLocation::KeepRelativeOffset, true, false, ENCPoolMethod::AutoRelease, true);
+			//GetWorld(), NiaSys, RootComponent->GetComponentLocation() + FVector(30.0f, 0.0f, 0.0f), FRotator::ZeroRotator, FVector(1.0f), true, false);
+		//UNiagaraFunctionLibrary::SpawnSystemAttached(NiagaraShootingStar,
+			//GetRootComponent(), "", Location, Rotation, EAttachLocation::KeepRelativeOffset, true, true,
+			//ENCPoolMethod::AutoRelease, true);
+	}
 	AnimInstance = GetMesh()->GetAnimInstance();
 }
 
@@ -63,6 +77,12 @@ void ACPPTreeEnemy::Tick(float DeltaTime)
 		if (BTAIController->GetBlackboardComponent()->GetValueAsBool(FName("MovingAfterAttack")) == true) {
 			AfterAttackMoving(DeltaTime);
 		}
+	}
+	if (bleeding->IsActive()) {
+		UE_LOG(LogTemp, Warning, TEXT("ACT"));
+	}
+	else {
+		UE_LOG(LogTemp, Warning, TEXT("NOACT"));
 	}
 }
 
@@ -165,10 +185,12 @@ void ACPPTreeEnemy::AfterAttackMoving(float DeltaTime)
 
 void ACPPTreeEnemy::GotDamage(float damage)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Damage : %f"), damage);
+	//UE_LOG(LogTemp, Warning, TEXT("Damage : %f"), damage);
 	healthPoint -= damage;
-	UE_LOG(LogTemp, Warning, TEXT("Remain HP : %f"), healthPoint);
-	UE_LOG(LogTemp, Warning, TEXT("Health P : %f"), Attributes->GetHealthPercent());
+	//UE_LOG(LogTemp, Warning, TEXT("Remain HP : %f"), healthPoint);
+	//UE_LOG(LogTemp, Warning, TEXT("Health P : %f"), Attributes->GetHealthPercent());
+
+	bleeding->Activate();
 
 	if (BTAIController != nullptr) {
 		if (healthPoint <= 0) {
@@ -204,6 +226,7 @@ void ACPPTreeEnemy::DyingAnimEnd()
 void ACPPTreeEnemy::HitAnimEnd()
 {
 	if (healthPoint > 0) {
+		bleeding->Deactivate();
 		BTAIController->GetBlackboardComponent()->SetValueAsBool(FName("TakingHit"), false);
 	}
 }
