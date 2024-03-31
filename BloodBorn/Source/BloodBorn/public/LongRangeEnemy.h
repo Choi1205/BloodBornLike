@@ -23,6 +23,9 @@ public:
 	class UPawnSensingComponent* PawnSensing;
 
 	UPROPERTY(EditAnywhere)
+	class UStaticMeshComponent* gunMesh;
+
+	UPROPERTY(EditAnywhere)
 	class USceneComponent* bulletFirePoint;
 
 	UPROPERTY(BlueprintReadOnly)
@@ -43,7 +46,7 @@ public:
 	bool SetFireGun = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	float health = 500.0f;
+	float health = 40.0f;
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class ABulletActor> bulletFactory;
@@ -91,8 +94,4 @@ private:
 	float lostPlayerTimer = 0.0f;
 
 	float hitTimer = 0.0f;
-
-	float noiseTimer = 0.0f;
-
-	bool noiseCheaker = false;
 };

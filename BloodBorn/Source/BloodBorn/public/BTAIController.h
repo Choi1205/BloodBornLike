@@ -51,8 +51,4 @@ private:
 	FVector RandomLocation;//다음 랜덤한 위치를 가리키는 백터
 
 	ABloodBornCharacter* Player;
-
-	float noiseTimer = 0.0f;
-
-	bool noiseCheaker = false;
 };

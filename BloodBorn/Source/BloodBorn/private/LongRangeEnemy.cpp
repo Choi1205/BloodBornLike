@@ -22,6 +22,9 @@ ALongRangeEnemy::ALongRangeEnemy()
 	//폰 감지 컴포넌트를 생성, 부착
 	PawnSensing = CreateDefaultSubobject<UPawnSensingComponent>(TEXT("PawnSensing"));
 
+	gunMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("GunMesh"));
+	gunMesh->SetupAttachment(GetMesh(), TEXT("RightHandSocket"));
+
 	//탄환 발사 포인트를 생성, 부착.
 	//SetupAttachment에 인자값으로 RootComponent를 주면 C++에서 루트 컴포넌트를 지정하지 않더라도, 자동으로 차일드가 됨.
 	bulletFirePoint = CreateDefaultSubobject<USceneComponent>(TEXT("BulletFirePoint"));
@@ -116,17 +119,10 @@ void ALongRangeEnemy::OnSeePawn(APawn* PlayerPawn)
 void ALongRangeEnemy::OnHearNoise(APawn* PlayerPawn, const FVector& Location, float Volume)
 {
 	ABloodBornCharacter* tempPlayer = Cast<ABloodBornCharacter>(PlayerPawn);
-
-	if (tempPlayer != nullptr) {
+	
+	if (!CanSeePlayer) {
 		FRotator toward = (Location - GetActorLocation()).Rotation();
 		SetActorRotation(toward);
-	}
-	else {
-		if (!noiseCheaker) {
-			noiseCheaker = true;
-			FRotator toward = (Location - GetActorLocation()).Rotation();
-			SetActorRotation(toward);
-		}
 	}
 }
 

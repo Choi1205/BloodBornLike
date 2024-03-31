@@ -17,6 +17,7 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "GameFramework/Character.h"
 #include "Kismet/GameplayStatics.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 // Sets default values
 ACPPTreeStayEnemy::ACPPTreeStayEnemy()
@@ -29,6 +30,7 @@ ACPPTreeStayEnemy::ACPPTreeStayEnemy()
 
 	Attributes = CreateDefaultSubobject< UAttributeComponent>(TEXT("Attributes"));
 
+	GetCharacterMovement()->MaxWalkSpeed = 500.0f;
 }
 
 // Called when the game starts or when spawned
@@ -56,6 +58,10 @@ void ACPPTreeStayEnemy::Tick(float DeltaTime)
 		if (stunTimer > 3.0f) {
 			BTStayAIController->GetBlackboardComponent()->SetValueAsBool(FName("InStun"), false);
 			stunTimer = 0.0f;
+		}
+
+		if (BTStayAIController->GetBlackboardComponent()->GetValueAsBool(FName("MovingAfterAttack")) == true) {
+			AfterAttackMoving(DeltaTime);
 		}
 	}
 }
@@ -138,6 +144,25 @@ void ACPPTreeStayEnemy::GotParryAttackCPP(float damage)
 	UE_LOG(LogTemp, Warning, TEXT("Gun Attack Damage : %.0f"), damage);
 }
 
+void ACPPTreeStayEnemy::AfterAttackMoving(float DeltaTime)
+{
+	if (healthPoint > 0) {
+		FVector playerLocation = GetWorld()->GetFirstPlayerController()->GetPawn()->GetActorLocation();
+		FVector towardPlayer = playerLocation - GetActorLocation();
+
+		FVector randomLocation = BTStayAIController->GetBlackboardComponent()->GetValueAsVector(FName("RandomPatrolLocation"));
+		FVector nextMovePoint = randomLocation - GetActorLocation();
+
+		float randomTime = BTStayAIController->GetBlackboardComponent()->GetValueAsFloat(FName("RandomTime"));
+
+		SetActorLocationAndRotation(GetActorLocation() + (GetCharacterMovement()->MaxWalkSpeed * 0.2) * nextMovePoint.GetSafeNormal(1.0) * DeltaTime, towardPlayer.Rotation(), true);
+
+		randomTime -= DeltaTime;
+
+		BTStayAIController->GetBlackboardComponent()->SetValueAsFloat(FName("RandomTime"), randomTime);
+	}
+}
+
 void ACPPTreeStayEnemy::GotDamage(float damage)
 {
 	UE_LOG(LogTemp, Warning, TEXT("Damage : %f"), damage);
@@ -178,5 +203,7 @@ void ACPPTreeStayEnemy::DyingAnimEnd()
 
 void ACPPTreeStayEnemy::HitAnimEnd()
 {
-	BTStayAIController->GetBlackboardComponent()->SetValueAsBool(FName("TakingHit"), false);
+	if (healthPoint > 0) {
+		BTStayAIController->GetBlackboardComponent()->SetValueAsBool(FName("TakingHit"), false);
+	}
 }

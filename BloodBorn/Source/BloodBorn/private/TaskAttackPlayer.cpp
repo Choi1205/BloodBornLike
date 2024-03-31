@@ -42,6 +42,8 @@ EBTNodeResult::Type UTaskAttackPlayer::ExecuteTask(UBehaviorTreeComponent& Owner
 			FVector RandomLocation;
 			//적 자신을 중심으로 한 1500.0f범위의 랜덤 위치를 지정
 			NavArea->K2_GetRandomReachablePointInRadius(GetWorld(), Enemy->GetActorLocation(), RandomLocation, 400.0f);
+			//Z축 높이를 현 위치와 같은 높이로.
+			RandomLocation.Z = Enemy->GetActorLocation().Z;
 			//랜덤 패트롤 위치로 지정
 			OwnerComp.GetBlackboardComponent()->SetValueAsVector(FName("RandomPatrolLocation"), RandomLocation);
 		}
@@ -76,6 +78,8 @@ EBTNodeResult::Type UTaskAttackPlayer::ExecuteTask(UBehaviorTreeComponent& Owner
 			FVector RandomLocation;
 			//적 자신을 중심으로 한 1500.0f범위의 랜덤 위치를 지정
 			NavArea->K2_GetRandomReachablePointInRadius(GetWorld(), stayEnemy->GetActorLocation(), RandomLocation, 400.0f);
+			//Z축 높이를 현 위치와 같은 높이로.
+			RandomLocation.Z = stayEnemy->GetActorLocation().Z;
 			//랜덤 패트롤 위치로 지정
 			OwnerComp.GetBlackboardComponent()->SetValueAsVector(FName("RandomPatrolLocation"), RandomLocation);
 		}

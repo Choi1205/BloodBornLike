@@ -79,6 +79,8 @@ public:
 	virtual void GotParryAttackCPP(float damage) override;
 
 private:
+	void AfterAttackMoving(float DeltaTime);
+
 	UPROPERTY(VisibleAnywhere)
 	UAttributeComponent* Attributes;
 

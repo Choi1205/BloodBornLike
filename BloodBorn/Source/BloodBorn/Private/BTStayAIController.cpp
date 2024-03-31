@@ -41,20 +41,10 @@ void ABTStayAIController::OnSeePawn(APawn* PlayerPawn)
 
 void ABTStayAIController::OnHearNoise(APawn* PlayerPawn, const FVector& Location, float Volume)
 {
-	ABloodBornCharacter* tempPlayer = Cast<ABloodBornCharacter>(PlayerPawn);
-
-	if (tempPlayer != nullptr) {
+	if (!GetBlackboardComponent()->GetValueAsBool(FName("CanSeePlayer"))) {
 		ACharacter* enemyChar = Cast<ACharacter>(GetPawn());
 		FRotator toward = (Location - enemyChar->GetActorLocation()).Rotation();
 		enemyChar->SetActorRotation(toward);
-	}
-	else {
-		if (!noiseCheaker) {
-			noiseCheaker = true;
-			ACharacter* enemyChar = Cast<ACharacter>(GetPawn());
-			FRotator toward = (Location - enemyChar->GetActorLocation()).Rotation();
-			enemyChar->SetActorRotation(toward);
-		}
 	}
 }
 

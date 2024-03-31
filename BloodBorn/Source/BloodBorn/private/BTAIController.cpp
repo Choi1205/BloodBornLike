@@ -10,6 +10,7 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "GameFramework/Character.h"
 #include "BloodBorn/BloodBornCharacter.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 ABTAIController::ABTAIController() {
 	PawnSensing = CreateDefaultSubobject<UPawnSensingComponent>(TEXT("PawnSensing"));
@@ -42,6 +43,7 @@ void ABTAIController::OnSeePawn(APawn* PlayerPawn)
 	Player = Cast<ABloodBornCharacter>(PlayerPawn);
 
 	if (Player) {
+		Cast<ACharacter>(GetPawn())->GetCharacterMovement()->MaxWalkSpeed = 500.0f;
 		Cast<ACharacter>(GetPawn())->MakeNoise(1.0f, Cast<ACharacter>(GetPawn()), GetPawn()->GetActorLocation());
 		SetCanSeePlayer(true, Player);
 		RunRetriggerableTimer();
@@ -50,20 +52,10 @@ void ABTAIController::OnSeePawn(APawn* PlayerPawn)
 
 void ABTAIController::OnHearNoise(APawn* PlayerPawn, const FVector& Location, float Volume)
 {
-	ABloodBornCharacter* tempPlayer = Cast<ABloodBornCharacter>(PlayerPawn);
-
-	if (tempPlayer != nullptr) {
+	if (!GetBlackboardComponent()->GetValueAsBool(FName("CanSeePlayer"))) {
 		ACharacter* enemyChar = Cast<ACharacter>(GetPawn());
 		FRotator toward = (Location - enemyChar->GetActorLocation()).Rotation();
 		enemyChar->SetActorRotation(toward);
-	}
-	else {
-		if (!noiseCheaker) {
-			noiseCheaker = true;
-			ACharacter* enemyChar = Cast<ACharacter>(GetPawn());
-			FRotator toward = (Location - enemyChar->GetActorLocation()).Rotation();
-			enemyChar->SetActorRotation(toward);
-		}
 	}
 }
 
