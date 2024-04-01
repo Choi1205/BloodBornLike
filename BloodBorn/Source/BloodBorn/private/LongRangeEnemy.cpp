@@ -12,6 +12,8 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/MovementComponent.h"
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraComponent.h"
 
 // Sets default values
 ALongRangeEnemy::ALongRangeEnemy()
@@ -217,10 +219,10 @@ void ALongRangeEnemy::GotParryAttackCPP(float damage)
 
 void ALongRangeEnemy::GotDamage(float damage)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Damage : %f"), damage);
 	health -= damage;
-	UE_LOG(LogTemp, Warning, TEXT("Remain HP : %f"), health);
-	UE_LOG(LogTemp, Warning, TEXT("Health P : %f"), Attributes->GetHealthPercent());
+
+	//출혈 이펙트 재생부. 블루프린트의 NiaSys에 미리 파티클을 등록해야한다.
+	bleeding = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), NiaSys, GetActorLocation(), FRotator::ZeroRotator);
 
 	if (health <= 0) {
 		PawnSensing->Deactivate();

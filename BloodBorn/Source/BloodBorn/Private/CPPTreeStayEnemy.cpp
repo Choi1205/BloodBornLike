@@ -18,6 +18,8 @@
 #include "GameFramework/Character.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraComponent.h"
 
 // Sets default values
 ACPPTreeStayEnemy::ACPPTreeStayEnemy()
@@ -165,10 +167,10 @@ void ACPPTreeStayEnemy::AfterAttackMoving(float DeltaTime)
 
 void ACPPTreeStayEnemy::GotDamage(float damage)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Damage : %f"), damage);
 	healthPoint -= damage;
-	UE_LOG(LogTemp, Warning, TEXT("Remain HP : %f"), healthPoint);
-	UE_LOG(LogTemp, Warning, TEXT("Health P : %f"), Attributes->GetHealthPercent());
+
+	//출혈 이펙트 재생부. 블루프린트의 NiaSys에 미리 파티클을 등록해야한다.
+	bleeding = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), NiaSys, GetActorLocation(), FRotator::ZeroRotator);
 
 	if (BTStayAIController != nullptr) {
 		if (healthPoint <= 0) {

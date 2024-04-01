@@ -30,9 +30,9 @@ ACPPTreeEnemy::ACPPTreeEnemy()
 	DamageCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("Damage Collision"));//박스 콜리전 컴포넌트를 생성하여 DamageCollision이름으로 생성한다.
 	DamageCollision->SetupAttachment(GetMesh(), TEXT("RightHandAttackSocket"));//생성한 박스 콜리전 컴포넌트를 매쉬에 붙인다.
 
-	bleeding = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Bleeding Comp"));
-	bleeding->SetupAttachment(RootComponent);
-	bleeding->bAutoActivate = false;
+	//bleeding = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Bleeding Comp"));
+	//bleeding->SetupAttachment(RootComponent);
+	//bleeding->bAutoActivate = false;
 	
 	Attributes = CreateDefaultSubobject< UAttributeComponent>(TEXT("Attributes"));
 
@@ -49,7 +49,7 @@ void ACPPTreeEnemy::BeginPlay()
 	DamageCollision->OnComponentBeginOverlap.AddDynamic(this, &ACPPTreeEnemy::OnDealDamageOverlapBegin);
 
 	if (NiaSys) {
-		bleeding = UNiagaraFunctionLibrary::SpawnSystemAttached(NiaSys, GetRootComponent(), "", GetActorLocation(), GetActorRotation(), EAttachLocation::KeepRelativeOffset, true, false, ENCPoolMethod::AutoRelease, true);
+		//bleeding = UNiagaraFunctionLibrary::SpawnSystemAttached(NiaSys, GetRootComponent(), "", GetActorLocation(), GetActorRotation(), EAttachLocation::KeepRelativeOffset, true, false, ENCPoolMethod::AutoRelease, true);
 			//GetWorld(), NiaSys, RootComponent->GetComponentLocation() + FVector(30.0f, 0.0f, 0.0f), FRotator::ZeroRotator, FVector(1.0f), true, false);
 		//UNiagaraFunctionLibrary::SpawnSystemAttached(NiagaraShootingStar,
 			//GetRootComponent(), "", Location, Rotation, EAttachLocation::KeepRelativeOffset, true, true,
@@ -77,12 +77,6 @@ void ACPPTreeEnemy::Tick(float DeltaTime)
 			AfterAttackMoving(DeltaTime);
 		}
 	}
-	//if (bleeding->IsActive()) {
-	//	UE_LOG(LogTemp, Warning, TEXT("ACT"));
-	//}
-	//else {
-	//	UE_LOG(LogTemp, Warning, TEXT("NOACT"));
-	//}
 }
 
 // Called to bind functionality to input
@@ -184,12 +178,10 @@ void ACPPTreeEnemy::AfterAttackMoving(float DeltaTime)
 
 void ACPPTreeEnemy::GotDamage(float damage)
 {
-	//UE_LOG(LogTemp, Warning, TEXT("Damage : %f"), damage);
 	healthPoint -= damage;
-	//UE_LOG(LogTemp, Warning, TEXT("Remain HP : %f"), healthPoint);
-	//UE_LOG(LogTemp, Warning, TEXT("Health P : %f"), Attributes->GetHealthPercent());
 
-	bleeding->Activate();
+	//출혈 이펙트 재생부. 블루프린트의 NiaSys에 미리 파티클을 등록해야한다.
+	bleeding = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), NiaSys, GetActorLocation(), FRotator::ZeroRotator);
 
 	if (BTAIController != nullptr) {
 		if (healthPoint <= 0) {
@@ -225,7 +217,6 @@ void ACPPTreeEnemy::DyingAnimEnd()
 void ACPPTreeEnemy::HitAnimEnd()
 {
 	if (healthPoint > 0) {
-		bleeding->Deactivate();
 		BTAIController->GetBlackboardComponent()->SetValueAsBool(FName("TakingHit"), false);
 	}
 }

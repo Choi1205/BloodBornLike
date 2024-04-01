@@ -28,6 +28,12 @@ public:
 	UPROPERTY(EditAnywhere)
 	class UBoxComponent* DamageCollision;//공격범위
 
+	UPROPERTY(EditAnywhere)
+	class UNiagaraSystem* NiaSys;
+
+	UPROPERTY(EditAnywhere)
+	class UNiagaraComponent* bleeding;
+
 	class ABTStayAIController* BTStayAIController;//AI컨트롤러의 기능을 사용하기 위해 컨트롤러에 대한 참조가 필요하다.
 
 	UFUNCTION()

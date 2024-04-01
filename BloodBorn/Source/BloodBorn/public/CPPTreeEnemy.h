@@ -31,7 +31,7 @@ public:
 	
 	UPROPERTY(EditAnywhere)
 	class UNiagaraSystem* NiaSys;
-	
+
 	UPROPERTY(EditAnywhere)
 	class UNiagaraComponent* bleeding;
 

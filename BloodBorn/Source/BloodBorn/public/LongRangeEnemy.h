@@ -27,6 +27,12 @@ public:
 	UPROPERTY(EditAnywhere)
 	class USceneComponent* bulletFirePoint;
 
+	UPROPERTY(EditAnywhere)
+	class UNiagaraSystem* NiaSys;
+
+	UPROPERTY(EditAnywhere)
+	class UNiagaraComponent* bleeding;
+
 	UPROPERTY(BlueprintReadOnly)
 	bool CanSeePlayer = false;
 
