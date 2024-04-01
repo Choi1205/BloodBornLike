@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "DamageSystem.h"
 #include "Interfaces/HitInterface.h"
 #include "CPPTreeEnemy.generated.h"
 

@@ -150,6 +150,9 @@ void ABloodBornCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 		//Dodge
 		EnhancedInputComponent->BindAction(DodgeAction, ETriggerEvent::Started, this, &ABloodBornCharacter::Dodge);
 
+		EnhancedInputComponent->BindAction(LockOnAction, ETriggerEvent::Started, this, &ABloodBornCharacter::LockOn);
+
+
 
 	}
 	else
@@ -194,6 +197,8 @@ void ABloodBornCharacter::Look(const FInputActionValue& Value)
 		// add yaw and pitch input to controller
 		AddControllerYawInput(LookAxisVector.X);
 		AddControllerPitchInput(LookAxisVector.Y);
+
+		mouseInputUpDown += LookAxisVector.Y;
 	}
 }
 
@@ -206,7 +211,7 @@ void ABloodBornCharacter::Equip()
 		OverlappingWeapon->SetOwner(this);
 		//GetOwner()
 		OverlappingWeapon->SetInstigator(this);
-		CharacterState = ECharacterState::ECS_EquippedOneHandedWeapon;
+		//CharacterState = ECharacterState::ECS_EquippedOneHandedWeapon;
 		OverlappingItem = nullptr;
 		EquippedWeapon = OverlappingWeapon;
 	}
@@ -356,4 +361,9 @@ void ABloodBornCharacter::PlayDeathMontage()
 {
 	PlayMontageSection(DeathMontage, FName("Death"));
 	ActionState = EActionState::EAS_Dead;
+}
+
+void ABloodBornCharacter::LockOn()
+{
+	CharacterState = ECharacterState::ECS_LockOn;
 }

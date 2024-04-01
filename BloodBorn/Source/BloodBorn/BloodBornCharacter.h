@@ -60,6 +60,9 @@ class ABloodBornCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* EquipAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* LockOnAction;
+
 public:
 	ABloodBornCharacter();
 
@@ -94,6 +97,10 @@ protected:
 
 	void Die();
 
+	//void step();
+	void LockOn();
+
+
 	/**
 	* Play Montage Function
 	*/
@@ -103,6 +110,10 @@ protected:
 
 	// animmontage 안 쓸거면 지울 부분 중 하나~
 	void PlayDodgeMontage();
+
+	// void PlayStepAnim();
+
+	//void PlayStepMontage();
 
 	void PlayHitReactMontage();
 
@@ -141,13 +152,20 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 	bool bIsInvincible = false;
 
+	UPROPERTY(BlueprintReadWrite)
+	bool IsLockOn = false;
+
 	UPROPERTY(EditAnywhere)
 	float health = 100.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float mouseInputUpDown = 0;
 
 private:
 	
 
 	void PlayMontageSection(UAnimMontage* Montage, const FName& sectionName);
+	//void HandleDamage(float DamageAmount);
 
 	ECharacterState CharacterState = ECharacterState::ECS_Unequipped;
 
@@ -182,5 +200,7 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = Combat)
 	UAnimMontage* DeathMontage;
 
+	//UPROPERTY(EditDefaultsOnly, Category = Combat)
+	//UAnimMontage* StepMontage;
 };
 

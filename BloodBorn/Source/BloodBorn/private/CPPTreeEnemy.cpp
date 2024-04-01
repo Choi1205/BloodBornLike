@@ -18,7 +18,6 @@
 #include "GameFramework/Character.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "GameFramework/Character.h"
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
 
@@ -78,12 +77,12 @@ void ACPPTreeEnemy::Tick(float DeltaTime)
 			AfterAttackMoving(DeltaTime);
 		}
 	}
-	if (bleeding->IsActive()) {
-		UE_LOG(LogTemp, Warning, TEXT("ACT"));
-	}
-	else {
-		UE_LOG(LogTemp, Warning, TEXT("NOACT"));
-	}
+	//if (bleeding->IsActive()) {
+	//	UE_LOG(LogTemp, Warning, TEXT("ACT"));
+	//}
+	//else {
+	//	UE_LOG(LogTemp, Warning, TEXT("NOACT"));
+	//}
 }
 
 // Called to bind functionality to input
