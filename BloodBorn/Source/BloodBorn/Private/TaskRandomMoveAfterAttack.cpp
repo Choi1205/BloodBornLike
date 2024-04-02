@@ -8,6 +8,7 @@
 #include "CPPTreeEnemy.h"
 #include "CPPTreeStayEnemy.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 EBTNodeResult::Type UTaskRandomMoveAfterAttack::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
@@ -30,6 +31,8 @@ EBTNodeResult::Type UTaskRandomMoveAfterAttack::ExecuteTask(UBehaviorTreeCompone
 		if (OwnerComp.GetBlackboardComponent()->GetValueAsBool(FName("MovingAfterAttack")) == false) {
 			//플레이어 경계이동 변수를 true로
 			OwnerComp.GetBlackboardComponent()->SetValueAsBool(FName("MovingAfterAttack"), true);
+			Enemy->GetCharacterMovement()->MaxWalkSpeed = 100.0f;
+			Enemy->GetCharacterMovement()->MaxAcceleration = 200.0f;
 		}
 
 		if (OwnerComp.GetBlackboardComponent()->GetValueAsBool(FName("MovingAfterAttack")) == true) {
@@ -37,6 +40,8 @@ EBTNodeResult::Type UTaskRandomMoveAfterAttack::ExecuteTask(UBehaviorTreeCompone
 			if (distance < 100.0f || OwnerComp.GetBlackboardComponent()->GetValueAsFloat(FName("RandomTime")) < 0) {
 				AIOwner->GetBlackboardComponent()->SetValueAsBool(FName("AttackedPlayer"), false);
 				OwnerComp.GetBlackboardComponent()->SetValueAsBool(FName("MovingAfterAttack"), false);
+				Enemy->GetCharacterMovement()->MaxWalkSpeed = 500.0f;
+				Enemy->GetCharacterMovement()->MaxAcceleration = 2048.0f;
 				return EBTNodeResult::Succeeded;
 			}
 		}
@@ -52,6 +57,8 @@ EBTNodeResult::Type UTaskRandomMoveAfterAttack::ExecuteTask(UBehaviorTreeCompone
 			if (OwnerComp.GetBlackboardComponent()->GetValueAsBool(FName("MovingAfterAttack")) == false) {
 				//플레이어 경계이동 변수를 true로
 				OwnerComp.GetBlackboardComponent()->SetValueAsBool(FName("MovingAfterAttack"), true);
+				stayEnemy->GetCharacterMovement()->MaxWalkSpeed = 100.0f;
+				stayEnemy->GetCharacterMovement()->MaxAcceleration = 200.0f;
 			}
 
 			if (OwnerComp.GetBlackboardComponent()->GetValueAsBool(FName("MovingAfterAttack")) == true) {
@@ -60,6 +67,8 @@ EBTNodeResult::Type UTaskRandomMoveAfterAttack::ExecuteTask(UBehaviorTreeCompone
 				{
 					AIOwner->GetBlackboardComponent()->SetValueAsBool(FName("AttackedPlayer"), false);
 					OwnerComp.GetBlackboardComponent()->SetValueAsBool(FName("MovingAfterAttack"), false);
+					stayEnemy->GetCharacterMovement()->MaxWalkSpeed = 500.0f;
+					stayEnemy->GetCharacterMovement()->MaxAcceleration = 2048.0f;
 					return EBTNodeResult::Succeeded;
 				}
 			}

@@ -168,7 +168,9 @@ void ACPPTreeEnemy::AfterAttackMoving(float DeltaTime)
 
 		float randomTime = BTAIController->GetBlackboardComponent()->GetValueAsFloat(FName("RandomTime"));
 
-		SetActorLocationAndRotation(GetActorLocation() + (GetCharacterMovement()->MaxWalkSpeed * 0.2) * nextMovePoint.GetSafeNormal(1.0) * DeltaTime, towardPlayer.Rotation(), true);
+		UE_LOG(LogTemp, Warning, TEXT("%f"), GetCharacterMovement()->MaxWalkSpeed);
+		AddMovementInput(nextMovePoint.GetSafeNormal(1.0));
+		SetActorRotation(towardPlayer.Rotation());
 
 		randomTime -= DeltaTime;
 
