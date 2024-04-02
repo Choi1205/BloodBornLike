@@ -22,6 +22,8 @@ protected:
 private:
 	float healthPoint = 2000.0f;
 
+	float distanceToPlayer = 0.0f;
+
 	class ALadyMariaAIController* mariaAI;
 
 	UPROPERTY(VisibleAnywhere)

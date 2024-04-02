@@ -26,6 +26,9 @@ public:
 	class ABloodBornCharacter* PlayerREF;//플레이어 캐릭터를 저장. 클래스명은 A+프로젝트명+Charactor
 
 	UPROPERTY(EditAnywhere)
+	class UStaticMeshComponent* weaponMesh;//무기 매시
+
+	UPROPERTY(EditAnywhere)
 	class UBoxComponent* DamageCollision;//공격범위
 
 	UPROPERTY(EditAnywhere)

@@ -1,6 +1,7 @@
 
 
 #include "LadyMaria.h"
+#include "LadyMariaAIController.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Components/AttributeComponent.h"
 
