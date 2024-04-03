@@ -2,10 +2,15 @@
 
 #include "LadyMaria.h"
 #include "LadyMariaAIController.h"
+#include "../BloodBornCharacter.h"
+#include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Components/AttributeComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/BoxComponent.h"
+#include "Animation/AnimInstance.h"
+#include "Animation/AnimMontage.h"
 
 ALadyMaria::ALadyMaria()
 {
@@ -30,6 +35,9 @@ ALadyMaria::ALadyMaria()
 	leftDamageCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("LeftDamageBox"));
 	leftDamageCollision->SetupAttachment(GetMesh(), TEXT("LeftHandSocket"));
 
+	GetCharacterMovement()->MaxWalkSpeed = 100.0f;
+	GetCharacterMovement()->MaxAcceleration = 200.0f;
+
 }
 
 void ALadyMaria::BeginPlay()
@@ -37,6 +45,8 @@ void ALadyMaria::BeginPlay()
 	Super::BeginPlay();
 
 	mariaAI = Cast<ALadyMariaAIController>(GetController());
+	playerREF = FindPlayer_BP();
+	AnimInstance = GetMesh()->GetAnimInstance();
 
 }
 
@@ -44,18 +54,32 @@ void ALadyMaria::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	/*FVector playerLocation = GetWorld()->GetFirstPlayerController()->GetPawn()->GetActorLocation();
-	FVector towardPlayer = playerLocation - GetActorLocation();
+	//매 틱마다 플레이어와의 거리를 잰다
+	distanceToPlayer = FVector::Distance(GetActorLocation(), playerREF->GetActorLocation());
 
-	FVector randomLocation = BTAIController->GetBlackboardComponent()->GetValueAsVector(FName("RandomPatrolLocation"));
-	FVector nextMovePoint = randomLocation - GetActorLocation();
-	*/
-	//1페이즈, 플레이어와 거리가 멀고, 공격명령이 없는 상태일때
-	if (true) {
-		//AddMovementInput(nextMovePoint.GetSafeNormal(1.0));
-		//SetActorRotation(towardPlayer.Rotation());
+	//플레이어와 거리가 멀고, 공격명령이 없는 상태일때
+	if (distanceToPlayer > 150.0f && mariaAI->bIsActing == false) {
+		WalkToPlayer();
 	}
 	
+}
+
+ABloodBornCharacter* ALadyMaria::FindPlayer_BP()
+{
+	TArray<AActor*> players;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ABloodBornCharacter::StaticClass(), players);
+
+	//AShootingPlayer형태로 반환한다.
+	return Cast<ABloodBornCharacter>(players[0]);
+}
+
+void ALadyMaria::WalkToPlayer()
+{
+	FVector playerLocation = GetWorld()->GetFirstPlayerController()->GetPawn()->GetActorLocation();
+	FVector towardPlayer = playerLocation - GetActorLocation();
+
+	AddMovementInput(towardPlayer.GetSafeNormal(1.0));
+	SetActorRotation(towardPlayer.Rotation());
 }
 
 void ALadyMaria::GetHit(const FVector& ImpactPoint)

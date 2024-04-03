@@ -39,23 +39,67 @@ public:
 	// 변수구역 //
 	//////////////
 
-	class ABloodBornCharacter* playerREF;
+	class ABloodBornCharacter* playerREF = nullptr;
 
 protected:
 	virtual void BeginPlay() override;
 
 private:
+
+	//////////////
+	// 변수구역 //
+	//////////////
+
 	float healthPoint = 2000.0f;
+
+	float stunTimer = 0.0f;
+
 
 	float distanceToPlayer = 0.0f;
 
-	class ALadyMariaAIController* mariaAI;
+	class ALadyMariaAIController* mariaAI = nullptr;
 
 	UPROPERTY(VisibleAnywhere)
 	UAttributeComponent* Attributes;
 
 public:	
 	virtual void Tick(float DeltaTime) override;
+
+	//////////////
+	// 변수구역 //
+	//////////////
+
+	//비긴 플레이에서 실행. 플레이어 레퍼런스 획득
+	class ABloodBornCharacter* FindPlayer_BP();
+
+	UPROPERTY(EditAnywhere)
+	class UAnimMontage* EnemyAttackAnimation1;
+
+	UPROPERTY(EditAnywhere)
+	class UAnimMontage* EnemyAttackAnimation2;
+
+	UPROPERTY(EditAnywhere)
+	class UAnimMontage* EnemyAttackAnimation3;
+
+	UPROPERTY(EditAnywhere)
+	class UAnimMontage* EnemyAttackAnimation4;
+
+	UPROPERTY(EditAnywhere)
+	class UAnimMontage* EnemyAttackAnimation5;
+
+	UPROPERTY(EditAnywhere)
+	class UAnimMontage* EnemyHitAnimation;
+
+	UPROPERTY(EditAnywhere)
+	class UAnimMontage* EnemyDyingAnimation;
+	
+	class UAnimInstance* AnimInstance;
+
+	//////////////
+	// gka수구역 //
+	//////////////
+
+	void WalkToPlayer();
 
 	virtual void GetHit(const FVector& ImpactPoint) override;
 
