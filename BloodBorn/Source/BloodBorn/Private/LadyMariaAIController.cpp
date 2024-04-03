@@ -8,7 +8,8 @@
 
 ALadyMariaAIController::ALadyMariaAIController()
 {
-	
+	//틱 이벤트 유효화
+	PrimaryActorTick.bCanEverTick = true;
 }
 
 void ALadyMariaAIController::BeginPlay()
@@ -18,13 +19,20 @@ void ALadyMariaAIController::BeginPlay()
 	NavArea = FNavigationSystem::GetCurrent<UNavigationSystemV1>(this);//현재 이 AI캐릭터가 올라서있는 Navi매쉬 범위를 가져온다.
 
 	playerREF = FindPlayer_BP();
+	EnemyREF = Cast<ACharacter>(GetPawn());
 }
 
 void ALadyMariaAIController::Tick(float DeltaTime)
 {
+	Super::Tick(DeltaTime);
+	//매 틱마다 플레이어와의 거리를 잰다
 	distanceToPlayer = FVector::Distance(GetPawn()->GetActorLocation(), playerREF->GetActorLocation());
+	if (distanceToPlayer > 100.0f) {
+		WalkToPlayer();
+	}
 }
 
+//비긴 플레이에서 실행. 플레이어 레퍼런스 획득
 ABloodBornCharacter* ALadyMariaAIController::FindPlayer_BP()
 {
 	TArray<AActor*> players;
@@ -34,11 +42,12 @@ ABloodBornCharacter* ALadyMariaAIController::FindPlayer_BP()
 	return Cast<ABloodBornCharacter>(players[0]);
 }
 
-void ALadyMariaAIController::RandomMove()
+void ALadyMariaAIController::WalkToPlayer()
 {
-	if (NavArea) {//Navi매쉬 범위 안에 있는경우
-		NavArea->K2_GetRandomLocationInNavigableRadius(GetWorld(), GetPawn()->GetActorLocation(), RandomLocation, 5000.0f);//내비매쉬 범위 안에서 5000.0f범위안의 랜덤한 지점을 RandomLocation에 입력한다.
+	//FVector playerLocation = GetWorld()->GetFirstPlayerController()->GetPawn()->GetActorLocation();
+	//FVector towardPlayer = playerLocation - GetActorLocation();
 
-		MoveToLocation(RandomLocation);//위에서 입력된 RandomLocation으로 이동한다.
-	}
+	//FVector randomLocation = BTAIController->GetBlackboardComponent()->GetValueAsVector(FName("RandomPatrolLocation"));
+	//FVector nextMovePoint = randomLocation - GetActorLocation();
+	
 }

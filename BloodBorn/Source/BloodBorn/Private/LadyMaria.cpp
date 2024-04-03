@@ -4,17 +4,38 @@
 #include "LadyMariaAIController.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Components/AttributeComponent.h"
+#include "Components/StaticMeshComponent.h"
+#include "Components/BoxComponent.h"
 
 ALadyMaria::ALadyMaria()
 {
 	PrimaryActorTick.bCanEverTick = true;
+
+	rightSword = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("RightSword"));
+	rightSword->SetupAttachment(GetMesh(), TEXT("RightHandSocket"));
+	rightSword->SetCollisionProfileName(TEXT("NoCollision"));
+
+	leftSword = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("LeftSword"));
+	leftSword->SetupAttachment(GetMesh(), TEXT("LeftHandSocket"));
+	leftSword->SetCollisionProfileName(TEXT("NoCollision"));
+
+	gun = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Gun"));
+	gun->SetupAttachment(GetMesh(), TEXT("LeftHandSocket"));
+	gun->SetCollisionProfileName(TEXT("NoCollision"));
+
+	rightDamageCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("RightDamageBox"));
+	rightDamageCollision->SetupAttachment(GetMesh(), TEXT("RightHandSocket"));
+	
+
+	leftDamageCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("LeftDamageBox"));
+	leftDamageCollision->SetupAttachment(GetMesh(), TEXT("LeftHandSocket"));
 
 }
 
 void ALadyMaria::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 	mariaAI = Cast<ALadyMariaAIController>(GetController());
 
 }
@@ -23,6 +44,18 @@ void ALadyMaria::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	/*FVector playerLocation = GetWorld()->GetFirstPlayerController()->GetPawn()->GetActorLocation();
+	FVector towardPlayer = playerLocation - GetActorLocation();
+
+	FVector randomLocation = BTAIController->GetBlackboardComponent()->GetValueAsVector(FName("RandomPatrolLocation"));
+	FVector nextMovePoint = randomLocation - GetActorLocation();
+	*/
+	//1페이즈, 플레이어와 거리가 멀고, 공격명령이 없는 상태일때
+	if (true) {
+		//AddMovementInput(nextMovePoint.GetSafeNormal(1.0));
+		//SetActorRotation(towardPlayer.Rotation());
+	}
+	
 }
 
 void ALadyMaria::GetHit(const FVector& ImpactPoint)

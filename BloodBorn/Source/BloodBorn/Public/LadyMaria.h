@@ -16,6 +16,31 @@ class BLOODBORN_API ALadyMaria : public ACharacter, public IHitInterface
 public:
 	ALadyMaria();
 
+	///////////////////
+	// 컴포넌트 구역 //
+	///////////////////
+
+	UPROPERTY(EditAnywhere)
+	class UStaticMeshComponent* rightSword;
+
+	UPROPERTY(EditAnywhere)
+	class UStaticMeshComponent* leftSword;
+
+	UPROPERTY(EditAnywhere)
+	class UStaticMeshComponent* gun;
+
+	UPROPERTY(EditAnywhere)
+	class UBoxComponent* rightDamageCollision;//공격범위
+
+	UPROPERTY(EditAnywhere)
+	class UBoxComponent* leftDamageCollision;//공격범위
+
+	//////////////
+	// 변수구역 //
+	//////////////
+
+	class ABloodBornCharacter* playerREF;
+
 protected:
 	virtual void BeginPlay() override;
 

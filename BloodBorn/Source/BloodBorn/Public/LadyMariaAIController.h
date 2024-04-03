@@ -27,8 +27,10 @@ public:
 
 	//이동외의 행동을 하면 이 변수가 true가 된다. 다른 행동을 실시할 수 있는지 트리거 역할을 한다.
 	bool bIsActing = false;
-
+	//플레이어 레퍼런스
 	class ABloodBornCharacter* playerREF;
+	//적(보스)레퍼런스
+	class ACharacter* EnemyREF;
 
 	float distanceToPlayer = 0.0f;
 
@@ -42,7 +44,9 @@ public:
 	// 함수구역 //
 	//////////////
 
+	//비긴 플레이에서 실행. 플레이어 레퍼런스 획득
 	class ABloodBornCharacter* FindPlayer_BP();
 
-	void RandomMove();
+	void WalkToPlayer();
+
 };
