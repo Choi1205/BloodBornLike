@@ -52,6 +52,8 @@ private:
 
 	float healthPoint = 2000.0f;
 
+	float stamina = 1000.0f;
+
 	float stunTimer = 0.0f;
 
 	float distanceToPlayer = 10000.0f;
@@ -74,25 +76,25 @@ public:
 	class ABloodBornCharacter* FindPlayer_BP();
 
 	UPROPERTY(EditAnywhere)
-	class UAnimMontage* EnemyAttackAnimation1;
+	class UAnimMontage* AnimRightSlash;
 
 	UPROPERTY(EditAnywhere)
-	class UAnimMontage* EnemyAttackAnimation2;
+	class UAnimMontage* AnimLeftSlash;
 
 	UPROPERTY(EditAnywhere)
-	class UAnimMontage* EnemyAttackAnimation3;
+	class UAnimMontage* AnimDualThrust;
 
 	UPROPERTY(EditAnywhere)
-	class UAnimMontage* EnemyAttackAnimation4;
+	class UAnimMontage* AnimGunShot;
 
 	UPROPERTY(EditAnywhere)
-	class UAnimMontage* EnemyAttackAnimation5;
+	class UAnimMontage* AnimEnemyAttack5;
 
 	UPROPERTY(EditAnywhere)
-	class UAnimMontage* EnemyHitAnimation;
+	class UAnimMontage* AnimBossHit;
 
 	UPROPERTY(EditAnywhere)
-	class UAnimMontage* EnemyDyingAnimation;
+	class UAnimMontage* AnimBossDying;
 	
 	class UAnimInstance* AnimInstance;
 
@@ -104,6 +106,8 @@ public:
 
 	float GetPlayerDistance();
 
+	float GetBossStamina();
+
 	virtual void GetHit(const FVector& ImpactPoint) override;
 
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
@@ -113,5 +117,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual void GotParryAttackCPP(float damage) override;
 
-	void RightSlash(float DeltaTime);
+	void RightSlash();
+
+	void LeftSlash();
 };

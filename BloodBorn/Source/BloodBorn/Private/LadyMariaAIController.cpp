@@ -25,7 +25,9 @@ void ALadyMariaAIController::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	UE_LOG(LogTemp, Warning, TEXT("%f"), EnemyREF->GetPlayerDistance());
+	//UE_LOG(LogTemp, Warning, TEXT("%f"), EnemyREF->GetPlayerDistance());
+
+	float stamina = EnemyREF->GetBossStamina();
 
 	//플레이어와 거리가 멀고, 공격명령이 없는 상태일때
 	if (EnemyREF->GetPlayerDistance() > 150.0f && EnemyREF->bIsActing == false) {
@@ -33,9 +35,22 @@ void ALadyMariaAIController::Tick(float DeltaTime)
 		attackTimer = 0.0f;
 	}
 
-	if (EnemyREF->GetPlayerDistance() <= 150.0f && EnemyREF->bIsActing == false) {
+	if (EnemyREF->GetPlayerDistance() <= 150.0f && EnemyREF->bIsActing == false && stamina == 1000.0f) {
 		UE_LOG(LogTemp, Warning, TEXT("Start"));
 		bIsRightSlash = true;
 		EnemyREF->bIsActing = true;
+	}
+}
+
+//연속 행동을 할지 결정하는 함수
+bool ALadyMariaAIController::RandomNextMoveTF(int32 rate)
+{
+	int32 num = FMath::RandRange(0, 99);
+
+	if (num < rate) {
+		return true;
+	}
+	else {
+		return false;
 	}
 }

@@ -61,10 +61,26 @@ void ALadyMaria::Tick(float DeltaTime)
 	if (bIsActing == false) {
 		FRotator toward = (playerREF->GetActorLocation() - GetActorLocation()).Rotation();
 		SetActorRotation(toward);
+
+		//행동을 멈추면 스테미너가 회복된다.
+		if (stamina < 1000.0f) {
+			//최대치보다 적으면 회복. 일단 초당 50
+			stamina += DeltaTime * 50;
+		}
+		else if (stamina > 1000.0f) {
+			//최대치를 넘으면 최대치로 맞춘다.
+			stamina = 1000.0f;
+		}
+
 	}
 
 	if (mariaAI->bIsRightSlash) {
-		RightSlash(DeltaTime);
+		RightSlash();
+		//UE_LOG(LogTemp, Warning, TEXT("Right, %d"), bIsActing);
+	}
+	if (mariaAI->bIsLeftSlash) {
+		LeftSlash();
+		//UE_LOG(LogTemp, Warning, TEXT("Leftt"));
 	}
 }
 
@@ -85,10 +101,15 @@ void ALadyMaria::WalkToPlayer()
 	AddMovementInput(towardPlayer.GetSafeNormal(1.0));
 }
 
-
+//거리 게터 함수
 float ALadyMaria::GetPlayerDistance()
 {
 	return distanceToPlayer;
+}
+//스테미나 게터 함수
+float ALadyMaria::GetBossStamina()
+{
+	return stamina;
 }
 
 void ALadyMaria::GetHit(const FVector& ImpactPoint)
@@ -186,13 +207,66 @@ void ALadyMaria::GotParryAttackCPP(float damage)
 	UE_LOG(LogTemp, Warning, TEXT("Gun Attack Damage : %.0f"), damage);
 }
 
-void ALadyMaria::RightSlash(float DeltaTime)
+void ALadyMaria::RightSlash()
 {
-	if (!AnimInstance->IsAnyMontagePlaying()) {
-		AnimInstance->Montage_Play(EnemyAttackAnimation1);
+	//만약 재생중이던 몽타주가 있고
+	if (bIsActing && AnimInstance->IsAnyMontagePlaying()) {
+		//우측베기가 아니면
+		if (!AnimInstance->Montage_IsPlaying(AnimRightSlash)) {
+			//몽타주를 정지
+			AnimInstance->Montage_Stop(0.0f, NULL);
+			//그리고 우측베기를 재생
+			AnimInstance->Montage_Play(AnimRightSlash);
+			//스테미나 소모
+			stamina -= 50.0f;
+		}
 	}
+	//재생중인 몽타주가 없으면
+	else if(bIsActing){
+		//우측베기를 재생
+		AnimInstance->Montage_Play(AnimRightSlash);
+		//스테미나 소모
+		stamina -= 50.0f;
+	}
+	
 	//몽타주 재생이 끝난 경우
 	if (!bIsActing) {
 		mariaAI->bIsRightSlash = false;
+		if (mariaAI->RandomNextMoveTF(50)) {
+			bIsActing = true;
+			mariaAI->bIsLeftSlash = true;
+		}
+	}
+}
+
+void ALadyMaria::LeftSlash()
+{
+	//만약 재생중이던 몽타주가 있고
+	if (bIsActing && AnimInstance->IsAnyMontagePlaying()) {
+		//우측베기가 아니면
+		if (!AnimInstance->Montage_IsPlaying(AnimLeftSlash)) {
+			//몽타주를 정지
+			AnimInstance->Montage_Stop(0.0f, NULL);
+			//그리고 우측베기를 재생
+			AnimInstance->Montage_Play(AnimLeftSlash);
+			//스테미나 소모
+			stamina -= 50.0f;
+		}
+	}
+	//재생중인 몽타주가 없으면
+	else if(bIsActing){
+		//우측베기를 재생
+		AnimInstance->Montage_Play(AnimLeftSlash);
+		//스테미나 소모
+		stamina -= 50.0f;
+	}
+
+	//몽타주 재생이 끝난 경우
+	if (!bIsActing) {
+		mariaAI->bIsLeftSlash = false;
+		if (mariaAI->RandomNextMoveTF(50)) {
+			bIsActing = true;
+			mariaAI->bIsRightSlash = true;
+		}
 	}
 }
