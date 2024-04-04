@@ -54,8 +54,7 @@ private:
 
 	float stunTimer = 0.0f;
 
-
-	float distanceToPlayer = 0.0f;
+	float distanceToPlayer = 10000.0f;
 
 	class ALadyMariaAIController* mariaAI = nullptr;
 
@@ -68,6 +67,8 @@ public:
 	//////////////
 	// 변수구역 //
 	//////////////
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bIsActing = false;
 
 	//비긴 플레이에서 실행. 플레이어 레퍼런스 획득
 	class ABloodBornCharacter* FindPlayer_BP();
@@ -96,10 +97,12 @@ public:
 	class UAnimInstance* AnimInstance;
 
 	//////////////
-	// gka수구역 //
+	// 함수구역 //
 	//////////////
 
 	void WalkToPlayer();
+
+	float GetPlayerDistance();
 
 	virtual void GetHit(const FVector& ImpactPoint) override;
 
@@ -109,4 +112,6 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	virtual void GotParryAttackCPP(float damage) override;
+
+	void RightSlash(float DeltaTime);
 };

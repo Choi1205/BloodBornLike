@@ -57,11 +57,15 @@ void ALadyMaria::Tick(float DeltaTime)
 	//매 틱마다 플레이어와의 거리를 잰다
 	distanceToPlayer = FVector::Distance(GetActorLocation(), playerREF->GetActorLocation());
 
-	//플레이어와 거리가 멀고, 공격명령이 없는 상태일때
-	if (distanceToPlayer > 150.0f && mariaAI->bIsActing == false) {
-		WalkToPlayer();
+	//공격중이 아니라면 보스는 항상 플레이어를 바라본다.
+	if (bIsActing == false) {
+		FRotator toward = (playerREF->GetActorLocation() - GetActorLocation()).Rotation();
+		SetActorRotation(toward);
 	}
-	
+
+	if (mariaAI->bIsRightSlash) {
+		RightSlash(DeltaTime);
+	}
 }
 
 ABloodBornCharacter* ALadyMaria::FindPlayer_BP()
@@ -79,7 +83,12 @@ void ALadyMaria::WalkToPlayer()
 	FVector towardPlayer = playerLocation - GetActorLocation();
 
 	AddMovementInput(towardPlayer.GetSafeNormal(1.0));
-	SetActorRotation(towardPlayer.Rotation());
+}
+
+
+float ALadyMaria::GetPlayerDistance()
+{
+	return distanceToPlayer;
 }
 
 void ALadyMaria::GetHit(const FVector& ImpactPoint)
@@ -175,4 +184,15 @@ void ALadyMaria::GotParryAttackCPP(float damage)
 	*/
 	//패리판정 및 스턴판정이 들어감
 	UE_LOG(LogTemp, Warning, TEXT("Gun Attack Damage : %.0f"), damage);
+}
+
+void ALadyMaria::RightSlash(float DeltaTime)
+{
+	if (!AnimInstance->IsAnyMontagePlaying()) {
+		AnimInstance->Montage_Play(EnemyAttackAnimation1);
+	}
+	//몽타주 재생이 끝난 경우
+	if (!bIsActing) {
+		mariaAI->bIsRightSlash = false;
+	}
 }

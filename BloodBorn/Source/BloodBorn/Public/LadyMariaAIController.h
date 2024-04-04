@@ -26,23 +26,26 @@ public:
 	//////////////
 
 	//이동외의 행동을 하면 이 변수가 true가 된다. 다른 행동을 실시할 수 있는지 트리거 역할을 한다.
-	bool bIsActing = false;
+	bool bIsRightSlash = false;
 
-	//Phase 1~4(Num is Phase - 1)
+	//페이즈는 1~4(숫자는 현재 페이즈 - 1)
 	int32 phase = 0;
 
 	//적(보스)레퍼런스
-	class ACharacter* EnemyREF;
+	class ALadyMaria* EnemyREF;
 
 	class UNavigationSystemV1* NavArea;//길찾기 범위. 프로젝트명.Build.cs 파일도 참조할 것
-
-
-
 
 	//////////////
 	// 함수구역 //
 	//////////////
 
+
+private:
+	//////////////
+	// 변수구역 //
+	//////////////
+	float attackTimer = 0.0f;
 
 
 };
