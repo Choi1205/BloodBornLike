@@ -82,6 +82,13 @@ void ALadyMaria::Tick(float DeltaTime)
 		LeftSlash();
 		//UE_LOG(LogTemp, Warning, TEXT("Leftt"));
 	}
+
+	if(bIsMovingWhileAttack){
+		SetActorLocation(GetActorLocation() + GetActorForwardVector() * DeltaTime * 400);
+	}
+	if(bIsAimmingWhileAttack){
+		SetActorRotation((playerREF->GetActorLocation() - GetActorLocation()).Rotation());
+	}
 }
 
 ABloodBornCharacter* ALadyMaria::FindPlayer_BP()
@@ -98,7 +105,17 @@ void ALadyMaria::WalkToPlayer()
 	FVector playerLocation = GetWorld()->GetFirstPlayerController()->GetPawn()->GetActorLocation();
 	FVector towardPlayer = playerLocation - GetActorLocation();
 
-	AddMovementInput(towardPlayer.GetSafeNormal(1.0));
+	if(distanceToPlayer > 150.0f){
+		AddMovementInput(towardPlayer.GetSafeNormal(1.0));
+	}
+	else{
+		int32 num = FMath::RandRange(0.0f, 99.0f);
+		FVector sidemoveDir = GetActorRightVector();
+		if(num < 50){
+			sidemoveDir *= -1;
+		}
+		AddMovementInput(sidemoveDir.GetSafeNormal(1.0));
+	}
 }
 
 //거리 게터 함수

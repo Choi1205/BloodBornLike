@@ -32,7 +32,6 @@ void ALadyMariaAIController::Tick(float DeltaTime)
 	//플레이어와 거리가 멀고, 공격명령이 없는 상태일때
 	if (EnemyREF->GetPlayerDistance() > 150.0f && EnemyREF->bIsActing == false) {
 		EnemyREF->WalkToPlayer();
-		attackTimer = 0.0f;
 	}
 
 	if (EnemyREF->GetPlayerDistance() <= 150.0f && EnemyREF->bIsActing == false && stamina == 1000.0f) {
@@ -40,12 +39,19 @@ void ALadyMariaAIController::Tick(float DeltaTime)
 		bIsRightSlash = true;
 		EnemyREF->bIsActing = true;
 	}
+	else if(EnemyREF->GetPlayerDistance() <= 150.0f && EnemyREF->bIsActing == false && stamina < 1000.0f) {
+		EnemyREF->WalkToPlayer();
+	}
 }
 
 //연속 행동을 할지 결정하는 함수
 bool ALadyMariaAIController::RandomNextMoveTF(int32 rate)
 {
 	int32 num = FMath::RandRange(0, 99);
+
+	if(EnemyREF->GetPlayerDistance() > 150.0f){
+		return false;
+	}
 
 	if (num < rate) {
 		return true;

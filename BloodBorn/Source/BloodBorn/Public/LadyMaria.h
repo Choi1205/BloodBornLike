@@ -72,8 +72,16 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool bIsActing = false;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bIsAimmingWhileAttack = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bIsMovingWhileAttack = false;
+
 	//비긴 플레이에서 실행. 플레이어 레퍼런스 획득
 	class ABloodBornCharacter* FindPlayer_BP();
+
+	class UAnimInstance* AnimInstance;
 
 	UPROPERTY(EditAnywhere)
 	class UAnimMontage* AnimRightSlash;
@@ -95,8 +103,6 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	class UAnimMontage* AnimBossDying;
-	
-	class UAnimInstance* AnimInstance;
 
 	//////////////
 	// 함수구역 //
