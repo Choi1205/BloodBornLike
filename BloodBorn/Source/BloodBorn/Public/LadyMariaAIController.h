@@ -32,6 +32,13 @@ public:
 	//페이즈는 1~4(숫자는 현재 페이즈 - 1)
 	int32 phase = 0;
 
+	//True면 우회전, False면 좌회전
+	UPROPERTY(BlueprintReadWrite)
+	bool bIsLeftMove = true;
+
+	UPROPERTY(BlueprintReadWrite)
+	bool bIsForwardDodge = false;
+
 	//적(보스)레퍼런스
 	class ALadyMaria* EnemyREF;
 
@@ -41,6 +48,7 @@ public:
 	// 함수구역 //
 	//////////////
 
+	UFUNCTION(BlueprintCallable)
 	bool RandomNextMoveTF(int32 rate);
 
 private:

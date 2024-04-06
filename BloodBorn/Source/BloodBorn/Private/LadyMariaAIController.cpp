@@ -25,22 +25,26 @@ void ALadyMariaAIController::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	//UE_LOG(LogTemp, Warning, TEXT("%f"), EnemyREF->GetPlayerDistance());
+	UE_LOG(LogTemp, Warning, TEXT("%f"), EnemyREF->GetPlayerDistance());
 
 	float stamina = EnemyREF->GetBossStamina();
 
-	//플레이어와 거리가 멀고, 공격명령이 없는 상태일때
-	if (EnemyREF->GetPlayerDistance() > 150.0f && EnemyREF->bIsActing == false) {
-		EnemyREF->WalkToPlayer();
-	}
 
-	if (EnemyREF->GetPlayerDistance() <= 150.0f && EnemyREF->bIsActing == false && stamina == 1000.0f) {
-		UE_LOG(LogTemp, Warning, TEXT("Start"));
-		bIsRightSlash = true;
-		EnemyREF->bIsActing = true;
-	}
-	else if(EnemyREF->GetPlayerDistance() <= 150.0f && EnemyREF->bIsActing == false && stamina < 1000.0f) {
-		EnemyREF->WalkToPlayer();
+	//공격명령이 없는 상태일때
+	if (EnemyREF->bIsActing == false) {
+		if (EnemyREF->GetPlayerDistance() > 250.0f && EnemyREF->GetPlayerDistance() < 300.0f && bIsForwardDodge) {
+			EnemyREF->ForwardDodge();
+		}
+		//플레이어와 거리가 멀거나, 스테미너가 소모된 상황일경우
+		if (EnemyREF->GetPlayerDistance() > 150.0f || stamina < 1000.0f) {
+			EnemyREF->WalkToPlayer();
+		}
+
+		if (EnemyREF->GetPlayerDistance() <= 150.0f && stamina == 1000.0f) {
+			UE_LOG(LogTemp, Warning, TEXT("Start"));
+			bIsRightSlash = true;
+			EnemyREF->bIsActing = true;
+		}
 	}
 }
 
@@ -48,10 +52,6 @@ void ALadyMariaAIController::Tick(float DeltaTime)
 bool ALadyMariaAIController::RandomNextMoveTF(int32 rate)
 {
 	int32 num = FMath::RandRange(0, 99);
-
-	if(EnemyREF->GetPlayerDistance() > 150.0f){
-		return false;
-	}
 
 	if (num < rate) {
 		return true;

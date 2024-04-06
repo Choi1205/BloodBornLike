@@ -11,6 +11,7 @@
 #include "Components/BoxComponent.h"
 #include "Animation/AnimInstance.h"
 #include "Animation/AnimMontage.h"
+#include "SmokeFXActor.h"
 
 ALadyMaria::ALadyMaria()
 {
@@ -47,7 +48,9 @@ void ALadyMaria::BeginPlay()
 	mariaAI = Cast<ALadyMariaAIController>(GetController());
 	playerREF = FindPlayer_BP();
 	AnimInstance = GetMesh()->GetAnimInstance();
-
+	FActorSpawnParameters params;
+	params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	smokeActor = GetWorld()->SpawnActor<ASmokeFXActor>(smokeVFX, FVector::ZeroVector, FRotator::ZeroRotator, params);
 }
 
 void ALadyMaria::Tick(float DeltaTime)
@@ -100,24 +103,6 @@ ABloodBornCharacter* ALadyMaria::FindPlayer_BP()
 	return Cast<ABloodBornCharacter>(players[0]);
 }
 
-void ALadyMaria::WalkToPlayer()
-{
-	FVector playerLocation = GetWorld()->GetFirstPlayerController()->GetPawn()->GetActorLocation();
-	FVector towardPlayer = playerLocation - GetActorLocation();
-
-	if(distanceToPlayer > 150.0f){
-		AddMovementInput(towardPlayer.GetSafeNormal(1.0));
-	}
-	else{
-		int32 num = FMath::RandRange(0.0f, 99.0f);
-		FVector sidemoveDir = GetActorRightVector();
-		if(num < 50){
-			sidemoveDir *= -1;
-		}
-		AddMovementInput(sidemoveDir.GetSafeNormal(1.0));
-	}
-}
-
 //거리 게터 함수
 float ALadyMaria::GetPlayerDistance()
 {
@@ -127,6 +112,30 @@ float ALadyMaria::GetPlayerDistance()
 float ALadyMaria::GetBossStamina()
 {
 	return stamina;
+}
+
+void ALadyMaria::WalkToPlayer()
+{
+	FVector playerLocation = GetWorld()->GetFirstPlayerController()->GetPawn()->GetActorLocation();
+	FVector towardPlayer = playerLocation - GetActorLocation();
+
+	if (distanceToPlayer > 150.0f) {
+		AddMovementInput(towardPlayer.GetSafeNormal(1.0));
+	}
+	else {
+		//150 거리 안쪽이면 아래 상수 속도로 플레이어 주변을 돈다. 공격 동료 후 근접상태일떄 주변 이동용
+		FVector sidemoveDir = GetActorRightVector() * 5;
+		if (mariaAI->bIsLeftMove) {
+			sidemoveDir *= -1;
+		}
+		AddMovementInput(sidemoveDir.GetSafeNormal(1.0));
+	}
+}
+
+void ALadyMaria::ForwardDodge()
+{
+	bIsActing = true;
+	AnimInstance->Montage_Play(AnimDodgeForward);
 }
 
 void ALadyMaria::GetHit(const FVector& ImpactPoint)
@@ -207,21 +216,37 @@ void ALadyMaria::GotDamage(float damage)
 
 void ALadyMaria::GotParryAttackCPP(float damage)
 {
-	GotDamage(damage);
-	/*
-	if (mariaAI != nullptr) {
-		if (CanParryed) {
-			if (AnimInstance->Montage_IsPlaying(NULL)) {
-				AnimInstance->Montage_Stop(NULL);
-			}
-			CanParryed = false;
-			mariaAI->GetBlackboardComponent()->SetValueAsBool(FName("InStun"), true);
-			mariaAI->GetBlackboardComponent()->SetValueAsBool(FName("TakingHit"), false);
+	//사격공격 회피체크. 회피율 50%
+	if (!bIsActing && mariaAI->RandomNextMoveTF(50)) {
+		//전방대시 ON상태였으면 끈다.
+		mariaAI->bIsForwardDodge = false;
+		//회피 방향 판정
+		if (mariaAI->RandomNextMoveTF(50)) {
+			mariaAI->bIsLeftMove = true;
+			AnimInstance->Montage_Play(AnimDodgeLeft);
+		}
+		else {
+			mariaAI->bIsLeftMove = false;
+			AnimInstance->Montage_Play(AnimDodgeRight);
 		}
 	}
-	*/
-	//패리판정 및 스턴판정이 들어감
-	UE_LOG(LogTemp, Warning, TEXT("Gun Attack Damage : %.0f"), damage);
+	else {
+		GotDamage(damage);
+		/*
+		if (mariaAI != nullptr) {
+			if (CanParryed) {
+				if (AnimInstance->Montage_IsPlaying(NULL)) {
+					AnimInstance->Montage_Stop(NULL);
+				}
+				CanParryed = false;
+				mariaAI->GetBlackboardComponent()->SetValueAsBool(FName("InStun"), true);
+				mariaAI->GetBlackboardComponent()->SetValueAsBool(FName("TakingHit"), false);
+			}
+		}
+		*/
+		//패리판정 및 스턴판정이 들어감
+		UE_LOG(LogTemp, Warning, TEXT("Gun Attack Damage : %.0f"), damage);
+	}
 }
 
 void ALadyMaria::RightSlash()
@@ -249,7 +274,7 @@ void ALadyMaria::RightSlash()
 	//몽타주 재생이 끝난 경우
 	if (!bIsActing) {
 		mariaAI->bIsRightSlash = false;
-		if (mariaAI->RandomNextMoveTF(50)) {
+		if (mariaAI->RandomNextMoveTF(50) && distanceToPlayer < 150.0f) {
 			bIsActing = true;
 			mariaAI->bIsLeftSlash = true;
 		}
@@ -281,7 +306,7 @@ void ALadyMaria::LeftSlash()
 	//몽타주 재생이 끝난 경우
 	if (!bIsActing) {
 		mariaAI->bIsLeftSlash = false;
-		if (mariaAI->RandomNextMoveTF(50)) {
+		if (mariaAI->RandomNextMoveTF(50) && distanceToPlayer < 150.0f) {
 			bIsActing = true;
 			mariaAI->bIsRightSlash = true;
 		}

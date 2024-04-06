@@ -33,10 +33,6 @@ ACPPTreeEnemy::ACPPTreeEnemy()
 	DamageCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("Damage Collision"));//박스 콜리전 컴포넌트를 생성하여 DamageCollision이름으로 생성한다.
 	DamageCollision->SetupAttachment(GetMesh(), TEXT("RightHandAttackSocket"));//생성한 박스 콜리전 컴포넌트를 매쉬에 붙인다.
 
-	//bleeding = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Bleeding Comp"));
-	//bleeding->SetupAttachment(RootComponent);
-	//bleeding->bAutoActivate = false;
-	
 	Attributes = CreateDefaultSubobject< UAttributeComponent>(TEXT("Attributes"));
 
 	GetCharacterMovement()->MaxWalkSpeed = 100.0f;
@@ -51,13 +47,6 @@ void ACPPTreeEnemy::BeginPlay()
 
 	DamageCollision->OnComponentBeginOverlap.AddDynamic(this, &ACPPTreeEnemy::OnDealDamageOverlapBegin);
 
-	if (NiaSys) {
-		//bleeding = UNiagaraFunctionLibrary::SpawnSystemAttached(NiaSys, GetRootComponent(), "", GetActorLocation(), GetActorRotation(), EAttachLocation::KeepRelativeOffset, true, false, ENCPoolMethod::AutoRelease, true);
-			//GetWorld(), NiaSys, RootComponent->GetComponentLocation() + FVector(30.0f, 0.0f, 0.0f), FRotator::ZeroRotator, FVector(1.0f), true, false);
-		//UNiagaraFunctionLibrary::SpawnSystemAttached(NiagaraShootingStar,
-			//GetRootComponent(), "", Location, Rotation, EAttachLocation::KeepRelativeOffset, true, true,
-			//ENCPoolMethod::AutoRelease, true);
-	}
 	AnimInstance = GetMesh()->GetAnimInstance();
 }
 

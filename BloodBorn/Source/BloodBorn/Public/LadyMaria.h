@@ -38,7 +38,7 @@ public:
 	//////////////
 	// 변수구역 //
 	//////////////
-
+	UPROPERTY(BlueprintReadOnly)
 	class ABloodBornCharacter* playerREF = nullptr;
 
 protected:
@@ -81,6 +81,12 @@ public:
 	//비긴 플레이에서 실행. 플레이어 레퍼런스 획득
 	class ABloodBornCharacter* FindPlayer_BP();
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	class ASmokeFXActor* smokeActor;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TSubclassOf<class ASmokeFXActor> smokeVFX;
+
 	class UAnimInstance* AnimInstance;
 
 	UPROPERTY(EditAnywhere)
@@ -99,6 +105,15 @@ public:
 	class UAnimMontage* AnimEnemyAttack5;
 
 	UPROPERTY(EditAnywhere)
+	class UAnimMontage* AnimDodgeForward;
+
+	UPROPERTY(EditAnywhere)
+	class UAnimMontage* AnimDodgeLeft;
+
+	UPROPERTY(EditAnywhere)
+	class UAnimMontage* AnimDodgeRight;
+
+	UPROPERTY(EditAnywhere)
 	class UAnimMontage* AnimBossHit;
 
 	UPROPERTY(EditAnywhere)
@@ -108,11 +123,13 @@ public:
 	// 함수구역 //
 	//////////////
 
-	void WalkToPlayer();
-
 	float GetPlayerDistance();
 
 	float GetBossStamina();
+
+	void WalkToPlayer();
+
+	void ForwardDodge();
 
 	virtual void GetHit(const FVector& ImpactPoint) override;
 
