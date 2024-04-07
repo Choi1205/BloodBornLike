@@ -35,6 +35,18 @@ public:
 	UPROPERTY(EditAnywhere)
 	class UBoxComponent* leftDamageCollision;//공격범위
 
+	UPROPERTY(EditAnywhere)
+	class UNiagaraSystem* NiaSys;
+
+	UPROPERTY(EditAnywhere)
+	class UNiagaraComponent* bleeding;
+
+	UPROPERTY(EditAnywhere)
+	class USceneComponent* bulletFirePoint;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class ABulletActor> bulletFactory;
+
 	//////////////
 	// 변수구역 //
 	//////////////
@@ -58,6 +70,8 @@ private:
 
 	float distanceToPlayer = 10000.0f;
 
+	float playerSpeed = 10000.0f;
+
 	class ALadyMariaAIController* mariaAI = nullptr;
 
 	UPROPERTY(VisibleAnywhere)
@@ -69,13 +83,17 @@ public:
 	//////////////
 	// 변수구역 //
 	//////////////
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+
+	UPROPERTY(BlueprintReadWrite)
 	bool bIsActing = false;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(BlueprintReadWrite)
+	bool bIsSuperArmor = false;
+
+	UPROPERTY(BlueprintReadWrite)
 	bool bIsAimmingWhileAttack = false;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(BlueprintReadWrite)
 	bool bIsMovingWhileAttack = false;
 
 	//비긴 플레이에서 실행. 플레이어 레퍼런스 획득
@@ -125,6 +143,8 @@ public:
 
 	float GetPlayerDistance();
 
+	float GetPlayerSpeed();
+
 	float GetBossStamina();
 
 	void WalkToPlayer();
@@ -143,4 +163,9 @@ public:
 	void RightSlash();
 
 	void LeftSlash();
+
+	void Thrust();
+
+	UFUNCTION(BlueprintCallable)
+	void FireGun();
 };

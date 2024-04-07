@@ -3,15 +3,19 @@
 #include "LadyMaria.h"
 #include "LadyMariaAIController.h"
 #include "../BloodBornCharacter.h"
+#include "BulletActor.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/AttributeComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/BoxComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "Animation/AnimInstance.h"
 #include "Animation/AnimMontage.h"
 #include "SmokeFXActor.h"
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraComponent.h"
 
 ALadyMaria::ALadyMaria()
 {
@@ -31,10 +35,13 @@ ALadyMaria::ALadyMaria()
 
 	rightDamageCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("RightDamageBox"));
 	rightDamageCollision->SetupAttachment(GetMesh(), TEXT("RightHandSocket"));
-	
 
 	leftDamageCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("LeftDamageBox"));
 	leftDamageCollision->SetupAttachment(GetMesh(), TEXT("LeftHandSocket"));
+
+	bulletFirePoint = CreateDefaultSubobject<USceneComponent>(TEXT("BulletFirePoint"));
+	bulletFirePoint->SetupAttachment(gun);
+	bulletFirePoint->SetRelativeLocation(FVector(38.0f, 0.0f, 7.0f));
 
 	GetCharacterMovement()->MaxWalkSpeed = 100.0f;
 	GetCharacterMovement()->MaxAcceleration = 200.0f;
@@ -60,6 +67,8 @@ void ALadyMaria::Tick(float DeltaTime)
 	//매 틱마다 플레이어와의 거리를 잰다
 	distanceToPlayer = FVector::Distance(GetActorLocation(), playerREF->GetActorLocation());
 
+	playerSpeed =  playerREF->GetVelocity().Length();
+
 	//공격중이 아니라면 보스는 항상 플레이어를 바라본다.
 	if (bIsActing == false) {
 		FRotator toward = (playerREF->GetActorLocation() - GetActorLocation()).Rotation();
@@ -77,13 +86,17 @@ void ALadyMaria::Tick(float DeltaTime)
 
 	}
 
+	if (mariaAI->bIsFireGun) {
+		FireGun();
+	}
+	if (mariaAI->bIsThrust) {
+		Thrust();
+	}
 	if (mariaAI->bIsRightSlash) {
 		RightSlash();
-		//UE_LOG(LogTemp, Warning, TEXT("Right, %d"), bIsActing);
 	}
 	if (mariaAI->bIsLeftSlash) {
 		LeftSlash();
-		//UE_LOG(LogTemp, Warning, TEXT("Leftt"));
 	}
 
 	if(bIsMovingWhileAttack){
@@ -107,6 +120,10 @@ ABloodBornCharacter* ALadyMaria::FindPlayer_BP()
 float ALadyMaria::GetPlayerDistance()
 {
 	return distanceToPlayer;
+}
+float ALadyMaria::GetPlayerSpeed()
+{
+	return playerSpeed;
 }
 //스테미나 게터 함수
 float ALadyMaria::GetBossStamina()
@@ -183,35 +200,38 @@ float ALadyMaria::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent
 	return DamageAmount;
 }
 
+//사격공격 데미지 처리도 필요하기 때문에 체력이 감소하는 함수를 따로 작성
 void ALadyMaria::GotDamage(float damage)
 {
+	//HP를 데미지 만큼 깍는다
 	healthPoint -= damage;
-	/*
-	//출혈 이펙트 재생부. 블루프린트의 NiaSys에 미리 파티클을 등록해야한다.
-	bleeding = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), NiaSys, GetActorLocation(), FRotator::ZeroRotator);
 
+	bleeding = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), NiaSys, GetActorLocation(), FRotator::ZeroRotator, FVector(3.0f));
 	if (mariaAI != nullptr) {
 		if (healthPoint <= 0) {
 			if (AnimInstance->Montage_IsPlaying(NULL)) {
 				AnimInstance->Montage_Stop(NULL);
 			}
-			mariaAI->PawnSensing->Deactivate();
 			GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-			AnimInstance->Montage_Play(EnemyDyingAnimation);
+			AnimInstance->Montage_Play(AnimBossDying);
+			AnimInstance->Montage_SetPlayRate(AnimBossDying, 1.0f);
 			mariaAI->UnPossess();
 			mariaAI = nullptr;
 		}
 		else {
-			if (!mariaAI->GetBlackboardComponent()->GetValueAsBool(FName("InStun"))) {
+			if (!mariaAI->bIsStun || !bIsSuperArmor) {
 				if (AnimInstance->Montage_IsPlaying(NULL)) {
 					AnimInstance->Montage_Stop(NULL);
 				}
-				mariaAI->GetBlackboardComponent()->SetValueAsBool(FName("TakingHit"), true);
-				AnimInstance->Montage_Play(EnemyHitAnimation);
+				bIsActing = true;
+				bIsMovingWhileAttack = false;
+				mariaAI->bIsRightSlash = false;
+				mariaAI->bIsLeftSlash = false;
+				AnimInstance->Montage_Play(AnimBossHit);
+				AnimInstance->Montage_SetPlayRate(AnimBossHit, 1.0f);
 			}
 		}
 	}
-	*/
 }
 
 void ALadyMaria::GotParryAttackCPP(float damage)
@@ -264,7 +284,7 @@ void ALadyMaria::RightSlash()
 		}
 	}
 	//재생중인 몽타주가 없으면
-	else if(bIsActing){
+	else if (bIsActing) {
 		//우측베기를 재생
 		AnimInstance->Montage_Play(AnimRightSlash);
 		//스테미나 소모
@@ -285,11 +305,11 @@ void ALadyMaria::LeftSlash()
 {
 	//만약 재생중이던 몽타주가 있고
 	if (bIsActing && AnimInstance->IsAnyMontagePlaying()) {
-		//우측베기가 아니면
+		//좌측베기가 아니면
 		if (!AnimInstance->Montage_IsPlaying(AnimLeftSlash)) {
 			//몽타주를 정지
 			AnimInstance->Montage_Stop(0.0f, NULL);
-			//그리고 우측베기를 재생
+			//그리고 좌측베기를 재생
 			AnimInstance->Montage_Play(AnimLeftSlash);
 			//스테미나 소모
 			stamina -= 50.0f;
@@ -297,7 +317,7 @@ void ALadyMaria::LeftSlash()
 	}
 	//재생중인 몽타주가 없으면
 	else if(bIsActing){
-		//우측베기를 재생
+		//좌측베기를 재생
 		AnimInstance->Montage_Play(AnimLeftSlash);
 		//스테미나 소모
 		stamina -= 50.0f;
@@ -310,5 +330,60 @@ void ALadyMaria::LeftSlash()
 			bIsActing = true;
 			mariaAI->bIsRightSlash = true;
 		}
+	}
+}
+
+void ALadyMaria::Thrust()
+{
+	//만약 재생중이던 몽타주가 있고
+	if (bIsActing && AnimInstance->IsAnyMontagePlaying()) {
+		//찌르기가 아니면
+		if (!AnimInstance->Montage_IsPlaying(AnimDualThrust)) {
+			//몽타주를 정지
+			AnimInstance->Montage_Stop(0.0f, NULL);
+			//그리고 찌르기를 재생
+			AnimInstance->Montage_Play(AnimDualThrust);
+			//스테미나 소모
+			stamina -= 100.0f;
+		}
+	}
+	//재생중인 몽타주가 없으면
+	else if (bIsActing) {
+		//찌르기를 재생
+		AnimInstance->Montage_Play(AnimDualThrust);
+		//스테미나 소모
+		stamina -= 100.0f;
+	}
+
+
+	//몽타주 재생이 끝난 경우
+	if (!bIsActing) {
+		mariaAI->bIsThrust = false;
+	}
+}
+
+void ALadyMaria::FireGun()
+{
+	//장거리에서만 발동되므로, 행동중이 아니고, 재생중인 몽타주가 없는 경우(회피중이 아닌경우)
+	if (!bIsActing && !AnimInstance->IsAnyMontagePlaying()) {
+		bIsActing = true;
+		AnimInstance->Montage_Play(AnimGunShot);
+	}
+	//탄환이 발사될 순간에 애님노티파이를 이용하여 다시 실행된다.
+	else {
+		FActorSpawnParameters params;
+		params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+		//탄환을 발사한다
+		ABulletActor* bullet = GetWorld()->SpawnActor<ABulletActor>(bulletFactory, bulletFirePoint->GetComponentLocation(), (playerREF->GetActorLocation() - bulletFirePoint->GetComponentLocation()).Rotation(), params);
+		if (bullet != nullptr) {
+			bullet->SetBulletSpeed(2000.0f);
+			bullet->SetFirePower(40.0f);
+		}
+	}
+
+	//몽타주 재생이 끝난 경우
+	if (!bIsActing) {
+		mariaAI->bIsFireGun = false;
 	}
 }

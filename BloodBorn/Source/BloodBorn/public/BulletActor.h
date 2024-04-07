@@ -21,8 +21,8 @@ public:
 	UPROPERTY(EditAnywhere)
 	class UStaticMeshComponent* bulletShape;
 
-	UPROPERTY(EditAnywhere)
-	float bulletSpeed = 1000.0f;
+	UPROPERTY(VisibleAnywhere)
+	class UParticleSystemComponent* particleComp;
 
 	class ABloodBornCharacter* PlayerREF;
 
@@ -31,7 +31,8 @@ public:
 
 private:
 
-	UPROPERTY(EditAnywhere)
+	float Speed = 1000.0f;
+
 	float damage = 20.0f;
 
 protected:
@@ -41,5 +42,9 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+	void SetBulletSpeed(float bulletSpeed);
+
+	void SetFirePower(float bulletDamage);
 
 };

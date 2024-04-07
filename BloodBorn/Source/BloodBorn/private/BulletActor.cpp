@@ -5,6 +5,7 @@
 #include "BloodBorn/BloodBornCharacter.h"
 #include "Components/SphereComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Particles/ParticleSystemComponent.h"
 #include "Kismet/GameplayStatics.h"
 
 // Sets default values
@@ -21,6 +22,11 @@ ABulletActor::ABulletActor()
 	bulletShape = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("staticMesh"));
 	bulletShape->SetupAttachment(bulletBody);
 	bulletShape->SetRelativeLocation(FVector(0.0f, 0.0f, -50.0f));
+
+	particleComp = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("Particle Component"));
+	particleComp->SetupAttachment(bulletBody);
+	particleComp->SetWorldScale3D(FVector(10.0f));
+	//particleComp->SetAutoActivate(false);
 }
 
 // Called when the game starts or when spawned
@@ -30,7 +36,7 @@ void ABulletActor::BeginPlay()
 
 	bulletBody->OnComponentBeginOverlap.AddDynamic(this, &ABulletActor::CallHit);
 	
-	SetLifeSpan(5.0f);
+	SetLifeSpan(3.0f);
 }
 
 // Called every frame
@@ -38,8 +44,18 @@ void ABulletActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	SetActorLocation(GetActorLocation() + GetActorForwardVector() * bulletSpeed * DeltaTime);
+	SetActorLocation(GetActorLocation() + GetActorForwardVector() * Speed * DeltaTime, true);
 
+}
+
+void ABulletActor::SetBulletSpeed(float bulletSpeed)
+{
+	Speed = bulletSpeed;
+}
+
+void ABulletActor::SetFirePower(float bulletDamage)
+{
+	damage = bulletDamage;
 }
 
 void ABulletActor::CallHit(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)

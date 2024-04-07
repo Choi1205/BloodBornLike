@@ -25,13 +25,16 @@ void ALadyMariaAIController::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	UE_LOG(LogTemp, Warning, TEXT("%f"), EnemyREF->GetPlayerDistance());
+	//UE_LOG(LogTemp, Warning, TEXT("%f"), EnemyREF->GetPlayerDistance());
 
 	float stamina = EnemyREF->GetBossStamina();
 
+	//스턴상태가 아닐때 && 공격명령이 없는 상태일때
+	if (!bIsStun && EnemyREF->bIsActing == false) {
+		if (!bIsFireGun && EnemyREF->GetPlayerDistance() > 500.0f) {
+			bIsFireGun = true;
+		}
 
-	//공격명령이 없는 상태일때
-	if (EnemyREF->bIsActing == false) {
 		if (EnemyREF->GetPlayerDistance() > 250.0f && EnemyREF->GetPlayerDistance() < 300.0f && bIsForwardDodge) {
 			EnemyREF->ForwardDodge();
 		}
@@ -41,9 +44,27 @@ void ALadyMariaAIController::Tick(float DeltaTime)
 		}
 
 		if (EnemyREF->GetPlayerDistance() <= 150.0f && stamina == 1000.0f) {
-			UE_LOG(LogTemp, Warning, TEXT("Start"));
-			bIsRightSlash = true;
-			EnemyREF->bIsActing = true;
+			if (EnemyREF->GetPlayerSpeed() < 100.0f) {
+				bIsThrust = true;
+				EnemyREF->bIsActing = true;
+			}
+			else {
+				if (RandomNextMoveTF(50)) {
+					bIsRightSlash = true;
+					EnemyREF->bIsActing = true;
+				}
+				else {
+					bIsLeftSlash = true;
+					EnemyREF->bIsActing = true;
+				}
+			}
+		}
+	}
+	if (bIsFireGun) {
+		gunFireTimer += DeltaTime;
+		if (gunFireTimer > 2.0f) {
+			bIsFireGun = false;
+			gunFireTimer = 0.0f;
 		}
 	}
 }
