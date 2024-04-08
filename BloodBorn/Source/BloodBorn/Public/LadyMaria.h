@@ -24,6 +24,9 @@ public:
 	class UStaticMeshComponent* rightSword;
 
 	UPROPERTY(EditAnywhere)
+	class UStaticMeshComponent* rightReverseSword;
+
+	UPROPERTY(EditAnywhere)
 	class UStaticMeshComponent* leftSword;
 
 	UPROPERTY(EditAnywhere)
@@ -84,6 +87,10 @@ public:
 	// 변수구역 //
 	//////////////
 
+	//페이즈는 1~3(숫자는 현재 페이즈 - 1)
+	int32 phase = 0;
+	bool phase2Cheaker = false;
+
 	UPROPERTY(BlueprintReadWrite)
 	bool bIsActing = false;
 
@@ -100,7 +107,10 @@ public:
 	class ABloodBornCharacter* FindPlayer_BP();
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	class ASmokeFXActor* smokeActor;
+	class ASmokeFXActor* smokeActor1;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	class ASmokeFXActor* smokeActor2;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TSubclassOf<class ASmokeFXActor> smokeVFX;
@@ -166,6 +176,27 @@ public:
 
 	void Thrust();
 
+	void AimGun();
+
+	/////////////////
+	// ABP함수구역 //
+	/////////////////
+
 	UFUNCTION(BlueprintCallable)
 	void FireGun();
+
+	UFUNCTION(BlueprintCallable)
+	void ABP_AttackStart();
+
+	UFUNCTION(BlueprintCallable)
+	void ABP_SlowEnd();
+
+	UFUNCTION(BlueprintCallable)
+	void ABP_AttackEnd();
+
+	UFUNCTION(BlueprintCallable)
+	void ABP_DodgeStart();
+
+	UFUNCTION(BlueprintCallable)
+	void ABP_DodgeEnd();
 };

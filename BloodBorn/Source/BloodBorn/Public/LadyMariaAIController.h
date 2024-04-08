@@ -32,11 +32,13 @@ public:
 	bool bIsRightSlash = false;
 	bool bIsLeftSlash = false;
 	bool bIsThrust = false;
+	UPROPERTY(BlueprintReadWrite)
 	bool bIsFireGun = false;
 	float gunFireTimer = 0.0f;
-
-	//페이즈는 1~4(숫자는 현재 페이즈 - 1)
-	int32 phase = 0;
+	bool bIsChangeMode = false;
+	bool bIsDualSword = true;
+	float dualSwordTimer = 0.0f;
+	float modeChangeTime = 20.0f;
 
 	//True면 우회전, False면 좌회전
 	UPROPERTY(BlueprintReadWrite)

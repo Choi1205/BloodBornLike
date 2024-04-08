@@ -31,8 +31,9 @@ void ALadyMariaAIController::Tick(float DeltaTime)
 
 	//스턴상태가 아닐때 && 공격명령이 없는 상태일때
 	if (!bIsStun && EnemyREF->bIsActing == false) {
-		if (!bIsFireGun && EnemyREF->GetPlayerDistance() > 500.0f) {
+		if (!bIsFireGun && EnemyREF->GetPlayerDistance() > 500.0f && !bIsDualSword) {
 			bIsFireGun = true;
+			EnemyREF->AimGun();
 		}
 
 		if (EnemyREF->GetPlayerDistance() > 250.0f && EnemyREF->GetPlayerDistance() < 300.0f && bIsForwardDodge) {
@@ -47,6 +48,7 @@ void ALadyMariaAIController::Tick(float DeltaTime)
 			if (EnemyREF->GetPlayerSpeed() < 100.0f) {
 				bIsThrust = true;
 				EnemyREF->bIsActing = true;
+				EnemyREF->Thrust();
 			}
 			else {
 				if (RandomNextMoveTF(50)) {
@@ -65,6 +67,20 @@ void ALadyMariaAIController::Tick(float DeltaTime)
 		if (gunFireTimer > 2.0f) {
 			bIsFireGun = false;
 			gunFireTimer = 0.0f;
+		}
+	}
+
+	if(EnemyREF->phase == 0){
+		dualSwordTimer += DeltaTime;
+		if(dualSwordTimer > modeChangeTime){
+			if(bIsDualSword){
+				bIsDualSword = false;
+			}
+			else{
+				bIsDualSword = true;
+			}
+			dualSwordTimer = 0.0f;
+			bIsChangeMode = true;
 		}
 	}
 }
