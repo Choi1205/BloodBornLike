@@ -67,6 +67,8 @@ private:
 
 	float stamina = 1000.0f;
 
+	float staminaRegain = 50.0f;
+
 	float stunTimer = 0.0f;
 
 	float distanceToPlayer = 10000.0f;
@@ -89,7 +91,7 @@ public:
 	int32 phase = 0;
 	bool phase2Cheaker = false;
 
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	bool bIsActing = false;
 
 	UPROPERTY(BlueprintReadWrite)

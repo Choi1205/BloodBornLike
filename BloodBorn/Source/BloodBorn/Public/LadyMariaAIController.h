@@ -29,8 +29,11 @@ public:
 	bool bIsStun = false;
 
 	//이동외의 행동을 하면 이 변수가 true가 된다. 다른 행동을 실시할 수 있는지 트리거 역할을 한다.
+	UPROPERTY(VisibleAnywhere)
 	bool bIsRightSlash = false;
+	UPROPERTY(VisibleAnywhere)
 	bool bIsLeftSlash = false;
+	UPROPERTY(VisibleAnywhere)
 	bool bIsThrust = false;
 	UPROPERTY(BlueprintReadWrite)
 	bool bIsFireGun = false;

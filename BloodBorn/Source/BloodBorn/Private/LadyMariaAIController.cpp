@@ -36,28 +36,28 @@ void ALadyMariaAIController::Tick(float DeltaTime)
 			EnemyREF->AimGun();
 		}
 
-		if (EnemyREF->GetPlayerDistance() > 250.0f && EnemyREF->GetPlayerDistance() < 300.0f && bIsForwardDodge) {
+		if (EnemyREF->GetPlayerDistance() >= 250.0f && EnemyREF->GetPlayerDistance() < 500.0f && bIsForwardDodge && stamina > 700.0f) {
 			EnemyREF->ForwardDodge();
 		}
 		//플레이어와 거리가 멀거나, 스테미너가 소모된 상황일경우
-		if (EnemyREF->GetPlayerDistance() > 150.0f || stamina < 1000.0f) {
+		if (EnemyREF->GetPlayerDistance() >= 250.0f || stamina < 1000.0f) {
 			EnemyREF->WalkToPlayer();
 		}
 
 		if (EnemyREF->GetPlayerDistance() < 250.0f && stamina > 700.0f) {
 			if (EnemyREF->GetPlayerSpeed() < 100.0f) {
 				bIsThrust = true;
-				EnemyREF->bIsActing = true;
+				//EnemyREF->bIsActing = true;
 				EnemyREF->Thrust();
 			}
-			else {
+			else if(!bIsRightSlash && !bIsLeftSlash){
 				if (RandomNextMoveTF(50)) {
 					bIsRightSlash = true;
-					EnemyREF->bIsActing = true;
+					//EnemyREF->bIsActing = true;
 				}
 				else {
 					bIsLeftSlash = true;
-					EnemyREF->bIsActing = true;
+					//EnemyREF->bIsActing = true;
 				}
 			}
 		}

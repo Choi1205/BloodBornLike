@@ -104,8 +104,8 @@ void ALadyMaria::Tick(float DeltaTime)
 
 		//행동을 멈추면 스테미너가 회복된다.
 		if (stamina < 1000.0f) {
-			//최대치보다 적으면 회복. 일단 초당 50
-			stamina += DeltaTime * 50;
+			//최대치보다 적으면 회복. 페이즈에 따라 회복량 변화
+			stamina += DeltaTime * staminaRegain;
 		}
 		else if (stamina > 1000.0f) {
 			//최대치를 넘으면 최대치로 맞춘다.
@@ -320,88 +320,56 @@ void ALadyMaria::OnDealDamageOverlapBegin(class UPrimitiveComponent* OverlappedC
 void ALadyMaria::RightSlash()
 {
 	//만약 재생중이던 몽타주가 있고
-	if (bIsActing && AnimInstance->IsAnyMontagePlaying()) {
+	if (AnimInstance->IsAnyMontagePlaying()) {
 		//우측베기가 아니면
 		if (!AnimInstance->Montage_IsPlaying(AnimRightSlash)) {
 			//몽타주를 정지
 			AnimInstance->Montage_Stop(0.0f, NULL);
-			//그리고 우측베기를 재생
-			AnimInstance->Montage_Play(AnimRightSlash);
-			//스테미나 소모
-			stamina -= 50.0f;
 		}
 	}
-	//재생중인 몽타주가 없으면
-	else if (bIsActing) {
-		//우측베기를 재생
+	else {
+		//그리고 우측베기를 재생
 		AnimInstance->Montage_Play(AnimRightSlash);
 		//스테미나 소모
 		stamina -= 50.0f;
-	}
-	
-	//몽타주 재생이 끝난 경우
-	if (!bIsActing) {
-		mariaAI->bIsRightSlash = false;
-		if (mariaAI->RandomNextMoveTF(50) && distanceToPlayer < 250.0f) {
-			bIsActing = true;
-			mariaAI->bIsLeftSlash = true;
-		}
+		bIsActing = true;
 	}
 }
 
 void ALadyMaria::LeftSlash()
 {
 	//만약 재생중이던 몽타주가 있고
-	if (bIsActing && AnimInstance->IsAnyMontagePlaying()) {
+	if (AnimInstance->IsAnyMontagePlaying()) {
 		//좌측베기가 아니면
 		if (!AnimInstance->Montage_IsPlaying(AnimLeftSlash)) {
 			//몽타주를 정지
 			AnimInstance->Montage_Stop(0.0f, NULL);
-			//그리고 좌측베기를 재생
-			AnimInstance->Montage_Play(AnimLeftSlash);
-			//스테미나 소모
-			stamina -= 50.0f;
 		}
 	}
-	//재생중인 몽타주가 없으면
-	else if(bIsActing){
-		//좌측베기를 재생
+	else {
+		//그리고 좌측베기를 재생
 		AnimInstance->Montage_Play(AnimLeftSlash);
 		//스테미나 소모
 		stamina -= 50.0f;
-	}
-
-	//몽타주 재생이 끝난 경우
-	if (!bIsActing) {
-		mariaAI->bIsLeftSlash = false;
-		if (mariaAI->RandomNextMoveTF(50) && distanceToPlayer < 250.0f) {
-			bIsActing = true;
-			mariaAI->bIsRightSlash = true;
-		}
+		bIsActing = true;
 	}
 }
 
 void ALadyMaria::Thrust()
 {
 	//만약 재생중이던 몽타주가 있고
-	if (bIsActing && AnimInstance->IsAnyMontagePlaying()) {
+	if (AnimInstance->IsAnyMontagePlaying()) {
 		//찌르기가 아니면
 		if (!AnimInstance->Montage_IsPlaying(AnimDualThrust)) {
 			//몽타주를 정지
 			AnimInstance->Montage_Stop(0.0f, NULL);
-			//그리고 찌르기를 재생
-			AnimInstance->Montage_Play(AnimDualThrust);
-			//스테미나 소모
-			stamina -= 100.0f;
 		}
 	}
-	//재생중인 몽타주가 없으면
-	else if (bIsActing) {
-		//찌르기를 재생
-		AnimInstance->Montage_Play(AnimDualThrust);
-		//스테미나 소모
-		stamina -= 100.0f;
-	}
+	//찌르기를 재생
+	AnimInstance->Montage_Play(AnimDualThrust);
+	//스테미나 소모
+	stamina -= 100.0f;
+	bIsActing = true;
 }
 
 void ALadyMaria::AimGun()
@@ -472,6 +440,8 @@ void ALadyMaria::ABP_AttackEnd()
 		UE_LOG(LogTemp, Warning, TEXT("ForwardDodge is False"));
 	}
 
+	mariaAI->bIsRightSlash = false;
+	mariaAI->bIsLeftSlash = false;
 	mariaAI->bIsFireGun = false;
 	mariaAI->bIsThrust = false;
 	bIsSuperArmor = false;
