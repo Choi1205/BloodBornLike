@@ -44,7 +44,7 @@ void ALadyMariaAIController::Tick(float DeltaTime)
 			EnemyREF->WalkToPlayer();
 		}
 
-		if (EnemyREF->GetPlayerDistance() <= 150.0f && stamina == 1000.0f) {
+		if (EnemyREF->GetPlayerDistance() < 250.0f && stamina > 700.0f) {
 			if (EnemyREF->GetPlayerSpeed() < 100.0f) {
 				bIsThrust = true;
 				EnemyREF->bIsActing = true;
@@ -62,6 +62,7 @@ void ALadyMariaAIController::Tick(float DeltaTime)
 			}
 		}
 	}
+
 	if (bIsFireGun) {
 		gunFireTimer += DeltaTime;
 		if (gunFireTimer > 2.0f) {

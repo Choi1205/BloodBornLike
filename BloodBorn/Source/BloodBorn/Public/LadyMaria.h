@@ -53,8 +53,6 @@ public:
 	//////////////
 	// 변수구역 //
 	//////////////
-	UPROPERTY(BlueprintReadOnly)
-	class ABloodBornCharacter* playerREF = nullptr;
 
 protected:
 	virtual void BeginPlay() override;
@@ -98,13 +96,22 @@ public:
 	bool bIsSuperArmor = false;
 
 	UPROPERTY(BlueprintReadWrite)
+	bool bIsCanParryed = false;
+
+	UPROPERTY(BlueprintReadWrite)
+	bool bIsStun = false;
+
+	UPROPERTY(BlueprintReadWrite)
+	bool bIsCanDealDamage = false;
+
+	UPROPERTY(BlueprintReadWrite)
 	bool bIsAimmingWhileAttack = false;
 
 	UPROPERTY(BlueprintReadWrite)
 	bool bIsMovingWhileAttack = false;
 
-	//비긴 플레이에서 실행. 플레이어 레퍼런스 획득
-	class ABloodBornCharacter* FindPlayer_BP();
+		UPROPERTY(BlueprintReadOnly)
+	class ABloodBornCharacter* playerREF = nullptr;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	class ASmokeFXActor* smokeActor1;
@@ -151,6 +158,9 @@ public:
 	// 함수구역 //
 	//////////////
 
+	//비긴 플레이에서 실행. 플레이어 레퍼런스 획득
+	class ABloodBornCharacter* FindPlayer_BP();
+
 	float GetPlayerDistance();
 
 	float GetPlayerSpeed();
@@ -169,6 +179,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	virtual void GotParryAttackCPP(float damage) override;
+
+	UFUNCTION()
+	void OnDealDamageOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	void RightSlash();
 

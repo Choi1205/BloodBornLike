@@ -61,6 +61,10 @@ void ALadyMaria::BeginPlay()
 	mariaAI = Cast<ALadyMariaAIController>(GetController());
 	playerREF = FindPlayer_BP();
 	AnimInstance = GetMesh()->GetAnimInstance();
+
+	rightDamageCollision->OnComponentBeginOverlap.AddDynamic(this, &ALadyMaria::OnDealDamageOverlapBegin);
+	leftDamageCollision->OnComponentBeginOverlap.AddDynamic(this, &ALadyMaria::OnDealDamageOverlapBegin);
+
 	FActorSpawnParameters params;
 	params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 	smokeActor1 = GetWorld()->SpawnActor<ASmokeFXActor>(smokeVFX, FVector::ZeroVector, FRotator::ZeroRotator, params);
@@ -234,9 +238,12 @@ void ALadyMaria::GotDamage(float damage)
 	bleeding = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), NiaSys, GetActorLocation(), FRotator::ZeroRotator, FVector(3.0f));
 	if (mariaAI != nullptr) {
 		if (healthPoint <= 0) {
+			bIsCanDealDamage = false;
+
 			if (AnimInstance->Montage_IsPlaying(NULL)) {
 				AnimInstance->Montage_Stop(NULL);
 			}
+
 			GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 			AnimInstance->Montage_Play(AnimBossDying);
 			AnimInstance->Montage_SetPlayRate(AnimBossDying, 1.0f);
@@ -245,7 +252,9 @@ void ALadyMaria::GotDamage(float damage)
 		}
 		else {
 			if (!mariaAI->bIsStun && !bIsSuperArmor) {
-			UE_LOG(LogTemp, Warning, TEXT("Hit!"));
+				bIsCanDealDamage = false;
+				UE_LOG(LogTemp, Warning, TEXT("Hit!"));
+
 				if (AnimInstance->Montage_IsPlaying(NULL)) {
 					AnimInstance->Montage_Stop(NULL);
 				}
@@ -278,20 +287,33 @@ void ALadyMaria::GotParryAttackCPP(float damage)
 	}
 	else {
 		GotDamage(damage);
-		/*
+		
 		if (mariaAI != nullptr) {
-			if (CanParryed) {
+			if (bIsCanParryed) {
 				if (AnimInstance->Montage_IsPlaying(NULL)) {
 					AnimInstance->Montage_Stop(NULL);
 				}
-				CanParryed = false;
-				mariaAI->GetBlackboardComponent()->SetValueAsBool(FName("InStun"), true);
-				mariaAI->GetBlackboardComponent()->SetValueAsBool(FName("TakingHit"), false);
+				bIsCanParryed = false;
+				mariaAI->bIsStun = true;
 			}
 		}
-		*/
+		
 		//패리판정 및 스턴판정이 들어감
 		UE_LOG(LogTemp, Warning, TEXT("Gun Attack Damage : %.0f"), damage);
+	}
+}
+
+void ALadyMaria::OnDealDamageOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	ABloodBornCharacter* Player = Cast<ABloodBornCharacter>(OtherActor);//들어온 액터가 플레이어인지 확인
+	if (Player && bIsCanDealDamage) {//플레이어이고, 공격도 가능하다면
+		//플레이어는 데미지를 입었다.
+		if (mariaAI -> bIsThrust) {
+			UGameplayStatics::ApplyDamage(Player, 100, GetInstigator()->GetController(), this, UDamageType::StaticClass());
+		}
+		else {
+			UGameplayStatics::ApplyDamage(Player, 50, GetInstigator()->GetController(), this, UDamageType::StaticClass());
+		}
 	}
 }
 
@@ -320,7 +342,7 @@ void ALadyMaria::RightSlash()
 	//몽타주 재생이 끝난 경우
 	if (!bIsActing) {
 		mariaAI->bIsRightSlash = false;
-		if (mariaAI->RandomNextMoveTF(50) && distanceToPlayer < 150.0f) {
+		if (mariaAI->RandomNextMoveTF(50) && distanceToPlayer < 250.0f) {
 			bIsActing = true;
 			mariaAI->bIsLeftSlash = true;
 		}
@@ -352,7 +374,7 @@ void ALadyMaria::LeftSlash()
 	//몽타주 재생이 끝난 경우
 	if (!bIsActing) {
 		mariaAI->bIsLeftSlash = false;
-		if (mariaAI->RandomNextMoveTF(50) && distanceToPlayer < 150.0f) {
+		if (mariaAI->RandomNextMoveTF(50) && distanceToPlayer < 250.0f) {
 			bIsActing = true;
 			mariaAI->bIsRightSlash = true;
 		}
@@ -427,6 +449,7 @@ void ALadyMaria::ABP_SlowEnd()
 	else{
 		AnimInstance->Montage_SetPlayRate(NULL, 1.0f);
 	}
+	bIsCanDealDamage = true;
 	bIsAimmingWhileAttack = false;
 }
 
