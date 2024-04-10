@@ -30,10 +30,15 @@ void ALadyMariaAIController::Tick(float DeltaTime)
 	float stamina = EnemyREF->GetBossStamina();
 
 	//스턴상태가 아닐때 && 공격명령이 없는 상태일때
-	if (!bIsStun && EnemyREF->bIsActing == false) {
+	if (!bIsStun && attackState == EAttackState::IDLE) {
 		if (!bIsFireGun && EnemyREF->GetPlayerDistance() > 500.0f && !bIsDualSword) {
 			bIsFireGun = true;
 			EnemyREF->AimGun();
+		}
+		else if (EnemyREF->GetPlayerDistance() > 500.0f && EnemyREF->GetPlayerDistance() < 1000.0f && EnemyREF->phaseState != EPhaseState::PHASE1) {
+			//2페이즈부터는 장거리 견제로 찌르기가 나간다.
+			attackState = EAttackState::THRUST;
+			EnemyREF->Thrust();
 		}
 
 		if (EnemyREF->GetPlayerDistance() >= 250.0f && EnemyREF->GetPlayerDistance() < 500.0f && bIsForwardDodge && stamina > 700.0f) {
@@ -44,21 +49,19 @@ void ALadyMariaAIController::Tick(float DeltaTime)
 			EnemyREF->WalkToPlayer();
 		}
 
-		if (EnemyREF->GetPlayerDistance() < 250.0f && stamina > 700.0f) {
-			if (EnemyREF->GetPlayerSpeed() < 100.0f) {
-				bIsThrust = true;
-				//EnemyREF->bIsActing = true;
-				EnemyREF->Thrust();
+		//1페이즈, 거리 200이하, 공격가능 스테미나, 아무 행동도 하지 않는상태, 플레이어의 속도가 100미만인 경우
+		if (EnemyREF->phaseState == EPhaseState::PHASE1 && EnemyREF->GetPlayerDistance() < 200.0f && stamina > 700.0f && attackState == EAttackState::IDLE && EnemyREF->GetPlayerSpeed() < 100.0f) {
+			//패링 카운터로 찌르기가 나간다.
+			attackState = EAttackState::THRUST;
+			EnemyREF->Thrust();
+		}
+
+		if (EnemyREF->GetPlayerDistance() < 250.0f && stamina > 700.0f && attackState == EAttackState::IDLE) {
+			if (RandomNextMoveTF(50)) {
+				attackState = EAttackState::RIGHTSLASH;
 			}
-			else if(!bIsRightSlash && !bIsLeftSlash){
-				if (RandomNextMoveTF(50)) {
-					bIsRightSlash = true;
-					//EnemyREF->bIsActing = true;
-				}
-				else {
-					bIsLeftSlash = true;
-					//EnemyREF->bIsActing = true;
-				}
+			else {
+				attackState = EAttackState::LEFTSLASH;
 			}
 		}
 	}
@@ -71,7 +74,7 @@ void ALadyMariaAIController::Tick(float DeltaTime)
 		}
 	}
 
-	if(EnemyREF->phase == 0){
+	if(EnemyREF->phaseState == EPhaseState::PHASE1){
 		dualSwordTimer += DeltaTime;
 		if(dualSwordTimer > modeChangeTime){
 			if(bIsDualSword){
@@ -83,6 +86,9 @@ void ALadyMariaAIController::Tick(float DeltaTime)
 			dualSwordTimer = 0.0f;
 			bIsChangeMode = true;
 		}
+	}
+	else {
+		bIsDualSword = true;
 	}
 }
 

@@ -9,6 +9,19 @@
 /**
  * 
  */
+
+UENUM(BlueprintType)
+enum class EAttackState : uint8 {
+	IDLE,
+	RIGHTSLASH,
+	LEFTSLASH,
+	THRUST,
+	QUICKSLASH,
+	AIMMINGGUN,
+	FORWARDDODGE,
+	TAKEHIT
+};
+
 UCLASS()
 class BLOODBORN_API ALadyMariaAIController : public AAIController
 {
@@ -30,6 +43,8 @@ public:
 
 	//이동외의 행동을 하면 이 변수가 true가 된다. 다른 행동을 실시할 수 있는지 트리거 역할을 한다.
 	UPROPERTY(VisibleAnywhere)
+	EAttackState attackState = EAttackState::IDLE;
+	UPROPERTY(VisibleAnywhere)
 	bool bIsRightSlash = false;
 	UPROPERTY(VisibleAnywhere)
 	bool bIsLeftSlash = false;
@@ -38,6 +53,8 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 	bool bIsFireGun = false;
 	float gunFireTimer = 0.0f;
+
+	//1페이즈 무기교체 타이머. bIsChangeMode는 무기교체 애니메이션 재생을 염두에 두고 만들어 둠
 	bool bIsChangeMode = false;
 	bool bIsDualSword = true;
 	float dualSwordTimer = 0.0f;

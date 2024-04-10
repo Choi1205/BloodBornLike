@@ -217,6 +217,16 @@ void ALongRangeEnemy::GotParryAttackCPP(float damage)
 	GotDamage(damage);
 }
 
+bool ALongRangeEnemy::GetInStun()
+{
+	return false;
+}
+
+float ALongRangeEnemy::GetHealth()
+{
+	return health;
+}
+
 void ALongRangeEnemy::GotDamage(float damage)
 {
 	health -= damage;

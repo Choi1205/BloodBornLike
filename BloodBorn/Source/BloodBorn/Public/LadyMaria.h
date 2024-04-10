@@ -6,7 +6,12 @@
 #include "Interfaces/HitInterface.h"
 #include "LadyMaria.generated.h"
 
-class UAttributeComponent;
+UENUM(BlueprintType)
+enum class EPhaseState : uint8 {
+	PHASE1,
+	PHASE2,
+	PHASE3,
+};
 
 UCLASS()
 class BLOODBORN_API ALadyMaria : public ACharacter, public IHitInterface
@@ -39,16 +44,26 @@ public:
 	class UBoxComponent* leftDamageCollision;//공격범위
 
 	UPROPERTY(EditAnywhere)
-	class UNiagaraSystem* NiaSys;
-
-	UPROPERTY(EditAnywhere)
-	class UNiagaraComponent* bleeding;
-
-	UPROPERTY(EditAnywhere)
 	class USceneComponent* bulletFirePoint;
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class ABulletActor> bulletFactory;
+
+	UPROPERTY(EditAnywhere)
+	class UNiagaraSystem* hitEffect;
+
+	UPROPERTY(EditAnywhere)
+	class UNiagaraSystem* bloodThrustEffect;
+
+	UPROPERTY(EditAnywhere)
+	class UNiagaraComponent* instanceEffect;
+
+	UPROPERTY(EditAnywhere)
+	class UNiagaraComponent* rightEffect;
+	
+	UPROPERTY(EditAnywhere)
+	class UNiagaraComponent* leftEffect;
+
 
 	//////////////
 	// 변수구역 //
@@ -65,6 +80,10 @@ private:
 
 	float healthPoint = 2000.0f;
 
+	float phase2HP = 1400.0f;
+
+	float phase3HP = 700.0f;
+
 	float stamina = 1000.0f;
 
 	float staminaRegain = 50.0f;
@@ -78,7 +97,7 @@ private:
 	class ALadyMariaAIController* mariaAI = nullptr;
 
 	UPROPERTY(VisibleAnywhere)
-	UAttributeComponent* Attributes;
+	class UAttributeComponent* Attributes;
 
 public:	
 	virtual void Tick(float DeltaTime) override;
@@ -87,12 +106,8 @@ public:
 	// 변수구역 //
 	//////////////
 
-	//페이즈는 1~3(숫자는 현재 페이즈 - 1)
-	int32 phase = 0;
-	bool phase2Cheaker = false;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-	bool bIsActing = false;
+	//페이즈는 1~3
+	EPhaseState phaseState = EPhaseState::PHASE1;
 
 	UPROPERTY(BlueprintReadWrite)
 	bool bIsSuperArmor = false;
@@ -112,7 +127,7 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 	bool bIsMovingWhileAttack = false;
 
-		UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly)
 	class ABloodBornCharacter* playerREF = nullptr;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
@@ -139,7 +154,7 @@ public:
 	class UAnimMontage* AnimGunShot;
 
 	UPROPERTY(EditAnywhere)
-	class UAnimMontage* AnimEnemyAttack5;
+	class UAnimMontage* AnimQuickSlash;
 
 	UPROPERTY(EditAnywhere)
 	class UAnimMontage* AnimDodgeForward;
@@ -182,6 +197,10 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual void GotParryAttackCPP(float damage) override;
 
+	virtual bool GetInStun() override;
+
+	virtual float GetHealth() override;
+
 	UFUNCTION()
 	void OnDealDamageOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
@@ -207,6 +226,9 @@ public:
 	void ABP_SlowEnd();
 
 	UFUNCTION(BlueprintCallable)
+	void ABP_ThrustSlowEnd();
+
+	UFUNCTION(BlueprintCallable)
 	void ABP_AttackEnd();
 
 	UFUNCTION(BlueprintCallable)
@@ -214,4 +236,7 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void ABP_DodgeEnd();
+
+	UFUNCTION(BlueprintCallable)
+	void ABP_BossHitEnd();
 };

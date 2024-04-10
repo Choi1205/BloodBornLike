@@ -52,6 +52,17 @@ ALadyMaria::ALadyMaria()
 	GetCharacterMovement()->MaxWalkSpeed = 100.0f;
 	GetCharacterMovement()->MaxAcceleration = 200.0f;
 
+	rightEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("RightEffect"));
+	rightEffect->SetupAttachment(rightSword);
+	rightEffect->SetRelativeLocation(FVector(0, 0, 140));
+	rightEffect->SetRelativeRotation(FRotator(0, 90, 0));
+	rightEffect->bAutoActivate = false;
+
+	leftEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("LefttEffect"));
+	leftEffect->SetupAttachment(leftSword);
+	leftEffect->SetRelativeLocation(FVector(0, 0, 140));
+	leftEffect->SetRelativeRotation(FRotator(0, 90, 0));
+	leftEffect->bAutoActivate = false;
 }
 
 void ALadyMaria::BeginPlay()
@@ -79,26 +90,23 @@ void ALadyMaria::Tick(float DeltaTime)
 	distanceToPlayer = FVector::Distance(GetActorLocation(), playerREF->GetActorLocation());
 	//플레이어의 속도도 잰다
 	playerSpeed =  playerREF->GetVelocity().Length();
-
-	if (!phase2Cheaker && mariaAI->bIsChangeMode && phase == 0) {
+	
+	if (phaseState == EPhaseState::PHASE1 && mariaAI->bIsChangeMode) {
 		if (mariaAI->bIsDualSword) {
 			leftSword->SetVisibility(true);
 			gun->SetVisibility(false);
 			rightReverseSword->SetVisibility(false);
 		}
-		else{
+		else {
 			leftSword->SetVisibility(false);
 			gun->SetVisibility(true);
 			rightReverseSword->SetVisibility(true);
 		}
 		mariaAI->bIsChangeMode = false;
 	}
-	else if(!phase2Cheaker && phase > 0){
-		phase2Cheaker = true;
-	}
 
 	//공격중이 아니라면 보스는 항상 플레이어를 바라본다.
-	if (bIsActing == false) {
+	if (mariaAI->attackState == EAttackState::IDLE) {
 		FRotator toward = (playerREF->GetActorLocation() - GetActorLocation()).Rotation();
 		SetActorRotation(toward);
 
@@ -113,27 +121,20 @@ void ALadyMaria::Tick(float DeltaTime)
 		}
 
 	}
-	/*
-	if (mariaAI->bIsThrust) {
-		Thrust();
-	}
-	*/
 
-	if (mariaAI->bIsRightSlash) {
+	if (mariaAI->attackState == EAttackState::RIGHTSLASH) {
 		RightSlash();
 	}
-	if (mariaAI->bIsLeftSlash) {
+	if (mariaAI->attackState == EAttackState::LEFTSLASH) {
 		LeftSlash();
 	}
-	
+
 	if(bIsMovingWhileAttack){
 		SetActorLocation(GetActorLocation() + GetActorForwardVector() * DeltaTime * 400);
 	}
 	if(bIsAimmingWhileAttack){
 		SetActorRotation((playerREF->GetActorLocation() - GetActorLocation()).Rotation());
 	}
-	//UE_LOG(LogTemp, Warning, TEXT("%s"), bIsSuperArmor?*FString("True"):*FString("False"));
-	//UE_LOG(LogTemp, Warning, TEXT("%s"), mariaAI->bIsStun? *FString("True") : *FString("False"));
 }
 
 ABloodBornCharacter* ALadyMaria::FindPlayer_BP()
@@ -180,7 +181,7 @@ void ALadyMaria::WalkToPlayer()
 
 void ALadyMaria::ForwardDodge()
 {
-	bIsActing = true;
+	mariaAI->attackState = EAttackState::FORWARDDODGE;
 	AnimInstance->Montage_Play(AnimDodgeForward);
 }
 
@@ -235,7 +236,17 @@ void ALadyMaria::GotDamage(float damage)
 	//HP를 데미지 만큼 깍는다
 	healthPoint -= damage;
 
-	bleeding = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), NiaSys, GetActorLocation(), FRotator::ZeroRotator, FVector(3.0f));
+	if (healthPoint < phase2HP) {
+		phaseState = EPhaseState::PHASE2;
+		staminaRegain = 75.0f;
+	}
+	else if (healthPoint < phase3HP) {
+		phaseState = EPhaseState::PHASE3;
+		staminaRegain = 100.0f;
+	}
+	//피격 이펙트 생성
+	instanceEffect = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), hitEffect, GetActorLocation(), FRotator::ZeroRotator, FVector(3.0f));
+
 	if (mariaAI != nullptr) {
 		if (healthPoint <= 0) {
 			bIsCanDealDamage = false;
@@ -258,10 +269,8 @@ void ALadyMaria::GotDamage(float damage)
 				if (AnimInstance->Montage_IsPlaying(NULL)) {
 					AnimInstance->Montage_Stop(NULL);
 				}
-				bIsActing = true;
 				bIsMovingWhileAttack = false;
-				mariaAI->bIsRightSlash = false;
-				mariaAI->bIsLeftSlash = false;
+				mariaAI->attackState = EAttackState::TAKEHIT;
 				AnimInstance->Montage_Play(AnimBossHit);
 				AnimInstance->Montage_SetPlayRate(AnimBossHit, 1.0f);
 			}
@@ -272,7 +281,7 @@ void ALadyMaria::GotDamage(float damage)
 void ALadyMaria::GotParryAttackCPP(float damage)
 {
 	//사격공격 회피체크. 회피율 50%
-	if (!bIsActing && mariaAI->RandomNextMoveTF(50)) {
+	if (mariaAI->attackState == EAttackState::IDLE && mariaAI->RandomNextMoveTF(50)) {
 		//전방대시 ON상태였으면 끈다.
 		mariaAI->bIsForwardDodge = false;
 		//회피 방향 판정
@@ -301,6 +310,16 @@ void ALadyMaria::GotParryAttackCPP(float damage)
 		//패리판정 및 스턴판정이 들어감
 		UE_LOG(LogTemp, Warning, TEXT("Gun Attack Damage : %.0f"), damage);
 	}
+}
+
+bool ALadyMaria::GetInStun()
+{
+	return bIsStun;
+}
+
+float ALadyMaria::GetHealth()
+{
+	return healthPoint;
 }
 
 void ALadyMaria::OnDealDamageOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -332,7 +351,7 @@ void ALadyMaria::RightSlash()
 		AnimInstance->Montage_Play(AnimRightSlash);
 		//스테미나 소모
 		stamina -= 50.0f;
-		bIsActing = true;
+		mariaAI->attackState = EAttackState::IDLE;
 	}
 }
 
@@ -351,7 +370,7 @@ void ALadyMaria::LeftSlash()
 		AnimInstance->Montage_Play(AnimLeftSlash);
 		//스테미나 소모
 		stamina -= 50.0f;
-		bIsActing = true;
+		mariaAI->attackState = EAttackState::IDLE;
 	}
 }
 
@@ -369,14 +388,14 @@ void ALadyMaria::Thrust()
 	AnimInstance->Montage_Play(AnimDualThrust);
 	//스테미나 소모
 	stamina -= 100.0f;
-	bIsActing = true;
+
 }
 
 void ALadyMaria::AimGun()
 {
 	//장거리에서만 발동되므로, 행동중이 아니고, 재생중인 몽타주가 없는 경우(회피중이 아닌경우)
-	if (!bIsActing && !AnimInstance->IsAnyMontagePlaying()) {
-		bIsActing = true;
+	if (mariaAI->attackState == EAttackState::IDLE && !AnimInstance->IsAnyMontagePlaying()) {
+		mariaAI->attackState = EAttackState::AIMMINGGUN;
 		AnimInstance->Montage_Play(AnimGunShot);
 	}
 }
@@ -398,32 +417,73 @@ void ALadyMaria::FireGun()
 
 void ALadyMaria::ABP_AttackStart()
 {
-	if(mariaAI->bIsThrust){
+	if (phaseState != EPhaseState::PHASE1 && mariaAI->attackState == EAttackState::THRUST) {
+		AnimInstance->Montage_SetPlayRate(NULL, 0.3f);
+	}
+	else if(mariaAI->attackState == EAttackState::THRUST){
 		bIsSuperArmor = true;
-		UE_LOG(LogTemp, Warning, TEXT("True"));
 	}
 	else{
 		AnimInstance->Montage_SetPlayRate(NULL, 0.1f);
-		UE_LOG(LogTemp, Warning, TEXT("False"));
 	}
 	bIsAimmingWhileAttack = true;
 }
 
 void ALadyMaria::ABP_SlowEnd()
 {
-	if (mariaAI->bIsThrust) {
+	if (mariaAI->attackState == EAttackState::THRUST) {
 		AnimInstance->Montage_SetPlayRate(AnimDualThrust, 2.0f);
 	}
 	else{
+		if (phaseState == EPhaseState::PHASE2) {
+			//피격 이펙트 생성
+			if (mariaAI->attackState == EAttackState::RIGHTSLASH) {
+				rightEffect->Activate(true);
+			}
+			else if (mariaAI->attackState == EAttackState::LEFTSLASH) {
+				leftEffect->Activate(true);
+			}
+		}
 		AnimInstance->Montage_SetPlayRate(NULL, 1.0f);
 	}
 	bIsCanDealDamage = true;
 	bIsAimmingWhileAttack = false;
 }
 
+void ALadyMaria::ABP_ThrustSlowEnd()
+{
+	if (phaseState == EPhaseState::PHASE1) {
+		AnimInstance->Montage_SetPlayRate(AnimDualThrust, 1.0f);
+		bIsCanDealDamage = false;
+	}
+	else{
+		TArray<FHitResult> hitInfos;
+		FVector startLoc = GetActorLocation();
+		FVector endLoc = startLoc + GetActorForwardVector() * 1000.0f;
+		FCollisionQueryParams queryParams;
+		queryParams.AddIgnoredActor(this);
+		bool bResult = GetWorld()->SweepMultiByProfile(hitInfos, startLoc, endLoc, FQuat::Identity, FName(TEXT("Pawn")), FCollisionShape::MakeSphere(17.0f), queryParams);
+		if (bResult) {
+			for (auto& hit : hitInfos) {
+				UE_LOG(LogTemp, Warning, TEXT("%s"), *hit.GetActor()->GetActorNameOrLabel());
+				ABloodBornCharacter* player = Cast<ABloodBornCharacter>(hit.GetActor());
+				if (player != nullptr) {
+					UGameplayStatics::ApplyDamage(player, 100.0f, GetInstigator()->GetController(), this, UDamageType::StaticClass());
+					break;
+				}
+			}
+		}
+		for (int32 i = 1; i <= 20; i++) {
+			//50부터 1000까지
+			FVector effectLoc = startLoc + GetActorForwardVector() * 50.0f * i;
+			FRotator effectRot = GetActorForwardVector().Rotation();
+			instanceEffect = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), bloodThrustEffect, effectLoc, effectRot, FVector(3.0f));
+		}
+	}
+}
+
 void ALadyMaria::ABP_AttackEnd()
 {
-	bIsActing = false;
 	if (mariaAI->RandomNextMoveTF(50)) {
 		mariaAI->bIsLeftMove = true;
 	}
@@ -440,10 +500,7 @@ void ALadyMaria::ABP_AttackEnd()
 		UE_LOG(LogTemp, Warning, TEXT("ForwardDodge is False"));
 	}
 
-	mariaAI->bIsRightSlash = false;
-	mariaAI->bIsLeftSlash = false;
-	mariaAI->bIsFireGun = false;
-	mariaAI->bIsThrust = false;
+	mariaAI->attackState = EAttackState::IDLE;
 	bIsSuperArmor = false;
 }
 
@@ -460,7 +517,7 @@ void ALadyMaria::ABP_DodgeEnd()
 		FVector playerToMaria = (GetActorLocation() - playerREF->GetActorLocation()).GetSafeNormal() * 100.0f;
 		SetActorLocation(playerREF->GetActorLocation() + playerToMaria);
 		GetMesh()->SetVisibility(true, true);
-		bIsActing = false;
+		mariaAI->attackState = EAttackState::IDLE;
 		mariaAI->bIsForwardDodge = false;
 	}
 	else{
@@ -473,8 +530,13 @@ void ALadyMaria::ABP_DodgeEnd()
 		SetActorLocation(nextLoc);
 		GetMesh()->SetVisibility(true, true);
 		AnimInstance->Montage_SetPlayRate(NULL, 0.25f);
-		bIsActing = false;
+		mariaAI->attackState = EAttackState::IDLE;
 	}
 	smokeActor2->SetActorLocation(GetActorLocation());
 	smokeActor2->PlayFX();
+}
+
+void ALadyMaria::ABP_BossHitEnd()
+{
+	mariaAI->attackState = EAttackState::IDLE;
 }

@@ -90,3 +90,12 @@ void AEnemy76::GotParryAttackCPP(float damage)
 {
 }
 
+bool AEnemy76::GetInStun()
+{
+	return false;
+}
+
+float AEnemy76::GetHealth()
+{
+	return 0.0f;
+}

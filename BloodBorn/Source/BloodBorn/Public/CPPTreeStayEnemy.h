@@ -85,6 +85,10 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual void GotParryAttackCPP(float damage) override;
 
+	virtual bool GetInStun() override;
+
+	virtual float GetHealth() override;
+
 private:
 	void AfterAttackMoving(float DeltaTime);
 

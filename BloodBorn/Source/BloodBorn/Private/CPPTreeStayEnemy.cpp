@@ -149,6 +149,16 @@ void ACPPTreeStayEnemy::GotParryAttackCPP(float damage)
 	UE_LOG(LogTemp, Warning, TEXT("Gun Attack Damage : %.0f"), damage);
 }
 
+bool ACPPTreeStayEnemy::GetInStun()
+{
+	return BTStayAIController->GetBlackboardComponent()->GetValueAsBool(FName("InStun"));
+}
+
+float ACPPTreeStayEnemy::GetHealth()
+{
+	return healthPoint;
+}
+
 void ACPPTreeStayEnemy::AfterAttackMoving(float DeltaTime)
 {
 	if (healthPoint > 0) {
