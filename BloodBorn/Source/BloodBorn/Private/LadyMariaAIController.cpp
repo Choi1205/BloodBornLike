@@ -42,15 +42,17 @@ void ALadyMariaAIController::Tick(float DeltaTime)
 		}
 
 		if (EnemyREF->GetPlayerDistance() >= 250.0f && EnemyREF->GetPlayerDistance() < 500.0f && bIsForwardDodge && stamina > 700.0f) {
-			EnemyREF->ForwardDodge();
+			if (!EnemyREF->AnimInstance->IsAnyMontagePlaying()) {
+				EnemyREF->ForwardDodge();
+			}
 		}
 		//플레이어와 거리가 멀거나, 스테미너가 소모된 상황일경우
 		if (EnemyREF->GetPlayerDistance() >= 250.0f || stamina < 1000.0f) {
 			EnemyREF->WalkToPlayer();
 		}
 
-		//1페이즈, 거리 200이하, 공격가능 스테미나, 아무 행동도 하지 않는상태, 플레이어의 속도가 100미만인 경우
-		if (EnemyREF->phaseState == EPhaseState::PHASE1 && EnemyREF->GetPlayerDistance() < 200.0f && stamina > 700.0f && attackState == EAttackState::IDLE && EnemyREF->GetPlayerSpeed() < 100.0f) {
+		//1페이즈, 거리 200이하, 공격가능 스테미나, 플레이어의 속도가 100미만인 경우
+		if (EnemyREF->phaseState == EPhaseState::PHASE1 && EnemyREF->GetPlayerDistance() < 200.0f && stamina > 700.0f && EnemyREF->GetPlayerSpeed() < 100.0f) {
 			//패링 카운터로 찌르기가 나간다.
 			attackState = EAttackState::THRUST;
 			EnemyREF->Thrust();

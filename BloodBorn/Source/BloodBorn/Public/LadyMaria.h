@@ -94,6 +94,10 @@ private:
 
 	float playerSpeed = 10000.0f;
 
+	float weakAttack = 50.0f;
+
+	float strongAttack = 100.0f;
+
 	class ALadyMariaAIController* mariaAI = nullptr;
 
 	UPROPERTY(VisibleAnywhere)
