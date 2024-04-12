@@ -21,47 +21,73 @@ ALadyMaria::ALadyMaria()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
-	rightSword = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("RightSword"));
-	rightSword->SetupAttachment(GetMesh(), TEXT("RightHandSocket"));
-	rightSword->SetCollisionProfileName(TEXT("NoCollision"));
+	hair = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("hair"));
+	hair->SetupAttachment(GetMesh(), TEXT("HairSocket"));
+	hair->SetCollisionProfileName(TEXT("NoCollision"));
+	hair->SetVisibility(true);
 
-	rightReverseSword = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("rightReverseSword"));
-	rightReverseSword->SetupAttachment(GetMesh(), TEXT("RightHandSocket"));
-	rightReverseSword->SetCollisionProfileName(TEXT("NoCollision"));
-	rightReverseSword->SetVisibility(false);
+	rightSword1 = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("RightSword1"));
+	rightSword1->SetupAttachment(GetMesh(), TEXT("RightHandSocket"));
+	rightSword1->SetCollisionProfileName(TEXT("NoCollision"));
+	rightSword1->SetVisibility(true);
 
-	leftSword = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("LeftSword"));
-	leftSword->SetupAttachment(GetMesh(), TEXT("LeftHandSocket"));
-	leftSword->SetCollisionProfileName(TEXT("NoCollision"));
+	rightTwoSword = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("RightTwoSword"));
+	rightTwoSword->SetupAttachment(GetMesh(), TEXT("RightHandSocket"));
+	rightTwoSword->SetCollisionProfileName(TEXT("NoCollision"));
+	rightTwoSword->SetVisibility(false);
+
+	rightSword2 = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("RightSword2"));
+	rightSword2->SetupAttachment(GetMesh(), TEXT("RightHandSocket"));
+	rightSword2->SetCollisionProfileName(TEXT("NoCollision"));
+	rightSword2->SetVisibility(false);
+
+	rightSword3 = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("RightSword3"));
+	rightSword3->SetupAttachment(GetMesh(), TEXT("RightHandSocket"));
+	rightSword3->SetCollisionProfileName(TEXT("NoCollision"));
+	rightSword3->SetVisibility(false);
+
+	rightDamageCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("RightDamageBox"));
+	rightDamageCollision->SetupAttachment(GetMesh(), TEXT("RightHandSocket"));
+	rightDamageCollision->SetRelativeLocation(FVector(0.0f, 47.0f, 1.5f));
+	rightDamageCollision->SetBoxExtent(FVector(1.0f, 36.0f, 3.0f));
+
+	leftSword1 = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("LeftSword1"));
+	leftSword1->SetupAttachment(GetMesh(), TEXT("LeftHandSocket"));
+	leftSword1->SetCollisionProfileName(TEXT("NoCollision"));
+	leftSword1->SetVisibility(true);
+
+	leftSword2 = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("LeftSword2"));
+	leftSword2->SetupAttachment(GetMesh(), TEXT("LeftHandSocket"));
+	leftSword2->SetCollisionProfileName(TEXT("NoCollision"));
+	leftSword2->SetVisibility(false);
+
+	leftDamageCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("LeftDamageBox"));
+	leftDamageCollision->SetupAttachment(GetMesh(), TEXT("LeftHandSocket"));
+	leftDamageCollision->SetRelativeLocation(FVector(0.0f, 28.0f, 0.0f));
+	leftDamageCollision->SetBoxExtent(FVector(1.0f, 21.0f, 2.0f));
 
 	gun = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Gun"));
 	gun->SetupAttachment(GetMesh(), TEXT("LeftHandSocket"));
 	gun->SetCollisionProfileName(TEXT("NoCollision"));
 	gun->SetVisibility(false);
 
-	rightDamageCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("RightDamageBox"));
-	rightDamageCollision->SetupAttachment(GetMesh(), TEXT("RightHandSocket"));
-
-	leftDamageCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("LeftDamageBox"));
-	leftDamageCollision->SetupAttachment(GetMesh(), TEXT("LeftHandSocket"));
-
 	bulletFirePoint = CreateDefaultSubobject<USceneComponent>(TEXT("BulletFirePoint"));
 	bulletFirePoint->SetupAttachment(gun);
-	bulletFirePoint->SetRelativeLocation(FVector(38.0f, 0.0f, 7.0f));
+	bulletFirePoint->SetRelativeLocation(FVector(0.0f, -1.25f, -40.0f));
 
 	GetCharacterMovement()->MaxWalkSpeed = 100.0f;
 	GetCharacterMovement()->MaxAcceleration = 200.0f;
 
 	rightEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("RightEffect"));
-	rightEffect->SetupAttachment(rightSword);
-	rightEffect->SetRelativeLocation(FVector(0, 0, 140));
-	rightEffect->SetRelativeRotation(FRotator(0, 90, 0));
+	rightEffect->SetupAttachment(rightSword1);
+	rightEffect->SetRelativeLocation(FVector(0.0f, 90.0f, 0.0f));
+	rightEffect->SetRelativeRotation(FRotator(-90.0f, 0.0f, 90.0f));
 	rightEffect->bAutoActivate = false;
 
 	leftEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("LefttEffect"));
-	leftEffect->SetupAttachment(leftSword);
-	leftEffect->SetRelativeLocation(FVector(0, 0, 140));
-	leftEffect->SetRelativeRotation(FRotator(0, 90, 0));
+	leftEffect->SetupAttachment(leftSword1);
+	leftEffect->SetRelativeLocation(FVector(0.0f, 110.0f, 0.0f));
+	leftEffect->SetRelativeRotation(FRotator(-90.0f, 90.0f, 0.0f));
 	leftEffect->bAutoActivate = false;
 }
 
@@ -93,14 +119,14 @@ void ALadyMaria::Tick(float DeltaTime)
 	
 		if (phaseState == EPhaseState::PHASE1 && mariaAI->bIsChangeMode) {
 			if (mariaAI->bIsDualSword) {
-				leftSword->SetVisibility(true);
+				leftSword1->SetVisibility(true);
 				gun->SetVisibility(false);
-				rightReverseSword->SetVisibility(false);
+				rightTwoSword->SetVisibility(false);
 			}
 			else {
-				leftSword->SetVisibility(false);
+				leftSword1->SetVisibility(false);
 				gun->SetVisibility(true);
-				rightReverseSword->SetVisibility(true);
+				rightTwoSword->SetVisibility(true);
 			}
 			mariaAI->bIsChangeMode = false;
 		}
@@ -242,18 +268,25 @@ void ALadyMaria::GotDamage(float damage)
 		staminaRegain = 75.0f;
 		weakAttack = 100;
 		strongAttack = 150;
-		FVector damageColl = rightDamageCollision->GetUnscaledBoxExtent();
-		damageColl.Z = damageColl.Z * 4;
-		rightDamageCollision->SetBoxExtent(damageColl);
-		damageColl = leftDamageCollision->GetUnscaledBoxExtent();
-		damageColl.Z = damageColl.Z * 4;
-		leftDamageCollision->SetBoxExtent(damageColl);
+		rightSword1->SetVisibility(false);
+		rightTwoSword->SetVisibility(false);
+		rightSword2->SetVisibility(true);
+		rightDamageCollision->SetBoxExtent(FVector(2.0f, 36.0f, 3.0f));
+		leftSword1->SetVisibility(false);
+		gun->SetVisibility(false);
+		leftSword2->SetVisibility(true);
+		leftDamageCollision->SetRelativeLocation(FVector(0.0f, 54.0f, -1.0f));
+		leftDamageCollision->SetBoxExtent(FVector(2.0f, 46.0f, 3.0f));
 	}
 	else if (phaseState == EPhaseState::PHASE2 && healthPoint < phase3HP) {
 		phaseState = EPhaseState::PHASE3;
 		staminaRegain = 100.0f;
 		weakAttack = 150;
 		strongAttack = 200;
+		rightSword2->SetVisibility(false);
+		rightSword3->SetVisibility(true);
+		rightDamageCollision->SetRelativeLocation(FVector(0.0f, 68.0f, 0.0f));
+		rightDamageCollision->SetBoxExtent(FVector(2.0f, 60.0f, 4.5f));
 	}
 	//피격 이펙트 생성
 	instanceEffect = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), hitEffect, GetActorLocation(), FRotator::ZeroRotator, FVector(3.0f));

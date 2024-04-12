@@ -26,13 +26,25 @@ public:
 	///////////////////
 
 	UPROPERTY(EditAnywhere)
-	class UStaticMeshComponent* rightSword;
+	class UStaticMeshComponent* hair;
 
 	UPROPERTY(EditAnywhere)
-	class UStaticMeshComponent* rightReverseSword;
+	class UStaticMeshComponent* rightSword1;
 
 	UPROPERTY(EditAnywhere)
-	class UStaticMeshComponent* leftSword;
+	class UStaticMeshComponent* rightTwoSword;
+
+	UPROPERTY(EditAnywhere)
+	class UStaticMeshComponent* rightSword2;
+
+	UPROPERTY(EditAnywhere)
+	class UStaticMeshComponent* rightSword3;
+
+	UPROPERTY(EditAnywhere)
+	class UStaticMeshComponent* leftSword1;
+
+	UPROPERTY(EditAnywhere)
+	class UStaticMeshComponent* leftSword2;
 
 	UPROPERTY(EditAnywhere)
 	class UStaticMeshComponent* gun;
