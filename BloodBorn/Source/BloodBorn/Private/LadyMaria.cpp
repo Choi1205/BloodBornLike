@@ -260,6 +260,7 @@ void ALadyMaria::GotDamage(float damage)
 
 	if (mariaAI != nullptr) {
 		if (healthPoint <= 0) {
+			healthPoint = 0;
 			bIsCanDealDamage = false;
 
 			if (AnimInstance->Montage_IsPlaying(NULL)) {

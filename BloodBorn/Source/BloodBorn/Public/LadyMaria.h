@@ -203,6 +203,7 @@ public:
 
 	virtual bool GetInStun() override;
 
+	UFUNCTION(BlueprintCallable)
 	virtual float GetHealth() override;
 
 	UFUNCTION()
