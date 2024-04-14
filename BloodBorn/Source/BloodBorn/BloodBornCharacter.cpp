@@ -70,7 +70,7 @@ ABloodBornCharacter::ABloodBornCharacter()
 	Attributes = CreateDefaultSubobject<UAttributeComponent>(TEXT("Attributes"));
 
 	LastHitTime = -5.f;
-	RallyWindowDuration = 5.0f;
+	RallyWindowDuration = 20.0f;
 	// LastDamageReceived = 0.0f;
 
 }
@@ -161,7 +161,7 @@ void ABloodBornCharacter::Tick(float DeltaTime)
 
 	if(Attributes->RegainableHealth > 0)
 	{
-		if(GetWorld()->GetTimeSeconds() - LastHitTime > 4.0f){
+		if(GetWorld()->GetTimeSeconds() - LastHitTime > 10.0f){
 			Attributes->ResetRegainableHealth();
 			if (PlayerOverlay && Attributes)
 			{
@@ -706,6 +706,7 @@ void ABloodBornCharacter::GunFire()
 		//록온된 적의 인터페이스에 접근
 		IHitInterface* HitInterface = Cast<IHitInterface>(LockOnEnemyREF);
 		HitInterface->GotParryAttackCPP(gunDamage);
+		PlayFireMontage();
 	}
 }
 
