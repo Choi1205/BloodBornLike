@@ -184,6 +184,8 @@ void ACPPTreeEnemy::GotDamage(float damage)
 {
 	healthPoint -= damage;
 
+	CanDealDamage = false;
+
 	//출혈 이펙트 재생부. 블루프린트의 NiaSys에 미리 파티클을 등록해야한다.
 	bleeding = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), NiaSys, GetActorLocation(), FRotator::ZeroRotator);
 

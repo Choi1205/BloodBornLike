@@ -76,10 +76,8 @@ public:
 	UPROPERTY(EditAnywhere)
 	class UNiagaraComponent* rightEffect_H;
 
-
-	//////////////
-	// 변수구역 //
-	//////////////
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class ABGMActor> bgmActor;
 
 protected:
 	virtual void BeginPlay() override;
@@ -116,6 +114,8 @@ private:
 
 	UPROPERTY(VisibleAnywhere)
 	class UAttributeComponent* Attributes;
+
+	class ABGMActor* bgmInstance;
 
 public:	
 	virtual void Tick(float DeltaTime) override;
