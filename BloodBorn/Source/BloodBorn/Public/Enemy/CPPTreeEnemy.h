@@ -54,7 +54,7 @@ public:
 	class UAnimMontage* EnemyHitAnimation;
 
 	UPROPERTY(EditAnywhere)
-	float healthPoint = 1000.0f;
+	float healthPoint = 60.0f;
 
 	float stunTimer = 0.0f;
 

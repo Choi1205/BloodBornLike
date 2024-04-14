@@ -66,5 +66,6 @@ void ABulletActor::CallHit(UPrimitiveComponent* OverlappedComp, AActor* OtherAct
 	if (PlayerREF) {
 		UGameplayStatics::ApplyDamage(PlayerREF, damage, nullptr, this, UDamageType::StaticClass());
 	}
+
 	Destroy();
 }

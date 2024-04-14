@@ -16,6 +16,7 @@
 #include "Enemy/SmokeFXActor.h"
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
+#include "Enemy/BGMActor.h"
 
 ALadyMaria::ALadyMaria()
 {
@@ -107,6 +108,12 @@ void ALadyMaria::BeginPlay()
 	smokeActor2 = GetWorld()->SpawnActor<ASmokeFXActor>(smokeVFX, FVector::ZeroVector, FRotator::ZeroRotator, params);
 
 	playerREF = FindPlayer_BP();
+
+	bgmInstance = GetWorld()->SpawnActor<ABGMActor>(bgmActor, FVector::ZeroVector, FRotator::ZeroRotator, params);
+	/*
+
+	//탄환을 발사한다
+	ABulletActor* bullet = GetWorld()->SpawnActor<ABulletActor>(bulletFactory, bulletFirePoint->GetComponentLocation(), (playerREF->GetActorLocation() - bulletFirePoint->GetComponentLocation()).Rotation(), params);*/
 }
 
 void ALadyMaria::Tick(float DeltaTime)
@@ -336,6 +343,7 @@ void ALadyMaria::GotDamage(float damage)
 			GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 			mariaAI->UnPossess();
 			mariaAI = nullptr;
+			bgmInstance->slowKillThis();
 		}
 		else {
 			if (mariaAI->bIsStun && damage >= 500.0f && !bIsHitHoldAttack) {
