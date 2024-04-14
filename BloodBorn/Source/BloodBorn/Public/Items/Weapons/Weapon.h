@@ -4,7 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "Items/Item.h"
+#include "BloodBorn/CharacterTypes.h"
 #include "Weapon.generated.h"
+
+DECLARE_EVENT_TwoParams(AWeapon, FSuccessfulAttackEvent, float, EAttackType);
 
 class UBoxComponent;
 
@@ -21,6 +24,12 @@ public:
 	void Equip(USceneComponent* InParent, FName InSocketName, AActor* NewOwner, APawn* NewInstigator);
 
 	TArray<AActor*> IgnoreActors;
+
+	FSuccessfulAttackEvent OnSuccessfulAttackEvent;
+
+	class ABloodBornCharacter* player; 
+
+	class AItem* item;
 
 protected:
 	virtual void BeginPlay() override;
@@ -46,4 +55,9 @@ private:
 
 public:
 	FORCEINLINE UBoxComponent* GetSawBox() const { return SawBox; }
+
+	//float ApplyDamage(AActor* DamagedActor);  // 데미지 적용하고 데미지 반환
+	//void ApplyDamage(AActor* DamagedActor, float DamageAmount, EAttackType AttackType);
+	float ApplyDamage(AActor* DamagedActor, float DamageAmount, EAttackType AttackType);
+
 };

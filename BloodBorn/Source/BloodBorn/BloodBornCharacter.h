@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
 #include "CharacterTypes.h"
+#include "Interfaces/PickupInterface.h"
 #include "BloodBornCharacter.generated.h"
 
 class USpringArmComponent;
@@ -16,13 +17,16 @@ struct FInputActionValue;
 class UAnimMontage;
 class AItem;
 class AWeapon;
+class AGun;
+class ABloodVial;
 class UAttributeComponent;
+class UPlayerOverlay;
 
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
 UCLASS(config=Game)
-class ABloodBornCharacter : public ACharacter
+class ABloodBornCharacter : public ACharacter, public IPickupInterface
 {
 	GENERATED_BODY()
 
@@ -63,11 +67,29 @@ class ABloodBornCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* LockOnAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* GunFireAction;
+
 public:
 	ABloodBornCharacter();
 
+	
+
 	UFUNCTION(BlueprintCallable)
 	void SetWeaponCollisionEnabled(ECollisionEnabled::Type CollisionEnabled);
+
+	UFUNCTION(BlueprintCallable)
+	void HoldAttackStart(AActor* DamagedActor, float DamageAmount, EAttackType AttackType);
+
+
+	UFUNCTION(BlueprintCallable)
+	void HoldAttackEnd(AActor* DamagedActor, float DamageAmount, EAttackType AttackType);
+
+	UFUNCTION(BlueprintCallable)
+	void WeaponVisible();
+
+	UFUNCTION(BlueprintCallable)
+	void WeaponInvisible();
 
 	// UPROPERTY(VisibleAnywhere, Category=SawMesh)
 	// class USkeletalMeshComponent* sawMeshComp;
@@ -75,6 +97,11 @@ public:
 	int32 Selection = 0;
 
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
+	virtual void SetOverlappingItem(AItem* Item) override;
+	virtual void AddBloodVials(ABloodVial* BloodVial) override;
+
+	void OnSuccessfulAttack(float Damage, EAttackType AttackType);  // 적에게 입히는 데미지
+
 
 protected:
 
@@ -91,14 +118,25 @@ protected:
 
 	void StrongAttack();
 
-	void Equip();
+
+	void FKeyPressed();
 
 	void Dodge();
 
+	bool HasEnoughStamina(float staCost);
+
 	void Die();
 
+	//void Step();
 	//void step();
 	void LockOn();
+
+	void GunFire();
+	
+
+	void HandleDamage(float DamageAmount);  // ,, virtual?
+
+	// void CalculateMaxRegainableHealth(float Damage);
 
 
 	/**
@@ -107,6 +145,8 @@ protected:
 	void PlayNormalAttackMontage();
 
 	void PlayStrongAttackMontage();
+
+	void PlayHoldAttackMontage();
 
 	// animmontage 안 쓸거면 지울 부분 중 하나~
 	void PlayDodgeMontage();
@@ -119,11 +159,20 @@ protected:
 
 	void PlayDeathMontage();
 
+	void PlayStepMontage();
+
+	void PlayFireMontage();
+
+
 	UFUNCTION(BlueprintCallable)
 	void AttackEnd();
 
 	UFUNCTION(BlueprintCallable)
 	void HitReactEnd();
+	
+	/*UFUNCTION(BlueprintCallable)
+	void HoldAttackStart();*/
+
 
 protected:
 	// APawn interface
@@ -132,10 +181,14 @@ protected:
 	// To add mapping context
 	virtual void BeginPlay();
 
-	//UPROPERTY(EditDefaultsOnly, Category = "Character Movement")
-	//float AttackMaxWalkSpeed = 100.0f;
+	virtual void Tick(float DeltaTime) override;
+	
+	// float GetLastDamageReceived() const { return LastDamageReceived; }
 
-	//float OriginWalkSpeed;
+	float LastHitTime;
+	float RallyWindowDuration;
+	// float LastDamageReceived;
+
 
 public:
 	/** Returns CameraBoom subobject **/
@@ -143,7 +196,7 @@ public:
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
-	FORCEINLINE void SetOverlappingItem(AItem* Item) { OverlappingItem = Item; }  // Setter Inline Func
+	// FORCEINLINE void SetOverlappingItem(AItem* Item) { OverlappingItem = Item; }  // Setter Inline Func
 
 	FORCEINLINE ECharacterState GetCharacterState() const { return CharacterState; }
 
@@ -153,20 +206,30 @@ public:
 	bool bIsInvincible = false;
 
 	UPROPERTY(BlueprintReadWrite)
-	bool IsLockOn = false;
+	bool bIsLockOn = false;
 
-	UPROPERTY(EditAnywhere)
-	float health = 100.0f;
+
+	bool IsInRallyWindow() const;
+
+	//UPROPERTY(EditAnywhere)
+	//float health = 100.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float mouseInputUpDown = 0;
 
+	int32 attackType = 0;
+
+	float staCooldown = 0.0f;
+
+	// float ApplyDamage(AActor* DamagedActor, float DamageAmount, EAttackType AttackType);
+
 private:
-	
+	void SetHUDHealth();
 
 	void PlayMontageSection(UAnimMontage* Montage, const FName& sectionName);
 	//void HandleDamage(float DamageAmount);
 
+	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	ECharacterState CharacterState = ECharacterState::ECS_Unequipped;
 
 	UPROPERTY(VisibleAnywhere)
@@ -176,11 +239,24 @@ private:
 	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	EActionState ActionState = EActionState::EAS_Unoccupied;
 
+	UPROPERTY()
+	UPlayerOverlay* PlayerOverlay;
+
 	UPROPERTY(VisibleInstanceOnly)
 	AItem* OverlappingItem;
 
 	UPROPERTY(VisibleAnywhere, Category = Weapon)
-	AWeapon* EquippedWeapon;
+	AWeapon* EquippedWeaponSaw;
+
+	UPROPERTY(VisibleAnywhere, Category = Weapon)
+	AGun* EquippedGun;
+
+	
+	UPROPERTY(VisibleAnywhere, Category = Weapon)
+	ABloodVial* EquippedBV;
+
+	//UPROPERTY(EditAnywhere, Category = Weapon)
+	//TSubclassOf<ULegacyCameraShake> CameraShake;
 
 	/**
 	* Animation Montages
@@ -192,6 +268,9 @@ private:
 	UAnimMontage* StrongAttackMontage;	
 	
 	UPROPERTY(EditDefaultsOnly, Category = Combat)
+	UAnimMontage* HoldAttackMontage;
+
+	UPROPERTY(EditDefaultsOnly, Category = Combat)
 	UAnimMontage* DodgeMontage;
 
 	UPROPERTY(EditDefaultsOnly, Category = Combat)
@@ -200,7 +279,33 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = Combat)
 	UAnimMontage* DeathMontage;
 
-	//UPROPERTY(EditDefaultsOnly, Category = Combat)
-	//UAnimMontage* StepMontage;
+	UPROPERTY(EditDefaultsOnly, Category = Combat)
+	UAnimMontage* StepMontage;
+
+	UPROPERTY(EditDefaultsOnly, Category = Combat)
+	UAnimMontage* FireMontage;
+
+
+
+	//float LastAttackTime;
+	//float LastDamageDealt;  // 마지막으로 가한 데미지
+	// currentHealth 는 Attribute에서 받을 거 
+
+	/////////////////
+	//환록 추가부분//
+	/////////////////
+
+	//락온 시작
+	class AActor* EngageLockOn();
+	//락온 해제
+	void DisEngageLockOn();
+
+	//락온된 액터
+	class AActor* LockOnEnemyREF = nullptr;
+	//락온시작시 락온 범위 찾기용 & 락온된 적과의 거리
+	float lockOnEnemyDistance = 800.0f;
+
+	//사격공격 데미지
+	float gunDamage = 5.0f;
 };
 

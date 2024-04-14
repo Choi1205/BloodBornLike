@@ -38,6 +38,7 @@ void AWeapon::Equip(USceneComponent* InParent, FName InSocketName, AActor* NewOw
 	SetInstigator(NewInstigator);
 	FAttachmentTransformRules TransformRules(EAttachmentRule::SnapToTarget, true);
 	ItemMesh->AttachToComponent(InParent, TransformRules, InSocketName);
+	player = Cast<ABloodBornCharacter>(NewOwner);
 }
 
 void AWeapon::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -70,23 +71,159 @@ void AWeapon::OnBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* Oth
 			EDrawDebugTrace::ForDuration, BoxHit, true
 	);
 	
+	//if (BoxHit.GetActor())
+	//{
+
+	//	IHitInterface* HitInterface = Cast<IHitInterface>(BoxHit.GetActor());  // enemy가 지금 IHitInterface 객체니 캐스트 가능
+	//	
+	//	if (HitInterface)
+	//	{
+	//		HitInterface->GetHit(BoxHit.ImpactPoint);
+	//	}
+	//	IgnoreActors.AddUnique(BoxHit.GetActor());
+
+	//	UGameplayStatics::ApplyDamage(
+	//			BoxHit.GetActor(),
+	//			Damage,
+	//			GetInstigator()->GetController(),
+	//			this,
+	//			UDamageType::StaticClass()
+	//	);
+	//}
 	if (BoxHit.GetActor())
 	{
 
-		IHitInterface* HitInterface = Cast<IHitInterface>(BoxHit.GetActor());  // enemy가 지금 IHitInterface 객체니 캐스트 가능
-		
-		if (HitInterface)
+		/*
+		if (player->attackType == 0)
 		{
-			HitInterface->GetHit(BoxHit.ImpactPoint);
+			ApplyDamage(BoxHit.GetActor(), Damage, EAttackType::Normal);
 		}
-		IgnoreActors.AddUnique(BoxHit.GetActor());
+		else if (player->attackType == 1)
+		{
+			ApplyDamage(BoxHit.GetActor(), HeavyDamage, EAttackType::Normal);
+		}
+		*/
+		float DamagedApplied = ApplyDamage(BoxHit.GetActor(), Damage, EAttackType::Normal);
+		if (DamagedApplied > 0.f)
+		{
+			IHitInterface* HitInterface = Cast<IHitInterface>(BoxHit.GetActor());
+			if (HitInterface)
+			{
+				HitInterface->GetHit(BoxHit.ImpactPoint);
+				UE_LOG(LogTemp, Warning, TEXT("Normal Attack"));
 
-		UGameplayStatics::ApplyDamage(
-				BoxHit.GetActor(),
-				Damage,
-				GetInstigator()->GetController(),
-				this,
-				UDamageType::StaticClass()
-		);
+			}
+
+			// 데미지 적용된 경우에만 호출
+			// OnSuccessfulAttack(DamagedApplied);
+			// OnSuccessfulAttackEvent.Broadcast(DamagedApplied);
+		}
+	}
+	else if (BoxHit.GetActor())
+	{
+		float DamagedApplied = ApplyDamage(BoxHit.GetActor(), Damage, EAttackType::Heavy);
+		if (DamagedApplied > 0.f)
+		{
+			IHitInterface* HitInterface = Cast<IHitInterface>(BoxHit.GetActor());
+			if (HitInterface)
+			{
+				HitInterface->GetHit(BoxHit.ImpactPoint);
+			}
+
+			// 데미지 적용된 경우에만 호출
+			// OnSuccessfulAttack(DamagedApplied);
+			// OnSuccessfulAttackEvent.Broadcast(DamagedApplied);
+		}
 	}
 }
+
+
+
+//float AWeapon::ApplyDamage(AActor* DamagedActor)
+//{
+//	if (!DamagedActor) return 0.f;
+//	
+//	float ActualDamage = UGameplayStatics::ApplyDamage(
+//																			DamagedActor,
+//																			Damage,
+//																			GetInstigator()->GetController(),
+//																			this,
+//																			UDamageType::StaticClass()
+//																		);
+//	return ActualDamage;
+//}
+float AWeapon::ApplyDamage(AActor* DamagedActor, float DamageAmount, EAttackType AttackType)
+{
+	if (!DamagedActor) return 0.f;
+	UE_LOG(LogTemp, Warning, TEXT("DamageAmount : %f"), DamageAmount);
+	if (player != nullptr)
+	{
+		if (player->attackType == 0)
+		{
+			player->OnSuccessfulAttack(DamageAmount, EAttackType::Normal);
+		}
+		else if (player->attackType == 1)
+		{
+			player->OnSuccessfulAttack(DamageAmount, EAttackType::Heavy);
+		}
+		else {
+			//내장뽑기 회복
+			//ItemMesh->SetVisibility(false);
+			player->OnSuccessfulAttack(DamageAmount, EAttackType::HoldAttack);
+		}
+	}
+	float ActualDamage = UGameplayStatics::ApplyDamage(
+		DamagedActor,
+		DamageAmount,
+		GetInstigator()->GetController(),
+		this,
+		UDamageType::StaticClass()
+	);
+	 return ActualDamage;
+
+
+	OnSuccessfulAttackEvent.Broadcast(DamageAmount, AttackType);
+
+	//if (!DamagedActor || !DamagedActor->GetClass()->ImplementsInterface(UHitInterface::StaticClass()))
+	//{
+	//	// DamagedActor가 유효한 대상이 아니거나 HitInterface를 구현하지 않은 경우 피해를 안 입힘
+	//	return 0.f;
+	//}
+	//// DamagedActor가 HitInterface를 구현했는지 확인
+	////if (DamagedActor->GetClass()->ImplementsInterface(UHitInterface::StaticClass()))
+	////{
+	//	// 피해를 입히고 실제로 입힌 피해량 받아옴
+	//	float ActualDamage = UGameplayStatics::ApplyDamage(
+	//		DamagedActor,
+	//		DamageAmount,
+	//		GetInstigator()->GetController(),
+	//		this,
+	//		UDamageType::StaticClass()
+	//	);
+
+	//	// 피해를 입힌 경우에만 이벤트 브로드캐스트
+	//	if (ActualDamage > 0.f)
+	//	{
+	//		OnSuccessfulAttackEvent.Broadcast(DamageAmount, AttackType);
+	//	}
+
+	//	return ActualDamage;
+	//}
+}
+//void AWeapon::ApplyDamage(AActor* DamagedActor, float DamageAmount, EAttackType AttackType)
+//{
+//	// if (!DamagedActor) return 0.f;
+//
+//	float ActualDamage = UGameplayStatics::ApplyDamage(
+//		DamagedActor,
+//		DamageAmount,
+//		GetInstigator()->GetController(),
+//		this,
+//		UDamageType::StaticClass()
+//	);
+//	// return ActualDamage;
+//
+//
+//	OnSuccessfulAttackEvent.Broadcast(DamageAmount, AttackType);
+//
+//}
