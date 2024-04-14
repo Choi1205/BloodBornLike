@@ -90,6 +90,8 @@ private:
 	// 변수구역 //
 	//////////////
 
+	float findPlayerTimer = 0.0f;
+
 	float healthPoint = 2000.0f;
 
 	float phase2HP = 1400.0f;
@@ -238,7 +240,7 @@ public:
 	/////////////////
 
 	UFUNCTION(BlueprintCallable)
-	void FireGun();
+	void ABP_FireGun();
 
 	UFUNCTION(BlueprintCallable)
 	void ABP_2ndSlowEnd();

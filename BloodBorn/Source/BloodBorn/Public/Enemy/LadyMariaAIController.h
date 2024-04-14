@@ -41,52 +41,60 @@ public:
 	//////////////
 
 	// 패링을 당했는가?
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	UPROPERTY(VisibleAnywhere)
 	bool bIsStun = false;
 
 	//이동외의 행동을 하면 이 변수가 true가 된다. 다른 행동을 실시할 수 있는지 트리거 역할을 한다.
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	UPROPERTY(VisibleAnywhere)
 	EAttackState attackState = EAttackState::IDLE;
-	UPROPERTY(VisibleAnywhere)
-	bool bIsRightSlash = false;
-	UPROPERTY(VisibleAnywhere)
-	bool bIsLeftSlash = false;
-	UPROPERTY(VisibleAnywhere)
-	bool bIsThrust = false;
-	UPROPERTY(BlueprintReadWrite)
-	bool bIsFireGun = false;
-	float gunFireTimer = 0.0f;
 
-	//1페이즈 무기교체 타이머. bIsChangeMode는 무기교체 애니메이션 재생을 염두에 두고 만들어 둠
-	bool bIsChangeMode = false;
+	//무기 교체 플래그. bIsChangeMode는 무기교체 애니메이션 재생을 염두에 두고 만들어 둠
 	bool bIsDualSword = true;
-	float dualSwordTimer = 0.0f;
-	float modeChangeTime = 20.0f;
+	bool bIsChangeMode = false;
 
 	//True면 우회전, False면 좌회전
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY(VisibleAnywhere)
 	bool bIsLeftMove = true;
 
 	//전방대시 사용 예정 플래그
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY(VisibleAnywhere)
 	bool bIsForwardDodge = false;
 
 	//적(보스)레퍼런스
 	class ALadyMaria* EnemyREF;
 
-	class UNavigationSystemV1* NavArea;//길찾기 범위. 프로젝트명.Build.cs 파일도 참조할 것
-
 	//////////////
 	// 함수구역 //
 	//////////////
 
-	UFUNCTION(BlueprintCallable)
+	//인자값을 넣어서 호출하면 해당 인자값 확율에 따라 True/False를 리턴한다
 	bool RandomNextMoveTF(int32 rate);
 
 private:
 	//////////////
 	// 변수구역 //
 	//////////////
-	float chargeTimer = 0.0f;
 
+	//거리 기준 변수. 조정용
+	const float veryLongRange = 5000.0f;
+	const float longRange = 1000.0f;
+	const float midRange = 500.0f;
+	const float closeRange = 200.0f;
+
+	//공격 가능한 스테미나. 조정용.
+	const float moveableStamina = 700.0f;
+
+	//찌르기, 차지베기의 쿨다운
+	const float chargeCooldown = 5.0f;
+	//찌르기, 차지베기 타이머. 기술을 쓰면 타이머가 0이 되고, 델타타임을 더해서 쿨다운까지 차면 재사용 가능.
+	float chargeTimer = 5.0f;
+
+	//1페이즈 모드 변경 타이머. 위와 같은 원리
+	const float modeChangeTime = 20.0f;
+	float dualSwordTimer = 0.0f;
+	
+
+	//사격 쿨다운. 위와 같은 원리
+	const float gunFireCooldown = 2.0f;
+	float gunFireTimer = 2.0f;
 };

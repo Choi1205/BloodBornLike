@@ -152,7 +152,7 @@ void UBossAnimInstance::AnimNotify_Boss_HitEnd()
 
 void UBossAnimInstance::AnimNotify_Boss_GunFire()
 {
-	mariaREF->FireGun();
+	mariaREF->ABP_FireGun();
 }
 
 void UBossAnimInstance::AnimNotify_Boss_HitHoldAttackEnd()

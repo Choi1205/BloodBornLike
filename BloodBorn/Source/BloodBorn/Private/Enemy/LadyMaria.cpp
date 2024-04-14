@@ -96,7 +96,6 @@ void ALadyMaria::BeginPlay()
 	Super::BeginPlay();
 
 	mariaAI = Cast<ALadyMariaAIController>(GetController());
-	playerREF = FindPlayer_BP();
 	AnimInstance = GetMesh()->GetAnimInstance();
 
 	rightDamageCollision->OnComponentBeginOverlap.AddDynamic(this, &ALadyMaria::OnDealDamageOverlapBegin);
@@ -106,79 +105,101 @@ void ALadyMaria::BeginPlay()
 	params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 	smokeActor1 = GetWorld()->SpawnActor<ASmokeFXActor>(smokeVFX, FVector::ZeroVector, FRotator::ZeroRotator, params);
 	smokeActor2 = GetWorld()->SpawnActor<ASmokeFXActor>(smokeVFX, FVector::ZeroVector, FRotator::ZeroRotator, params);
+
+	playerREF = FindPlayer_BP();
 }
 
 void ALadyMaria::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	if (mariaAI != nullptr) {
-		//매 틱마다 플레이어와의 거리를 잰다
-		distanceToPlayer = FVector::Distance(GetActorLocation(), playerREF->GetActorLocation());
-		//플레이어의 속도도 잰다
-		playerSpeed =  playerREF->GetVelocity().Length();
-	
-		if (phaseState == EPhaseState::PHASE1 && mariaAI->bIsChangeMode) {
-			if (mariaAI->bIsDualSword) {
-				leftSword1->SetVisibility(true);
-				gun->SetVisibility(false);
-				rightTwoSword->SetVisibility(false);
-			}
-			else {
-				leftSword1->SetVisibility(false);
-				gun->SetVisibility(true);
-				rightTwoSword->SetVisibility(true);
-			}
-			mariaAI->bIsChangeMode = false;
-		}
 
-		//공격중이 아니라면 보스는 항상 플레이어를 바라본다.
-		if (mariaAI->attackState == EAttackState::IDLE) {
-			FRotator toward = (playerREF->GetActorLocation() - GetActorLocation()).Rotation();
-			SetActorRotation(toward);
+	//비긴 플레이에서 못찾는 경우가 있나...?
+	if (playerREF != nullptr) {
+		if (mariaAI != nullptr) {
+			//매 틱마다 플레이어와의 거리를 잰다
+			distanceToPlayer = FVector::Distance(GetActorLocation(), playerREF->GetActorLocation());
+			//플레이어의 속도도 잰다
+			playerSpeed = playerREF->GetVelocity().Length();
 
-			//행동을 멈추면 스테미너가 회복된다.
-			if (stamina < 1000.0f) {
-				//최대치보다 적으면 회복. 페이즈에 따라 회복량 변화
-				stamina += DeltaTime * staminaRegain;
-			}
-			else if (stamina > 1000.0f) {
-				//최대치를 넘으면 최대치로 맞춘다.
-				stamina = 1000.0f;
+			if (phaseState == EPhaseState::PHASE1 && mariaAI->bIsChangeMode) {
+				if (mariaAI->bIsDualSword) {
+					leftSword1->SetVisibility(true);
+					gun->SetVisibility(false);
+					rightTwoSword->SetVisibility(false);
+				}
+				else {
+					leftSword1->SetVisibility(false);
+					gun->SetVisibility(true);
+					rightTwoSword->SetVisibility(true);
+				}
+				mariaAI->bIsChangeMode = false;
 			}
 
-		}
+			//공격중이 아니라면 보스는 항상 플레이어를 바라본다.
+			if (mariaAI->attackState == EAttackState::IDLE) {
+				FRotator toward = (playerREF->GetActorLocation() - GetActorLocation()).Rotation();
+				SetActorRotation(toward);
 
-		if (mariaAI->attackState == EAttackState::QUICKTHRUST || mariaAI->attackState == EAttackState::CHARGETHRUST) {
-			Thrust();
-		}
-		else if (mariaAI->attackState == EAttackState::CHARGESLASH) {
-			ChargeSlash();
-		}
-		else if (mariaAI->attackState == EAttackState::QUICKSLASH || mariaAI->attackState == EAttackState::STRONGSLASH) {
-			Slash();
-		}
+				//행동을 멈추면 스테미너가 회복된다.
+				if (stamina < 1000.0f) {
+					//최대치보다 적으면 회복. 페이즈에 따라 회복량 변화
+					stamina += DeltaTime * staminaRegain;
+				}
+				else if (stamina > 1000.0f) {
+					//최대치를 넘으면 최대치로 맞춘다.
+					stamina = 1000.0f;
+				}
 
-		if(bIsMovingWhileAttack){
-			if (mariaAI->attackState == EAttackState::QUICKTHRUST) {
-				SetActorLocation(GetActorLocation() + GetActorForwardVector() * DeltaTime * 800, true);
 			}
-			else {
-				SetActorLocation(GetActorLocation() + GetActorForwardVector() * DeltaTime * 400, true);
+
+			if (mariaAI->attackState == EAttackState::QUICKTHRUST || mariaAI->attackState == EAttackState::CHARGETHRUST) {
+				Thrust();
+			}
+			else if (mariaAI->attackState == EAttackState::CHARGESLASH) {
+				ChargeSlash();
+			}
+			else if (mariaAI->attackState == EAttackState::QUICKSLASH || mariaAI->attackState == EAttackState::STRONGSLASH) {
+				Slash();
+			}
+
+			if (bIsMovingWhileAttack) {
+				if (mariaAI->attackState == EAttackState::QUICKTHRUST) {
+					SetActorLocation(GetActorLocation() + GetActorForwardVector() * DeltaTime * 800, true);
+				}
+				else {
+					SetActorLocation(GetActorLocation() + GetActorForwardVector() * DeltaTime * 400, true);
+				}
+			}
+			if (bIsAimmingWhileAttack) {
+				SetActorRotation((playerREF->GetActorLocation() - GetActorLocation()).Rotation());
 			}
 		}
-		if(bIsAimmingWhileAttack){
-			SetActorRotation((playerREF->GetActorLocation() - GetActorLocation()).Rotation());
-		}
+	}
+	else if (findPlayerTimer < 0) {
+		//만약 못찾았으면 다시찾기
+		playerREF = FindPlayer_BP();
+	}
+	else {
+		//틱 이벤트에서 계속 GetAllActorsOfClass를 실행하면 성능에 영향을 줄 것으로 예상되므로, 5초 타이머를 돌린다.
+		findPlayerTimer -= DeltaTime;
 	}
 }
 
+//비긴플레이에서 호출. 플레이어 찾기
 ABloodBornCharacter* ALadyMaria::FindPlayer_BP()
 {
 	TArray<AActor*> players;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ABloodBornCharacter::StaticClass(), players);
 
-	//AShootingPlayer형태로 반환한다.
-	return Cast<ABloodBornCharacter>(players[0]);
+	if (players[0] != nullptr) {
+		//플레이어 포인터 형태로 반환한다.
+		return Cast<ABloodBornCharacter>(players[0]);
+	}
+	else {
+		findPlayerTimer = 5.0f;
+		return nullptr;
+	}
+	
 }
 
 //거리 게터 함수
@@ -186,6 +207,7 @@ float ALadyMaria::GetPlayerDistance()
 {
 	return distanceToPlayer;
 }
+//속도 게터 함수
 float ALadyMaria::GetPlayerSpeed()
 {
 	return playerSpeed;
@@ -268,12 +290,13 @@ float ALadyMaria::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent
 //사격공격 데미지 처리도 필요하기 때문에 체력이 감소하는 함수를 따로 작성
 void ALadyMaria::GotDamage(float damage)
 {
+	//내장뽑기 공격 모션중에는 다른 데미지를 받지 않는다.
 	if (!bIsHitHoldAttack) {
 		//HP를 데미지 만큼 깍는다
-		healthPoint -= damage;
+		healthPoint = FMath::Max(healthPoint - damage, 0.0f);
 	}
 
-	//
+	//데미지를 입으면 페이즈를 변경할 지 체크. 페이즈 변경 모션이 없어서 여기서 체크하고, 모션이 생기면 모션 노티파이로 이동?
 	if (phaseState == EPhaseState::PHASE1 && healthPoint < phase2HP) {
 		phaseState = EPhaseState::PHASE2;
 		staminaRegain = 75.0f;
@@ -302,9 +325,9 @@ void ALadyMaria::GotDamage(float damage)
 	//피격 이펙트 생성
 	instanceEffect = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), hitEffect, GetActorLocation(), FRotator::ZeroRotator, FVector(3.0f));
 
+	//AI제거 방어코드
 	if (mariaAI != nullptr) {
-		if (healthPoint <= 0) {
-			healthPoint = 0;
+		if (healthPoint == 0) {
 			bIsCanDealDamage = false;
 			mariaAI->attackState = EAttackState::DIED;
 			if (AnimInstance->Montage_IsPlaying(NULL)) {
@@ -407,7 +430,7 @@ void ALadyMaria::Slash()
 	//스테미나 소모
 	stamina -= 50.0f;
 
-	//없으면 우측베기를 재생
+	//없으면 베기공격을 재생
 	if (mariaAI->attackState == EAttackState::QUICKSLASH) {
 		AnimInstance->Montage_Play(AnimQuickSlash);
 	}
@@ -493,7 +516,7 @@ void ALadyMaria::EffectOn()
 	rightEffect_H->Activate(true);
 }
 
-void ALadyMaria::FireGun()
+void ALadyMaria::ABP_FireGun()
 {
 	
 	//탄환이 발사될 순간에 애님노티파이를 이용하여 다시 실행된다.
@@ -561,8 +584,6 @@ void ALadyMaria::ABP_DodgeEnd()
 	if(mariaAI->bIsForwardDodge) {
 		FVector playerToMaria = (GetActorLocation() - playerREF->GetActorLocation()).GetSafeNormal() * 100.0f;
 		SetActorLocation(playerREF->GetActorLocation() + playerToMaria);
-		GetMesh()->SetVisibility(true, true);
-		mariaAI->attackState = EAttackState::IDLE;
 		mariaAI->bIsForwardDodge = false;
 	}
 	else{
@@ -573,10 +594,10 @@ void ALadyMaria::ABP_DodgeEnd()
 		nextLoc = GetActorLocation() + nextLoc * 200.0f;
 
 		SetActorLocation(nextLoc);
-		GetMesh()->SetVisibility(true, true);
 		AnimInstance->Montage_SetPlayRate(NULL, 0.25f);
-		mariaAI->attackState = EAttackState::IDLE;
 	}
+
+	GetMesh()->SetVisibility(true, true);
 
 	switch (phaseState) {
 	case EPhaseState::PHASE1:
@@ -615,6 +636,7 @@ void ALadyMaria::ABP_DodgeEnd()
 		smokeActor2->SetActorLocation(GetActorLocation());
 		smokeActor2->PlayFX();
 	}
+	mariaAI->attackState = EAttackState::IDLE;
 }
 
 void ALadyMaria::ABP_BossHitEnd()
