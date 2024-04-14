@@ -79,6 +79,13 @@ public:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class ABGMActor> bgmActor;
 
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float maxHealthPoint = 2000.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float healthPoint = 2000.0f;
+
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -89,8 +96,6 @@ private:
 	//////////////
 
 	float findPlayerTimer = 0.0f;
-
-	float healthPoint = 2000.0f;
 
 	float phase2HP = 1400.0f;
 
