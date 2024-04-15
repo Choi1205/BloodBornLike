@@ -73,6 +73,7 @@ ABloodBornCharacter::ABloodBornCharacter()
 	RallyWindowDuration = 20.0f;
 	// LastDamageReceived = 0.0f;
 
+
 }
 
 void ABloodBornCharacter::SetWeaponCollisionEnabled(ECollisionEnabled::Type CollisionEnabled)
@@ -169,7 +170,6 @@ void ABloodBornCharacter::Tick(float DeltaTime)
 			}
 		}
 	}
-
 	/*IHitInterface* HitInterface = Cast<IHitInterface>(Hit.GetActor());
 			//HitResult 인터페이스를 가지고 있으면
 			if (HitInterface) {
@@ -254,7 +254,7 @@ void ABloodBornCharacter::Move(const FInputActionValue& Value)
 	// input is a Vector2D
 	FVector2D MovementVector = Value.Get<FVector2D>();
 
-	if (ActionState == EActionState::EAS_StrongAttacking || ActionState == EActionState::EAS_HitReaction || ActionState == EActionState::EAS_HoldAttacking) return;	 // 공격할 때 못 움직이게 강제, 근데 이렇게 하면 강공격 때도 또 받아야하는 거 아닌가 ? OR로 처리?
+	if (ActionState == EActionState::EAS_StrongAttacking || ActionState == EActionState::EAS_HitReaction || ActionState == EActionState::EAS_HoldAttacking || ActionState == EActionState::EAS_GunFire) return;	 // 공격할 때 못 움직이게 강제, 근데 이렇게 하면 강공격 때도 또 받아야하는 거 아닌가 ? OR로 처리?
 
 	GetCharacterMovement()->GetLastUpdateVelocity();
 	GetControlRotation();
@@ -354,7 +354,7 @@ void ABloodBornCharacter::Dodge()
 
 	else
 	{
-		if (CharacterState != ECharacterState::ECS_LockOn && ActionState == EActionState::EAS_Unoccupied)
+		if (CharacterState != ECharacterState::ECS_LockOn && ActionState != EActionState::EAS_HitReaction)
 		{
 			GetCharacterMovement()->MaxWalkSpeed = 1000.f;
 			PlayDodgeMontage();
@@ -366,7 +366,7 @@ void ABloodBornCharacter::Dodge()
 			}
 		}
 
-		if (CharacterState == ECharacterState::ECS_LockOn)
+		if (CharacterState == ECharacterState::ECS_LockOn && ActionState != EActionState::EAS_HitReaction)
 		{
 			PlayStepMontage();
 			if (Attributes)
@@ -703,6 +703,7 @@ void ABloodBornCharacter::GunFire()
 {
 	//사격애니메이션과 발포 이펙트를 넣고 락온 여부와 관계 없이 무조건 발동되게 하자
 	if (LockOnEnemyREF != nullptr) {
+		ActionState = EActionState::EAS_GunFire;
 		//록온된 적의 인터페이스에 접근
 		IHitInterface* HitInterface = Cast<IHitInterface>(LockOnEnemyREF);
 		HitInterface->GotParryAttackCPP(gunDamage);
