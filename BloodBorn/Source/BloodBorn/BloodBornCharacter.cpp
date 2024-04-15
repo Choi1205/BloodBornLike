@@ -54,6 +54,8 @@ ABloodBornCharacter::ABloodBornCharacter()
 	CameraBoom->SetupAttachment(RootComponent);
 	CameraBoom->TargetArmLength = 200.0f; // The camera follows at this distance behind the character	
 	CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
+	CameraBoom->bEnableCameraLag = true;
+	CameraBoom->CameraLagSpeed = 8.0f;
 
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
@@ -349,9 +351,24 @@ void ABloodBornCharacter::FKeyPressed()
 
 void ABloodBornCharacter::Dodge()
 {
-	//Selection = 0;
-	if (!HasEnoughStamina(Attributes->GetDodgeCost())) return;
+	if (CharacterState == ECharacterState::ECS_LockOn)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("current state : LockOn"));
+	}
+	if (ActionState == EActionState::EAS_Unoccupied)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("current state : Unoccupied"));
+	}
+	if (ActionState == EActionState::EAS_HitReaction)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("current state : Hit!!!!!!!!!!!!!!!!!!!!"));
+	}
 
+	//Selection = 0;
+	if (!HasEnoughStamina(Attributes->GetDodgeCost())) {
+		UE_LOG(LogTemp, Warning, TEXT("NOOOOOOOOOOOOOOOHasEnoughStamina"));
+	return;
+	}
 	else
 	{
 		if (CharacterState != ECharacterState::ECS_LockOn && ActionState != EActionState::EAS_HitReaction && ActionState == EActionState::EAS_Unoccupied)
@@ -368,12 +385,32 @@ void ABloodBornCharacter::Dodge()
 
 		if (CharacterState == ECharacterState::ECS_LockOn && ActionState != EActionState::EAS_HitReaction && ActionState == EActionState::EAS_Unoccupied)
 		{
-			PlayStepMontage();
+			UE_LOG(LogTemp, Warning, TEXT("11111111111111111111111111111"));
+
+			bIsDodge = true;
+
+			FVector currentVelocity = GetCharacterMovement()->Velocity;
+			FRotator currentRot = GetCharacterMovement()->GetLastUpdateRotation()/*GetActorRotation()*/;
+
+			FVector newVector = (currentRot.UnrotateVector(currentVelocity)).GetSafeNormal();
+			moveX = newVector.X;
+			moveY = newVector.Y;
+
+			GetCharacterMovement()->MaxWalkSpeed = 1000.f;
+			GetCharacterMovement()->MaxAcceleration = 4096.f;
+			UE_LOG(LogTemp, Warning, TEXT("movex and y :  %f, %f"), moveX, moveY);
+			// PlayStepMontage();
 			if (Attributes)
 			{
 				Attributes->UseStamina(Attributes->GetDodgeCost());
 				PlayerOverlay->SetStaminaBarPercent(Attributes->GetStaminaPercent());
 			}
+			FTimerHandle endtimer;
+			GetWorldTimerManager().SetTimer(endtimer, FTimerDelegate::CreateLambda([&](){
+				bIsDodge=false;
+				GetCharacterMovement()->MaxWalkSpeed = 600.f;
+				GetCharacterMovement()->MaxAcceleration = 2048.f;
+			}), 0.4f, false);
 		}
 	}
 }

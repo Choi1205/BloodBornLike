@@ -102,6 +102,11 @@ public:
 
 	void OnSuccessfulAttack(float Damage, EAttackType AttackType);  // 적에게 입히는 데미지
 
+	UPROPERTY(BlueprintReadOnly)
+	float moveX;
+	UPROPERTY(BlueprintReadOnly)
+	float moveY;
+
 
 protected:
 
@@ -207,7 +212,9 @@ public:
 
 	UPROPERTY(BlueprintReadWrite)
 	bool bIsLockOn = false;
-
+	
+	UPROPERTY(BlueprintReadWrite)
+	bool bIsDodge = false;
 
 	bool IsInRallyWindow() const;
 
