@@ -354,7 +354,7 @@ void ABloodBornCharacter::Dodge()
 
 	else
 	{
-		if (CharacterState != ECharacterState::ECS_LockOn && ActionState != EActionState::EAS_HitReaction)
+		if (CharacterState != ECharacterState::ECS_LockOn && ActionState != EActionState::EAS_HitReaction && ActionState == EActionState::EAS_Unoccupied)
 		{
 			GetCharacterMovement()->MaxWalkSpeed = 1000.f;
 			PlayDodgeMontage();
@@ -366,7 +366,7 @@ void ABloodBornCharacter::Dodge()
 			}
 		}
 
-		if (CharacterState == ECharacterState::ECS_LockOn && ActionState != EActionState::EAS_HitReaction)
+		if (CharacterState == ECharacterState::ECS_LockOn && ActionState != EActionState::EAS_HitReaction && ActionState == EActionState::EAS_Unoccupied)
 		{
 			PlayStepMontage();
 			if (Attributes)
@@ -702,7 +702,8 @@ void ABloodBornCharacter::LockOn()
 void ABloodBornCharacter::GunFire()
 {
 	//사격애니메이션과 발포 이펙트를 넣고 락온 여부와 관계 없이 무조건 발동되게 하자
-	if (LockOnEnemyREF != nullptr) {
+	if (ActionState == EActionState::EAS_Unoccupied && LockOnEnemyREF != nullptr) {
+		
 		ActionState = EActionState::EAS_GunFire;
 		//록온된 적의 인터페이스에 접근
 		IHitInterface* HitInterface = Cast<IHitInterface>(LockOnEnemyREF);
@@ -713,6 +714,7 @@ void ABloodBornCharacter::GunFire()
 
 void ABloodBornCharacter::PlayFireMontage()
 {
+	
 	PlayMontageSection(FireMontage, FName("GunFire"));
 }
 

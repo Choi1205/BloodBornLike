@@ -100,7 +100,7 @@ void UAttributeComponent::RegenStamina(float DeltaTime)
 	if (staCoolDown > 0.0f) {
 		staCoolDown -= DeltaTime;
 	}
-	if (staCoolDown < 0.f) {
+	if (staCoolDown <= 0.f) {
 		Stamina = FMath::Clamp(Stamina + StaminaRegenRate * DeltaTime, 0.0f, MaxStamina);
 	}
 }
