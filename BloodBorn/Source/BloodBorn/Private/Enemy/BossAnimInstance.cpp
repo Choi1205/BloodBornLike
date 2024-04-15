@@ -133,6 +133,7 @@ void UBossAnimInstance::AnimNotify_Boss_MovingAttackEnd()
 
 void UBossAnimInstance::AnimNotify_Boss_DodgeStart()
 {
+	mariaREF->bIsSuperArmor = true;
 	if (mariaREF->smokeActor1 != nullptr) {
 		mariaREF->GetMesh()->SetVisibility(false, true);
 		mariaREF->smokeActor1->SetActorLocation(mariaREF->GetActorLocation());

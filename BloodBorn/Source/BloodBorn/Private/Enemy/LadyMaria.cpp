@@ -644,6 +644,7 @@ void ALadyMaria::ABP_DodgeEnd()
 		smokeActor2->SetActorLocation(GetActorLocation());
 		smokeActor2->PlayFX();
 	}
+	bIsSuperArmor = false;
 	mariaAI->attackState = EAttackState::IDLE;
 }
 
