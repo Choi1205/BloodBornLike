@@ -115,6 +115,10 @@ private:
 
 	float strongAttack = 100.0f;
 
+	FVector landPlace;
+
+	const float moveDeltaTime = 0.276996f;
+
 	class ALadyMariaAIController* mariaAI = nullptr;
 
 	UPROPERTY(VisibleAnywhere)
@@ -180,7 +184,10 @@ public:
 	class UAnimMontage* AnimGunShot;
 
 	UPROPERTY(EditAnywhere)
-	class UAnimMontage* AnimChargeSlash;
+	class UAnimMontage* AnimAssult;
+
+	UPROPERTY(EditAnywhere)
+	class UAnimMontage* AnimJumpAttack;
 
 	UPROPERTY(EditAnywhere)
 	class UAnimMontage* AnimDodgeForward;
@@ -232,7 +239,9 @@ public:
 
 	void Thrust();
 
-	void ChargeSlash();
+	void JumpAttack();
+
+	void Assult();
 
 	void AimGun();
 
@@ -244,10 +253,8 @@ public:
 	// ABP함수구역 //
 	/////////////////
 
-	UFUNCTION(BlueprintCallable)
 	void ABP_FireGun();
 
-	UFUNCTION(BlueprintCallable)
 	void ABP_2ndSlowEnd();
 
 	UFUNCTION(BlueprintCallable)
@@ -255,4 +262,7 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void ABP_BossHitEnd();
+
+	void ABP_BossJumpTop();
+
 };

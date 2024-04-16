@@ -59,12 +59,10 @@ void UBossAnimInstance::AnimNotify_Boss_AttackStart()
 	else if (mariaAIREF->attackState == EAttackState::QUICKSLASH) {
 		Montage_SetPlayRate(NULL, 0.1f);
 	}
-	else if (mariaAIREF->attackState == EAttackState::STRONGSLASH) {
+	else if (mariaAIREF->attackState == EAttackState::STRONGSLASH || mariaAIREF->attackState == EAttackState::JUMPATTACK) {
 		Montage_SetPlayRate(NULL, 0.5f);
 	}
-	else if (mariaAIREF->attackState == EAttackState::CHARGESLASH) {
-		Montage_SetPlayRate(NULL, 0.05f);
-	}
+	
 	mariaREF->bIsAimmingWhileAttack = true;
 }
 
@@ -78,10 +76,6 @@ void UBossAnimInstance::AnimNotify_Boss_SlowEnd()
 	}
 	else {
 		Montage_SetPlayRate(NULL, 1.0f);
-	}
-
-	if (mariaAIREF->attackState == EAttackState::CHARGESLASH) {
-		mariaREF->EffectMove();
 	}
 
 	if (mariaREF->phaseState != EPhaseState::PHASE1) {
@@ -177,4 +171,21 @@ void UBossAnimInstance::AnimNotify_Boss_InStunEnd()
 {
 	mariaAIREF->bIsStun = false;
 	mariaAIREF->attackState = EAttackState::IDLE;
+}
+
+void UBossAnimInstance::AnimNotify_Boss_JumpStart()
+{
+	//이펙트 켜기
+}
+
+void UBossAnimInstance::AnimNotify_Boss_JumpTop()
+{
+	//플레이어 위치를 이용, 착지위치 계산
+	mariaREF->ABP_BossJumpTop();
+	Montage_SetPlayRate(NULL, 1.0f);
+}
+
+void UBossAnimInstance::AnimNotify_Boss_JumpLand()
+{
+	//착지 이펙트 켜기, 데미지 판정
 }

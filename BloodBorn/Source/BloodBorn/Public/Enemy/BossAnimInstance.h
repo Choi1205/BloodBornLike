@@ -64,4 +64,10 @@ private:
 	void AnimNotify_Boss_ParryEnd();
 	UFUNCTION()
 	void AnimNotify_Boss_InStunEnd();
+	UFUNCTION()
+	void AnimNotify_Boss_JumpStart();
+	UFUNCTION()
+	void AnimNotify_Boss_JumpTop();
+	UFUNCTION()
+	void AnimNotify_Boss_JumpLand();
 };
