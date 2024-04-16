@@ -25,8 +25,13 @@ EBTNodeResult::Type UTaskAttackPlayer::ExecuteTask(UBehaviorTreeComponent& Owner
 			return EBTNodeResult::Aborted;
 		}
 
-		//조종중인 폰의 애님 인스턴스를 통하여 조종중인 폰의 몽타주를 재생
-		AnimInstance->Montage_Play(Enemy->EnemyAttackAnimation);
+		if (FMath::RandRange(0, 1) == 0) {
+			//조종중인 폰의 애님 인스턴스를 통하여 조종중인 폰의 몽타주를 재생
+			AnimInstance->Montage_Play(Enemy->EnemyAttackAnimation);
+		}
+		else {
+			AnimInstance->Montage_Play(Enemy->EnemyAttackAnimation2);
+		}
 
 		//랜덤한 시간동안 플레이어 주변을 어물거리는 시간
 		float randomTime = FMath::FRandRange(2.0f, 4.0f);
@@ -61,8 +66,13 @@ EBTNodeResult::Type UTaskAttackPlayer::ExecuteTask(UBehaviorTreeComponent& Owner
 			return EBTNodeResult::Aborted;
 		}
 
-		//조종중인 폰의 애님 인스턴스를 통하여 조종중인 폰의 몽타주를 재생
-		AnimInstance->Montage_Play(stayEnemy->EnemyAttackAnimation);
+		if (FMath::RandRange(0, 1) == 0) {
+			//조종중인 폰의 애님 인스턴스를 통하여 조종중인 폰의 몽타주를 재생
+			AnimInstance->Montage_Play(stayEnemy->EnemyAttackAnimation);
+		}
+		else {
+			AnimInstance->Montage_Play(stayEnemy->EnemyAttackAnimation2);
+		}
 
 		//랜덤한 시간동안 플레이어 주변을 어물거리는 시간
 		float randomTime = FMath::FRandRange(2.0f, 4.0f);

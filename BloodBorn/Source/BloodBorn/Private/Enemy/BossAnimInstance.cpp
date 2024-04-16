@@ -63,6 +63,10 @@ void UBossAnimInstance::AnimNotify_Boss_AttackStart()
 		Montage_SetPlayRate(NULL, 0.5f);
 	}
 	
+	if (mariaAIREF->attackState == EAttackState::JUMPATTACK) {
+		mariaREF->bIsSuperArmor = true;
+	}
+
 	mariaREF->bIsAimmingWhileAttack = true;
 }
 
