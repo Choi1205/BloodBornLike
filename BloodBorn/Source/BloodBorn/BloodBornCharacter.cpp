@@ -141,7 +141,7 @@ void ABloodBornCharacter::BeginPlay()
 			{
 				PlayerOverlay->SetHealthBarPercent(Attributes->GetHealthPercent());
 				PlayerOverlay->SetStaminaBarPercent(Attributes->GetStaminaPercent());
-				PlayerOverlay->SetVial(20);
+				PlayerOverlay->SetVial(Attributes->GetBloodVial());
 				PlayerOverlay->SetBullet(20);
 				UE_LOG(LogTemp, Warning, TEXT("hpbar valid"));
 			}
@@ -242,6 +242,9 @@ void ABloodBornCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 		
 		//사격공격
 		EnhancedInputComponent->BindAction(GunFireAction, ETriggerEvent::Started, this, &ABloodBornCharacter::GunFire);
+
+		// Heal - 수혈액 사용
+		EnhancedInputComponent->BindAction(UseBloodVialAction, ETriggerEvent::Started, this, &ABloodBornCharacter::UseBloodVial);
 
 	}
 	else
@@ -673,15 +676,44 @@ void ABloodBornCharacter::SetOverlappingItem(AItem* Item)
 	OverlappingItem = Item;
 }
 
-void ABloodBornCharacter::AddBloodVials(ABloodVial* BloodVial)
+
+void ABloodBornCharacter::UseBloodVial()
 {
-	if (Attributes)
+	if (Attributes && PlayerOverlay)
 	{
-		Attributes->AddBloodVials(BloodVial->GetBloodVials());
-		int32 BloodVialCount = Attributes->GetBloodVials();
-		UE_LOG(LogTemp, Warning, TEXT("Blood Vial Count: %d"), BloodVialCount);
+		if (Attributes->BloodVial > 0)
+		{
+			Attributes->UseBloodVial(Attributes->GetBloodVial());
+			PlayerOverlay->SetVial(Attributes->GetBloodVial());
+			PlayerOverlay->SetHealthBarPercent(Attributes->GetHealthPercent());
+			PlayBloodVialMontage();
+		}
+		else
+		{
+			// 몽타주 재생 안함
+			return;
+		}
+
 	}
 }
+
+void ABloodBornCharacter::PlayBloodVialMontage()
+{
+	PlayMontageSection(BloodVialMontage, FName("UseBloodVial"));
+
+}
+
+
+
+// void ABloodBornCharacter::AddBloodVials(ABloodVial* BloodVial)
+// {
+// 	if (Attributes)
+// 	{
+// 		Attributes->AddBloodVials(BloodVial->GetBloodVials());
+// 		int32 BloodVialCount = Attributes->GetBloodVials();
+// 		UE_LOG(LogTemp, Warning, TEXT("Blood Vial Count: %d"), BloodVialCount);
+// 	}
+// }
 
 void ABloodBornCharacter::PlayHitReactMontage()
 {
@@ -754,6 +786,8 @@ void ABloodBornCharacter::PlayFireMontage()
 	
 	PlayMontageSection(FireMontage, FName("GunFire"));
 }
+
+
 
 //void adf내장뽑기()
 //{

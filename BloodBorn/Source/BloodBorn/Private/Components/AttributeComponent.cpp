@@ -84,11 +84,19 @@ void UAttributeComponent::ResetRegainableHealth()
 
 }
 
-void UAttributeComponent::AddBloodVials(int32 AmountOfBVial)
+void UAttributeComponent::UseBloodVial(int32 BV)
 {
-	BloodVials += AmountOfBVial;
-	//BloodVials = FMath::Clamp(BloodVials + AmountOfBVial, 0, 20);
+	BloodVial -= 1;
+	//Health += 100;
+	Health = FMath::Clamp(Health + 100, 0.f, MaxHealth);
+
 }
+
+// void UAttributeComponent::AddBloodVials(int32 AmountOfBVial)
+// {
+// 	BloodVials += AmountOfBVial;
+// 	//BloodVials = FMath::Clamp(BloodVials + AmountOfBVial, 0, 20);
+// }
 
 void UAttributeComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {

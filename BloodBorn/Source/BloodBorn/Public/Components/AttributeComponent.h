@@ -37,7 +37,7 @@ public:
 	float MaxStamina;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Actor Attributes")
-	int32 BloodVials = 0;
+	int32 BloodVial = 20;
 
 protected:
 	virtual void BeginPlay() override;
@@ -83,8 +83,8 @@ public:
 	void RegainHealth(float RegainHP);
 	void ResetRegainableHealth();
 
-
-	void AddBloodVials(int32 AmountOfBVial);
+	void UseBloodVial(int32 BV);
+	// void AddBloodVials(int32 AmountOfBVial);
 
 	FORCEINLINE float GetDodgeCost() const { return DodgeCost; }
 	FORCEINLINE float GetNormalAttackCost() const { return NormalAttackCost; }
@@ -98,6 +98,6 @@ public:
 	FORCEINLINE float GetPredictedHP() const { return PredictedHP; }
 
 
-	FORCEINLINE int32 GetBloodVials() const { return BloodVials; }
+	FORCEINLINE int32 GetBloodVial() const { return BloodVial; }
 
 };

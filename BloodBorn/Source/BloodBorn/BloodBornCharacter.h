@@ -69,11 +69,14 @@ class ABloodBornCharacter : public ACharacter, public IPickupInterface
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* GunFireAction;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* UseBloodVialAction;
+
 
 public:
 	ABloodBornCharacter();
 
-	
 
 	UFUNCTION(BlueprintCallable)
 	void SetWeaponCollisionEnabled(ECollisionEnabled::Type CollisionEnabled);
@@ -91,14 +94,11 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void WeaponInvisible();
 
-	// UPROPERTY(VisibleAnywhere, Category=SawMesh)
-	// class USkeletalMeshComponent* sawMeshComp;
-	
 	int32 Selection = 0;
 
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 	virtual void SetOverlappingItem(AItem* Item) override;
-	virtual void AddBloodVials(ABloodVial* BloodVial) override;
+	// virtual void AddBloodVials(ABloodVial* BloodVial) override;
 
 	void OnSuccessfulAttack(float Damage, EAttackType AttackType);  // 적에게 입히는 데미지
 
@@ -141,8 +141,7 @@ protected:
 
 	void HandleDamage(float DamageAmount);  // ,, virtual?
 
-	// void CalculateMaxRegainableHealth(float Damage);
-
+	void UseBloodVial();
 
 	/**
 	* Play Montage Function
@@ -168,6 +167,7 @@ protected:
 
 	void PlayFireMontage();
 
+	void PlayBloodVialMontage();
 
 	UFUNCTION(BlueprintCallable)
 	void AttackEnd();
@@ -292,6 +292,8 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = Combat)
 	UAnimMontage* FireMontage;
 
+	UPROPERTY(EditDefaultsOnly, Category = Combat)
+	UAnimMontage* BloodVialMontage;
 
 
 	//float LastAttackTime;
