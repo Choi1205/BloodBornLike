@@ -32,4 +32,14 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, Category = "Movement | Action State")
 	EActionState ActionState;
+
+	UPROPERTY()
+	UPlayerOverlay* PlayerOverlay;
+
+	UPROPERTY()
+	UAttributeComponent* Attributes;
+
+private:
+	UFUNCTION()
+	void AnimNotify_Heal();
 };

@@ -19,6 +19,7 @@ public:
 	void SetStaminaBarPercent(float Percent);
 	void SetVial(int32 Vial);
 	void SetBullet(int32 Bullet);
+	void SetHealthSliderBarPercent(float Percent);
 
 	void SetPredictedHPBarPercent(float Percent);
 
@@ -37,4 +38,7 @@ protected:
 
 	UPROPERTY(meta = (BindWidget))
 	class UProgressBar* PredictedHP;
+
+	UPROPERTY(meta = (BindWidget))
+	class USlider* HealthSliderBar;
 };

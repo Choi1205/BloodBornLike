@@ -141,6 +141,7 @@ void ABloodBornCharacter::BeginPlay()
 			{
 				PlayerOverlay->SetHealthBarPercent(Attributes->GetHealthPercent());
 				PlayerOverlay->SetStaminaBarPercent(Attributes->GetStaminaPercent());
+				PlayerOverlay->SetHealthSliderBarPercent(Attributes->GetHealthSlider());
 				PlayerOverlay->SetVial(Attributes->GetBloodVial());
 				PlayerOverlay->SetBullet(20);
 				UE_LOG(LogTemp, Warning, TEXT("hpbar valid"));
@@ -374,8 +375,13 @@ void ABloodBornCharacter::Dodge()
 	}
 	else
 	{
-		if (CharacterState != ECharacterState::ECS_LockOn && ActionState != EActionState::EAS_HitReaction && ActionState == EActionState::EAS_Unoccupied)
+		if (CharacterState != ECharacterState::ECS_LockOn && ActionState != EActionState::EAS_HitReaction && ActionState == EActionState::EAS_Unoccupied || ActionState == EActionState::EAS_Heal)
 		{
+			if (ActionState == EActionState::EAS_Heal)
+			{
+				GetCharacterMovement()->MaxWalkSpeed = 1000.f;
+				GetCharacterMovement()->MaxAcceleration = 2048.f;
+			}
 			GetCharacterMovement()->MaxWalkSpeed = 1000.f;
 			PlayDodgeMontage();
 			ActionState = EActionState::EAS_Dodge;
@@ -648,6 +654,7 @@ void ABloodBornCharacter::SetHUDHealth()
 	if (PlayerOverlay && Attributes)
 	{
 		PlayerOverlay->SetHealthBarPercent(Attributes->GetHealthPercent());
+		PlayerOverlay->SetHealthSliderBarPercent(Attributes->GetHealthSlider());
 	}
 } 
 
@@ -679,27 +686,54 @@ void ABloodBornCharacter::SetOverlappingItem(AItem* Item)
 
 void ABloodBornCharacter::UseBloodVial()
 {
-	if (Attributes && PlayerOverlay)
+	if (EquippedWeaponSaw && ActionState != EActionState::EAS_HitReaction && ActionState == EActionState::EAS_Unoccupied) 
 	{
-		if (Attributes->BloodVial > 0)
+		if (Attributes)
 		{
-			Attributes->UseBloodVial(Attributes->GetBloodVial());
-			PlayerOverlay->SetVial(Attributes->GetBloodVial());
-			PlayerOverlay->SetHealthBarPercent(Attributes->GetHealthPercent());
-			PlayBloodVialMontage();
+			if (Attributes->BloodVial > 0)
+			{
+				ActionState = EActionState::EAS_Heal;
+				if (ActionState == EActionState::EAS_Heal)
+				{
+					GetCharacterMovement()->MaxWalkSpeed = 150.f;
+					GetCharacterMovement()->MaxAcceleration = 512.f;
+					PlayBloodVialMontage();
+				}
+			}
+			else
+			{
+				return;
+			}
 		}
-		else
-		{
-			// 몽타주 재생 안함
-			return;
-		}
-
+// 		if (Attributes && PlayerOverlay)
+// 		{
+// 			if (Attributes->BloodVial > 0)
+// 			{
+// 				ActionState = EActionState::EAS_Heal;
+// 				if(ActionState == EActionState::EAS_Heal)
+// 				{
+// 					GetCharacterMovement()->MaxWalkSpeed = 150.f;
+// 					GetCharacterMovement()->MaxAcceleration = 512.f;
+// 					Attributes->UseBloodVial(Attributes->GetBloodVial());
+// 					PlayerOverlay->SetVial(Attributes->GetBloodVial());
+// 					PlayerOverlay->SetHealthBarPercent(Attributes->GetHealthPercent());
+// 					PlayerOverlay->SetHealthSliderBarPercent(Attributes->GetHealthSlider());
+// 					PlayBloodVialMontage();
+// 				}
+// 			}
+// 			else
+// 			{
+// 				// 몽타주 재생 안함
+// 				return;
+// 			}
+// 		}
 	}
 }
 
 void ABloodBornCharacter::PlayBloodVialMontage()
 {
-	PlayMontageSection(BloodVialMontage, FName("UseBloodVial"));
+	// PlayMontageSection(BloodVialMontage, FName("UseBloodVial"));
+	PlayMontageSection(BloodVialMontage, FName("Heal"));
 
 }
 

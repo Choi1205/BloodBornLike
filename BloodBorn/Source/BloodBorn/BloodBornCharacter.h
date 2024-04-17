@@ -107,6 +107,8 @@ public:
 	UPROPERTY(BlueprintReadOnly)
 	float moveY;
 
+	void UseBloodVial();
+
 
 protected:
 
@@ -141,7 +143,7 @@ protected:
 
 	void HandleDamage(float DamageAmount);  // ,, virtual?
 
-	void UseBloodVial();
+	// void UseBloodVial();
 
 	/**
 	* Play Montage Function

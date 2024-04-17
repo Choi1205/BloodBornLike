@@ -22,7 +22,7 @@ void UAttributeComponent::BeginPlay()
 void UAttributeComponent::ReceiveDamage(float Damage)
 {
 	Health = FMath::Clamp(Health - Damage, 0.f, MaxHealth);
-
+	HealthSlider = FMath::Clamp(Health - Damage, 0.f, MaxHealth);
 	// 플레이어가 입은 데미지 양을 회복 가능한 체력으로 설정
 	RegainableHealth = Damage;
 	PredictedHP = Health + RegainableHealth;
@@ -45,6 +45,11 @@ float UAttributeComponent::GetHealthPercent()
 float UAttributeComponent::GetStaminaPercent()
 {
 	return Stamina / MaxStamina;
+}
+
+float UAttributeComponent::GetHealthSlider()
+{
+	return Health / MaxHealth;
 }
 
 float UAttributeComponent::GetRegainHealthPercent()

@@ -4,6 +4,7 @@
 #include "HUD/PlayerOverlay.h"
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
+#include "Components/Slider.h"
 
 void UPlayerOverlay::SetHealthBarPercent(float Percent)
 {
@@ -40,10 +41,19 @@ void UPlayerOverlay::SetBullet(int32 Bullet)
 	}
 }
 
+
 void UPlayerOverlay::SetPredictedHPBarPercent(float Percent)
 {
 	if (PredictedHP)
 	{
 		PredictedHP->SetPercent(Percent);
+	}
+}
+
+void UPlayerOverlay::SetHealthSliderBarPercent(float Percent)
+{
+	if (HealthSliderBar)
+	{
+		HealthSliderBar->SetValue(Percent);
 	}
 }

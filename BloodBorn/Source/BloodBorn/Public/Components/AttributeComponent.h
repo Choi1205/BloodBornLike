@@ -23,6 +23,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Actor Attributes")
 	float MaxHealth;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Actor Attributes")
+	float HealthSlider;
+
 	////////////////////////////////////////s
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Actor Attributes")
 	float RegainableHealth;
@@ -75,6 +78,7 @@ public:
 	float GetHealthPercent();
 	float GetStaminaPercent();
 
+	float GetHealthSlider();
 
 	float GetRegainHealthPercent();
 
@@ -91,6 +95,9 @@ public:
 	FORCEINLINE float GetHeavyAttackCost() const { return HeavyAttackCost; }
 	FORCEINLINE float GetStamina() const { return Stamina; }
 	FORCEINLINE float GetHealth() const { return Health; }
+	///
+	FORCEINLINE float GetHealthSlider() const { return HealthSlider; }
+	///
 	FORCEINLINE float GetLastDamageReceived() const { return LastDamageReceived; }
 
 
