@@ -143,7 +143,7 @@ void ABloodBornCharacter::BeginPlay()
 				PlayerOverlay->SetStaminaBarPercent(Attributes->GetStaminaPercent());
 				PlayerOverlay->SetHealthSliderBarPercent(Attributes->GetHealthSlider());
 				PlayerOverlay->SetVial(Attributes->GetBloodVial());
-				PlayerOverlay->SetBullet(20);
+				PlayerOverlay->SetBullet(Attributes->GetBullet());
 				UE_LOG(LogTemp, Warning, TEXT("hpbar valid"));
 			}
 		}
@@ -246,6 +246,9 @@ void ABloodBornCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 
 		// Heal - 수혈액 사용
 		EnhancedInputComponent->BindAction(UseBloodVialAction, ETriggerEvent::Started, this, &ABloodBornCharacter::UseBloodVial);
+
+		// 은탄 생성
+		EnhancedInputComponent->BindAction(MakeBulletAction, ETriggerEvent::Started, this, &ABloodBornCharacter::MakeBullets);
 
 	}
 	else
@@ -375,7 +378,7 @@ void ABloodBornCharacter::Dodge()
 	}
 	else
 	{
-		if (CharacterState != ECharacterState::ECS_LockOn && ActionState != EActionState::EAS_HitReaction && ActionState == EActionState::EAS_Unoccupied || ActionState == EActionState::EAS_Heal)
+		if (CharacterState != ECharacterState::ECS_LockOn && CharacterState != ECharacterState::ECS_EquippedTwoHandedWeapon && ActionState != EActionState::EAS_HitReaction && ActionState == EActionState::EAS_Unoccupied || ActionState == EActionState::EAS_Heal)
 		{
 			if (ActionState == EActionState::EAS_Heal)
 			{
@@ -688,46 +691,67 @@ void ABloodBornCharacter::UseBloodVial()
 {
 	if (EquippedWeaponSaw && ActionState != EActionState::EAS_HitReaction && ActionState == EActionState::EAS_Unoccupied) 
 	{
-		if (Attributes)
-		{
-			if (Attributes->BloodVial > 0)
-			{
-				ActionState = EActionState::EAS_Heal;
-				if (ActionState == EActionState::EAS_Heal)
-				{
-					GetCharacterMovement()->MaxWalkSpeed = 150.f;
-					GetCharacterMovement()->MaxAcceleration = 512.f;
-					PlayBloodVialMontage();
-				}
-			}
-			else
-			{
-				return;
-			}
-		}
-// 		if (Attributes && PlayerOverlay)
-// 		{
-// 			if (Attributes->BloodVial > 0)
-// 			{
-// 				ActionState = EActionState::EAS_Heal;
-// 				if(ActionState == EActionState::EAS_Heal)
-// 				{
-// 					GetCharacterMovement()->MaxWalkSpeed = 150.f;
-// 					GetCharacterMovement()->MaxAcceleration = 512.f;
-// 					Attributes->UseBloodVial(Attributes->GetBloodVial());
-// 					PlayerOverlay->SetVial(Attributes->GetBloodVial());
-// 					PlayerOverlay->SetHealthBarPercent(Attributes->GetHealthPercent());
-// 					PlayerOverlay->SetHealthSliderBarPercent(Attributes->GetHealthSlider());
-// 					PlayBloodVialMontage();
-// 				}
-// 			}
+ 		if (Attributes)
+ 		{
+ 			if (Attributes->BloodVial > 0)
+ 			{
+ 				ActionState = EActionState::EAS_Heal;
+ 				if (ActionState == EActionState::EAS_Heal)
+ 				{
+ 					GetCharacterMovement()->MaxWalkSpeed = 150.f;
+ 					GetCharacterMovement()->MaxAcceleration = 512.f;
+ 					PlayBloodVialMontage();
+ 				}
+ 			}
 // 			else
 // 			{
-// 				// 몽타주 재생 안함
 // 				return;
 // 			}
 // 		}
+//  		if (Attributes && PlayerOverlay)
+// 	 	{
+// 	 		if (Attributes->BloodVial > 0)
+// 	 		{
+// 	 			ActionState = EActionState::EAS_Heal;
+// 	 			if(ActionState == EActionState::EAS_Heal)
+// 	 			{
+// 	 				GetCharacterMovement()->MaxWalkSpeed = 150.f;
+// 	 				GetCharacterMovement()->MaxAcceleration = 512.f;
+// 	 				Attributes->UseBloodVial(Attributes->GetBloodVial());
+// 	 				PlayerOverlay->SetVial(Attributes->GetBloodVial());
+// 	 				PlayerOverlay->SetHealthBarPercent(Attributes->GetHealthPercent());
+// 	 				PlayerOverlay->SetHealthSliderBarPercent(Attributes->GetHealthSlider());
+//	 				PlayBloodVialMontage();
+//	 			}
+	 	}
 	}
+	else
+	{
+		// 몽타주 재생 안함
+		return;
+	}
+// 		}
+// 	}
+}
+
+void ABloodBornCharacter::Heal()
+{
+	// 왜 이거까지 추가했는데도 playrate 0.1로 하고 테스트해봤는데도 닷지가 되는거냐고 
+// 	if (CharacterState == ECharacterState::ECS_EquippedTwoHandedWeapon)
+// 	{
+		if (Attributes && PlayerOverlay)
+		{
+			if (Attributes->BloodVial > 0)
+			{
+				Attributes->UseBloodVial(Attributes->GetBloodVial());
+				PlayerOverlay->SetVial(Attributes->GetBloodVial());
+				PlayerOverlay->SetHealthBarPercent(Attributes->GetHealthPercent());
+				PlayerOverlay->SetHealthSliderBarPercent(Attributes->GetHealthSlider());
+			}
+		}
+//}
+	
+
 }
 
 void ABloodBornCharacter::PlayBloodVialMontage()
@@ -804,14 +828,38 @@ void ABloodBornCharacter::LockOn()
 }
 void ABloodBornCharacter::GunFire()
 {
-	//사격애니메이션과 발포 이펙트를 넣고 락온 여부와 관계 없이 무조건 발동되게 하자
-	if (ActionState == EActionState::EAS_Unoccupied && LockOnEnemyREF != nullptr) {
+ 	if (Attributes->Bullet > 0)
+ 	{
+		//사격애니메이션과 발포 이펙트를 넣고 락온 여부와 관계 없이 무조건 발동되게 하자
+		if (ActionState == EActionState::EAS_Unoccupied && LockOnEnemyREF != nullptr) {
 		
-		ActionState = EActionState::EAS_GunFire;
-		//록온된 적의 인터페이스에 접근
-		IHitInterface* HitInterface = Cast<IHitInterface>(LockOnEnemyREF);
-		HitInterface->GotParryAttackCPP(gunDamage);
-		PlayFireMontage();
+			ActionState = EActionState::EAS_GunFire;
+			//록온된 적의 인터페이스에 접근
+			IHitInterface* HitInterface = Cast<IHitInterface>(LockOnEnemyREF);
+			HitInterface->GotParryAttackCPP(gunDamage);
+			Attributes->UseBullet(Attributes->GetBullet());
+			PlayFireMontage();
+		}
+ 	}
+ 	else
+ 	{
+ 		return;
+ 	}
+}
+
+void ABloodBornCharacter::MakeBullets()
+{
+	if (Attributes && PlayerOverlay)
+	{
+		Attributes->MakeBullet(Attributes->GetBullet());
+		PlayerOverlay->SetBullet(Attributes->GetBullet());
+		PlayerOverlay->SetHealthBarPercent(Attributes->GetHealthPercent());
+		PlayerOverlay->SetHealthSliderBarPercent(Attributes->GetHealthSlider());
+		if (Attributes->Health == 0.0f)
+		{
+			Die();
+			ActionState = EActionState::EAS_Dead;
+		}
 	}
 }
 
@@ -819,6 +867,11 @@ void ABloodBornCharacter::PlayFireMontage()
 {
 	
 	PlayMontageSection(FireMontage, FName("GunFire"));
+	if (PlayerOverlay)
+	{
+		PlayerOverlay->SetBullet(Attributes->GetBullet());
+	}
+
 }
 
 

@@ -42,6 +42,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Actor Attributes")
 	int32 BloodVial = 20;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Actor Attributes")
+	int32 Bullet = 20;
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -88,6 +91,8 @@ public:
 	void ResetRegainableHealth();
 
 	void UseBloodVial(int32 BV);
+	void UseBullet(int32 bullet);
+	void MakeBullet(int32 newBullet);
 	// void AddBloodVials(int32 AmountOfBVial);
 
 	FORCEINLINE float GetDodgeCost() const { return DodgeCost; }
@@ -106,5 +111,6 @@ public:
 
 
 	FORCEINLINE int32 GetBloodVial() const { return BloodVial; }
+	FORCEINLINE int32 GetBullet() const { return Bullet; }
 
 };

@@ -41,32 +41,41 @@ void UPlayerAnimInstance::NativeUpdateAnimation(float DeltaTIime)
 }
 
 void UPlayerAnimInstance::AnimNotify_Heal()
-{
-
+{	
 	UE_LOG(LogTemp, Warning, TEXT("ANIMNOTIFY_HEAL"));
-	PlayerCharacter->UseBloodVial();
-	if (/*Attributes && */PlayerOverlay)
+	CharacterState = ECharacterState::ECS_EquippedTwoHandedWeapon;
+	if (CharacterState == ECharacterState::ECS_EquippedTwoHandedWeapon)
 	{
-// 		if (Attributes->BloodVial > 0)
-// 		{
-			// ActionState = EActionState::EAS_Heal;
-// 			if (ActionState == EActionState::EAS_Heal)
-// 			{
-				//PlayerCharacter->GetCharacterMovement()->MaxWalkSpeed = 150.f;
-				//PlayerCharacter->GetCharacterMovement()->MaxAcceleration = 512.f;
-		UE_LOG(LogTemp, Warning, TEXT("PLAYEROVERLAY VALID"));
-
-				Attributes->UseBloodVial(Attributes->GetBloodVial());
-				PlayerOverlay->SetVial(Attributes->GetBloodVial());
-				PlayerOverlay->SetHealthBarPercent(Attributes->GetHealthPercent());
-				PlayerOverlay->SetHealthSliderBarPercent(Attributes->GetHealthSlider());
-//			}
-//		}
-// 		else
-// 		{
-// 			// 몽타주 재생 안함
-// 			return;
-// 		}
+		UE_LOG(LogTemp, Warning, TEXT("current state : TWOHANDED"));
+		Montage_SetPlayRate(PlayerCharacter->BloodVialMontage, 0.8f);
+		PlayerCharacter->Heal();
 	}
+
+
+// 	UE_LOG(LogTemp, Warning, TEXT("ANIMNOTIFY_HEAL"));
+// 	PlayerCharacter->UseBloodVial();
+// 	if (/*Attributes && */PlayerOverlay)
+// 	{
+// // 		if (Attributes->BloodVial > 0)
+// // 		{
+// 			// ActionState = EActionState::EAS_Heal;
+// // 			if (ActionState == EActionState::EAS_Heal)
+// // 			{
+// 				//PlayerCharacter->GetCharacterMovement()->MaxWalkSpeed = 150.f;
+// 				//PlayerCharacter->GetCharacterMovement()->MaxAcceleration = 512.f;
+// 		UE_LOG(LogTemp, Warning, TEXT("PLAYEROVERLAY VALID"));
+// 
+// 				Attributes->UseBloodVial(Attributes->GetBloodVial());
+// 				PlayerOverlay->SetVial(Attributes->GetBloodVial());
+// 				PlayerOverlay->SetHealthBarPercent(Attributes->GetHealthPercent());
+// 				PlayerOverlay->SetHealthSliderBarPercent(Attributes->GetHealthSlider());
+// //			}
+// //		}
+// // 		else
+// // 		{
+// // 			// 몽타주 재생 안함
+// // 			return;
+// // 		}
+// 	}
 	// rate 도 0.8로 해야함, 닷지 불가능도 //
 }

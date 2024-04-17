@@ -73,6 +73,9 @@ class ABloodBornCharacter : public ACharacter, public IPickupInterface
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* UseBloodVialAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* MakeBulletAction;
+
 
 public:
 	ABloodBornCharacter();
@@ -108,7 +111,10 @@ public:
 	float moveY;
 
 	void UseBloodVial();
+	void Heal();
 
+	UPROPERTY(EditDefaultsOnly, Category = Combat)
+	UAnimMontage* BloodVialMontage;
 
 protected:
 
@@ -139,7 +145,7 @@ protected:
 	void LockOn();
 
 	void GunFire();
-	
+	void MakeBullets();
 
 	void HandleDamage(float DamageAmount);  // ,, virtual?
 
@@ -294,8 +300,7 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = Combat)
 	UAnimMontage* FireMontage;
 
-	UPROPERTY(EditDefaultsOnly, Category = Combat)
-	UAnimMontage* BloodVialMontage;
+
 
 
 	//float LastAttackTime;
