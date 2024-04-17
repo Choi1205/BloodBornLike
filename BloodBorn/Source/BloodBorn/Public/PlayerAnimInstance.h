@@ -34,10 +34,10 @@ public:
 	EActionState ActionState;
 
 	UPROPERTY()
-	UPlayerOverlay* PlayerOverlay;
+	class UPlayerOverlay* PlayerOverlay;
 
 	UPROPERTY()
-	UAttributeComponent* Attributes;
+	class UAttributeComponent* Attributes;
 
 private:
 	UFUNCTION()

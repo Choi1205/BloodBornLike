@@ -5,6 +5,7 @@
 #include "BloodBorn/BloodBornCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/AttributeComponent.h"
+#include "HUD/BBPlayerHUD.h"
 #include "HUD/PlayerOverlay.h"
 #include "Kismet/KismetMathLibrary.h"
 
@@ -13,11 +14,18 @@ void UPlayerAnimInstance::NativeInitializeAnimation()
 {
 	Super::NativeInitializeAnimation();  // override인 재정의이기 때문에 super, 부모 ver 호출해서 부모에서 무슨 일이 일어나는지 확인, 애니메이션 인스턴스도 여기서 실행될 것
 
+// 	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
+// 	{
 	PlayerCharacter = Cast<ABloodBornCharacter>(TryGetPawnOwner());  // () 안에 있는 게 <> 안에 있는 개체를 가리키지 않으면 cast 실패 후 null 반환, () 안에 전달하려는 항목이 null 이면 cast 실패하고 null 반환
 		if (PlayerCharacter)
 		{
 			PlayerCharacterMovement = PlayerCharacter->GetCharacterMovement();
 		}
+// 	ABBPlayerHUD* BBPlayerHUD = Cast<ABBPlayerHUD>(PlayerController->GetHUD());
+// 		if (BBPlayerHUD)
+// 		{
+// 			PlayerOverlay = BBPlayerHUD->GetPlayerOverlay();
+// 		}
 }
 
 void UPlayerAnimInstance::NativeUpdateAnimation(float DeltaTIime)
