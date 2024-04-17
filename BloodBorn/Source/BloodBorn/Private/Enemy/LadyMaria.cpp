@@ -162,8 +162,8 @@ void ALadyMaria::Tick(float DeltaTime)
 			if (mariaAI->attackState == EAttackState::QUICKTHRUST || mariaAI->attackState == EAttackState::CHARGETHRUST) {
 				Thrust();
 			}
-			else if (mariaAI->attackState == EAttackState::CHARGESLASH) {
-				ChargeSlash();
+			else if (mariaAI->attackState == EAttackState::JUMPATTACK) {
+				JumpAttack();
 			}
 			else if (mariaAI->attackState == EAttackState::QUICKSLASH || mariaAI->attackState == EAttackState::STRONGSLASH) {
 				Slash();
@@ -172,6 +172,10 @@ void ALadyMaria::Tick(float DeltaTime)
 			if (bIsMovingWhileAttack) {
 				if (mariaAI->attackState == EAttackState::QUICKTHRUST) {
 					SetActorLocation(GetActorLocation() + GetActorForwardVector() * DeltaTime * 800, true);
+				}
+				else if (mariaAI->attackState == EAttackState::JUMPATTACK) {
+					FVector moveLoc = FMath::Lerp(GetActorLocation(), landPlace, (1/moveDeltaTime) * DeltaTime);
+					SetActorLocation(moveLoc, true);
 				}
 				else {
 					SetActorLocation(GetActorLocation() + GetActorForwardVector() * DeltaTime * 400, true);
@@ -467,7 +471,7 @@ void ALadyMaria::Thrust()
 	stamina -= 100.0f;
 }
 
-void ALadyMaria::ChargeSlash()
+void ALadyMaria::JumpAttack()
 {
 	//만약 재생중이던 몽타주가 있으면
 	if (AnimInstance->IsAnyMontagePlaying()) {
@@ -476,9 +480,21 @@ void ALadyMaria::ChargeSlash()
 	}
 
 	//없으면 좌측베기를 재생
-	AnimInstance->Montage_Play(AnimChargeSlash);
+	AnimInstance->Montage_Play(AnimJumpAttack);
 	//스테미나 소모
 	stamina -= 100.0f;
+}
+
+void ALadyMaria::Assult()
+{
+	//만약 재생중이던 몽타주가 있으면
+	if (AnimInstance->IsAnyMontagePlaying()) {
+		//공격 취소
+		return;
+	}
+
+	//없으면 좌측베기를 재생
+	AnimInstance->Montage_Play(AnimAssult);
 }
 
 void ALadyMaria::AimGun()
@@ -504,7 +520,7 @@ void ALadyMaria::EffectOn()
 		rightEffect_V->SetRelativeRotation(FRotator(0.0f, -90.0f, 180.0f));
 		rightEffect_H->SetRelativeRotation(FRotator(0.0f, -90.0f, -90.0f));
 	}
-	else if (mariaAI->attackState == EAttackState::CHARGESLASH) {
+	/*else if (mariaAI->attackState == EAttackState::JUMPATTACK) {
 		TArray<FHitResult> hitInfos;
 		FCollisionQueryParams queryParams;
 		queryParams.AddIgnoredActor(this);
@@ -519,7 +535,7 @@ void ALadyMaria::EffectOn()
 				}
 			}
 		}
-	}
+	}*/
 	rightEffect_V->Activate(true);
 	rightEffect_H->Activate(true);
 }
@@ -651,4 +667,12 @@ void ALadyMaria::ABP_DodgeEnd()
 void ALadyMaria::ABP_BossHitEnd()
 {
 	mariaAI->attackState = EAttackState::IDLE;
+}
+
+void ALadyMaria::ABP_BossJumpTop()
+{
+	//플레이어 위치를 이용, 착지위치 계산
+	//플레이어 위치에 착지 예정.
+	landPlace = playerREF->GetActorLocation();
+	//landPlace = playerREF->GetActorLocation() + (GetActorLocation() - playerREF->GetActorLocation()).GetSafeNormal() * 50.0f;
 }

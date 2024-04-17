@@ -48,6 +48,9 @@ public:
 	class UAnimMontage* EnemyAttackAnimation;
 
 	UPROPERTY(EditAnywhere)
+	class UAnimMontage* EnemyAttackAnimation2;
+
+	UPROPERTY(EditAnywhere)
 	class UAnimMontage* EnemyDyingAnimation;
 
 	UPROPERTY(EditAnywhere)

@@ -34,9 +34,8 @@ void ALadyMariaAIController::Tick(float DeltaTime)
 		//장거리 견제 명령
 		//3페이즈, 초장거리 상황일때, 공격이 가능하면 눈앞으로 대시해라.
 		if (EnemyREF->phaseState == EPhaseState::PHASE3 && EnemyREF->GetPlayerDistance() > longRange && stamina > moveableStamina && !bIsForwardDodge) {
-			bIsForwardDodge = true;
-			attackState = EAttackState::FORWARDDODGE;
-			EnemyREF->ForwardDodge();
+			attackState = EAttackState::ASSULT;
+			EnemyREF->Assult();
 		}
 
 		//1페이즈의 합체검 상태 && 플레이어 거리가 500 초과면
@@ -47,13 +46,13 @@ void ALadyMariaAIController::Tick(float DeltaTime)
 		}
 		//2페이즈부터는 장거리 견제로 찌르기가 나간다. 아주 멀면 발동 안함
 		else if (EnemyREF->GetPlayerDistance() > midRange && EnemyREF->GetPlayerDistance() < longRange && stamina > moveableStamina && EnemyREF->phaseState != EPhaseState::PHASE1 && chargeTimer == chargeCooldown) {
-			//50%확율로 차지찌르기/차지베기
+			//50%확율로 차지찌르기/점프공격
 			if (RandomNextMoveTF(50)) {
 				attackState = EAttackState::CHARGETHRUST;
 				chargeTimer = 0.0f;
 			}
 			else {
-				attackState = EAttackState::CHARGESLASH;
+				attackState = EAttackState::JUMPATTACK;
 				chargeTimer = 0.0f;
 			}
 		}
