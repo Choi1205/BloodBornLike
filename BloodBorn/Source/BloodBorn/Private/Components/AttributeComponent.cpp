@@ -107,7 +107,7 @@ void UAttributeComponent::MakeBullet(int32 newBullet)
 	// Bullet += 5;
 	Bullet = FMath::Clamp(Bullet + 5, 0.f, 20);
 	// 构具 newBullet捞 hp?
-	Health = FMath::Clamp(Health - 300, 0.f, MaxHealth);  // 努伐橇甫 结具 蹬 Min阑 结具蹬..
+	Health = FMath::Clamp(Health - 100, 0.f, MaxHealth);  // 努伐橇甫 结具 蹬 Min阑 结具蹬..
 }
 
 // void UAttributeComponent::AddBloodVials(int32 AmountOfBVial)

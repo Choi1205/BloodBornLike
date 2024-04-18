@@ -35,6 +35,7 @@ void UPlayerAnimInstance::NativeUpdateAnimation(float DeltaTIime)
 	if (PlayerCharacterMovement)  // NULL이 아닌 경우에만 이 포인터에 엑세스
 	{
 		GroundSpeed = UKismetMathLibrary::VSizeXY(PlayerCharacterMovement->Velocity);  // UKismetMathLibrary 클래스 안에 있는 VSizeXY 같은 함수들은 static이므로 KismetMathLibrary 유형의 객체(object)가 존재할 필요가 없음, 이 함수는 상태나 클래스의 변수를 변경하지 않음, 그저 수학 계산 수행하고 결과 반환하는 일만 함
+		Direction = UAnimInstance::CalculateDirection(PlayerCharacter->GetVelocity(), PlayerCharacter->GetActorRotation());
 		CharacterState = PlayerCharacter->GetCharacterState();
 		//ActionState = PlayerCharacter->GetActionState();
 	}
@@ -43,39 +44,112 @@ void UPlayerAnimInstance::NativeUpdateAnimation(float DeltaTIime)
 void UPlayerAnimInstance::AnimNotify_Heal()
 {	
 	UE_LOG(LogTemp, Warning, TEXT("ANIMNOTIFY_HEAL"));
-	CharacterState = ECharacterState::ECS_EquippedTwoHandedWeapon;
-	if (CharacterState == ECharacterState::ECS_EquippedTwoHandedWeapon)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("current state : TWOHANDED"));
-		Montage_SetPlayRate(PlayerCharacter->BloodVialMontage, 0.8f);
-		PlayerCharacter->Heal();
-	}
-
-
-// 	UE_LOG(LogTemp, Warning, TEXT("ANIMNOTIFY_HEAL"));
-// 	PlayerCharacter->UseBloodVial();
-// 	if (/*Attributes && */PlayerOverlay)
+// 	if (CharacterState == ECharacterState::ECS_EquippedOneHandedWeapon)
 // 	{
-// // 		if (Attributes->BloodVial > 0)
-// // 		{
-// 			// ActionState = EActionState::EAS_Heal;
-// // 			if (ActionState == EActionState::EAS_Heal)
-// // 			{
-// 				//PlayerCharacter->GetCharacterMovement()->MaxWalkSpeed = 150.f;
-// 				//PlayerCharacter->GetCharacterMovement()->MaxAcceleration = 512.f;
-// 		UE_LOG(LogTemp, Warning, TEXT("PLAYEROVERLAY VALID"));
-// 
-// 				Attributes->UseBloodVial(Attributes->GetBloodVial());
-// 				PlayerOverlay->SetVial(Attributes->GetBloodVial());
-// 				PlayerOverlay->SetHealthBarPercent(Attributes->GetHealthPercent());
-// 				PlayerOverlay->SetHealthSliderBarPercent(Attributes->GetHealthSlider());
-// //			}
-// //		}
-// // 		else
-// // 		{
-// // 			// 몽타주 재생 안함
-// // 			return;
-// // 		}
-// 	}
-	// rate 도 0.8로 해야함, 닷지 불가능도 //
+		//UE_LOG(LogTemp, Warning, TEXT("current state : ONEHANDED"));
+	Montage_SetPlayRate(PlayerCharacter->BloodVialMontage, 0.8f);
+	PlayerCharacter->Heal();
+	//	UE_LOG(LogTemp, Warning, TEXT("Heal Done"));
+//	}
+}
+
+void UPlayerAnimInstance::AnimNotify_Decline()
+{
+	UE_LOG(LogTemp, Warning, TEXT("ANIMNOTIFY_Decline"));
+	Montage_SetPlayRate(PlayerCharacter->MakeBulletMontage, 0.8f);
+	PlayerCharacter->Decline();
+}
+
+void UPlayerAnimInstance::AnimNotify_AttackEnd()
+{
+	PlayerCharacter->AttackEnd();
+}
+
+void UPlayerAnimInstance::AnimNotify_EnableBoxCollision()
+{
+	PlayerCharacter->SetWeaponCollisionEnabled(ECollisionEnabled::QueryOnly);
+}
+
+void UPlayerAnimInstance::AnimNotify_DisableCollision()
+{
+	PlayerCharacter->SetWeaponCollisionEnabled(ECollisionEnabled::NoCollision);
+}
+
+void UPlayerAnimInstance::AnimNotify_HitReactEnd()
+{
+	PlayerCharacter->HitReactEnd();
+}
+
+void UPlayerAnimInstance::AnimNotify_EnableInvincible()
+{
+	PlayerCharacter->bIsInvincible =true;
+}
+
+void UPlayerAnimInstance::AnimNotify_DisableInvincible()
+{
+	PlayerCharacter->bIsInvincible = false;
+	PlayerCharacter->GetCharacterMovement()->MaxWalkSpeed = 600.0f;
+	PlayerCharacter->GetCharacterMovement()->MaxAcceleration = 2048.0f;
+}
+
+void UPlayerAnimInstance::AnimNotify_WeaponVisible()
+{
+	PlayerCharacter->WeaponVisible();
+}
+
+void UPlayerAnimInstance::AnimNotify_GunInvisible()
+{
+	PlayerCharacter->GunInvisible();
+}
+
+void UPlayerAnimInstance::AnimNotify_GunVisible()
+{
+	PlayerCharacter->GunVisible();
+}
+
+void UPlayerAnimInstance::AnimNotify_WeaponInvisible()
+{
+	PlayerCharacter->WeaponInvisible();
+}
+
+void UPlayerAnimInstance::AnimNotify_HoldAttackStart()
+{
+	PlayerCharacter->HoldAttackStart(PlayerCharacter->LockOnEnemyREF, 10.0f, EAttackType::Normal);
+	Montage_SetPlayRate(PlayerCharacter->FireMontage, 0.4f);
+}
+
+void UPlayerAnimInstance::AnimNotify_HoldAttackFinish()
+{
+	PlayerCharacter->HoldAttackEnd(PlayerCharacter->LockOnEnemyREF, 500.0f, EAttackType::HoldAttack);
+	Montage_SetPlayRate(PlayerCharacter->FireMontage, 1.0f);
+}
+
+void UPlayerAnimInstance::AnimNotify_RaiseArm()
+{
+	Montage_SetPlayRate(PlayerCharacter->FireMontage, 6.0f);
+}
+
+void UPlayerAnimInstance::AnimNotify_ReturnArm()
+{
+	Montage_SetPlayRate(PlayerCharacter->FireMontage, 1.0f);
+}
+
+void UPlayerAnimInstance::AnimNotify_Stay()
+{
+	Montage_SetPlayRate(PlayerCharacter->BloodVialMontage, 0.8f);
+}
+
+void UPlayerAnimInstance::AnimNotify_BulletStay()
+{
+	Montage_SetPlayRate(PlayerCharacter->MakeBulletMontage, 0.8f);
+}
+
+void UPlayerAnimInstance::AnimNotify_Back()
+{
+	Montage_SetPlayRate(PlayerCharacter->BloodVialMontage, 4.5f);
+}
+
+void UPlayerAnimInstance::AnimNotify_BulletBack()
+{
+	Montage_SetPlayRate(PlayerCharacter->MakeBulletMontage, 4.5f);
 }

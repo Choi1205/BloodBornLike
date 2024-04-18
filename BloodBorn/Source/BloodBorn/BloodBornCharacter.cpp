@@ -107,15 +107,28 @@ void ABloodBornCharacter::WeaponVisible()
 {
 	//if (EquippedWeaponSaw != nullptr && EquippedWeaponSaw->ItemMesh != nullptr)
 	//{
-		EquippedWeaponSaw->ItemMesh->SetVisibility(true);
-		ActionState = EActionState::EAS_Unoccupied;
+// 		EquippedWeaponSaw->ItemMesh->SetVisibility(true);
+// 		ActionState = EActionState::EAS_Unoccupied;
 
 	//}
+	EquippedWeaponSaw->ItemMesh->SetVisibility(true);
+	ActionState = EActionState::EAS_Unoccupied;
 }
 
 void ABloodBornCharacter::WeaponInvisible()
 {
 	EquippedWeaponSaw->ItemMesh->SetVisibility(false);
+}
+
+void ABloodBornCharacter::GunVisible()
+{
+	EquippedGun->ItemMesh->SetVisibility(true);
+	ActionState = EActionState::EAS_Unoccupied;
+}
+
+void ABloodBornCharacter::GunInvisible()
+{
+	EquippedGun->ItemMesh->SetVisibility(false);
 }
 
 void ABloodBornCharacter::BeginPlay()
@@ -333,6 +346,10 @@ void ABloodBornCharacter::FKeyPressed()
 		//CharacterState = ECharacterState::ECS_EquippedOneHandedWeapon;
 		OverlappingItem = nullptr;
 		EquippedGun = OverlappingGun;
+		if (EquippedGun)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("99999999999999999999999"));
+		}
 	}
 
 	ABloodVial* OverlappingBloodVial = Cast<ABloodVial>(OverlappingItem);
@@ -378,7 +395,11 @@ void ABloodBornCharacter::Dodge()
 	}
 	else
 	{
-		if (CharacterState != ECharacterState::ECS_LockOn && CharacterState != ECharacterState::ECS_EquippedTwoHandedWeapon && ActionState != EActionState::EAS_HitReaction && ActionState == EActionState::EAS_Unoccupied || ActionState == EActionState::EAS_Heal)
+		if (CharacterState == ECharacterState::ECS_EquippedOneHandedWeapon)
+		{
+			EquippedWeaponSaw->ItemMesh->SetVisibility(true);
+		}
+		if (CharacterState != ECharacterState::ECS_LockOn && CharacterState != ECharacterState::ECS_EquippedOneHandedWeapon && ActionState != EActionState::EAS_HitReaction && ActionState == EActionState::EAS_Unoccupied || ActionState == EActionState::EAS_Heal || ActionState == EActionState::EAS_MakeBullet)
 		{
 			if (ActionState == EActionState::EAS_Heal)
 			{
@@ -696,12 +717,13 @@ void ABloodBornCharacter::UseBloodVial()
  			if (Attributes->BloodVial > 0)
  			{
  				ActionState = EActionState::EAS_Heal;
- 				if (ActionState == EActionState::EAS_Heal)
- 				{
- 					GetCharacterMovement()->MaxWalkSpeed = 150.f;
- 					GetCharacterMovement()->MaxAcceleration = 512.f;
- 					PlayBloodVialMontage();
- 				}
+				CharacterState = ECharacterState::ECS_EquippedOneHandedWeapon;
+//  				if (ActionState == EActionState::EAS_Heal)
+//  				{
+				GetCharacterMovement()->MaxWalkSpeed = 150.f;
+				GetCharacterMovement()->MaxAcceleration = 512.f;
+				PlayBloodVialMontage();
+// 				}
  			}
 // 			else
 // 			{
@@ -739,20 +761,21 @@ void ABloodBornCharacter::Heal()
 	// 왜 이거까지 추가했는데도 playrate 0.1로 하고 테스트해봤는데도 닷지가 되는거냐고 
 // 	if (CharacterState == ECharacterState::ECS_EquippedTwoHandedWeapon)
 // 	{
-		if (Attributes && PlayerOverlay)
-		{
-			if (Attributes->BloodVial > 0)
-			{
-				Attributes->UseBloodVial(Attributes->GetBloodVial());
-				PlayerOverlay->SetVial(Attributes->GetBloodVial());
-				PlayerOverlay->SetHealthBarPercent(Attributes->GetHealthPercent());
-				PlayerOverlay->SetHealthSliderBarPercent(Attributes->GetHealthSlider());
-			}
-		}
-//}
-	
+	//CharacterState = ECharacterState::ECS_EquippedOneHandedWeapon;
 
+	if (Attributes && PlayerOverlay)
+	{
+		if (Attributes->BloodVial > 0)
+		{
+			Attributes->UseBloodVial(Attributes->GetBloodVial());
+			PlayerOverlay->SetVial(Attributes->GetBloodVial());
+			PlayerOverlay->SetHealthBarPercent(Attributes->GetHealthPercent());
+			PlayerOverlay->SetHealthSliderBarPercent(Attributes->GetHealthSlider());
+		}
+	}
+//}
 }
+
 
 void ABloodBornCharacter::PlayBloodVialMontage()
 {
@@ -760,6 +783,7 @@ void ABloodBornCharacter::PlayBloodVialMontage()
 	PlayMontageSection(BloodVialMontage, FName("Heal"));
 
 }
+
 
 
 
@@ -826,6 +850,7 @@ void ABloodBornCharacter::LockOn()
 		LockOnEnemyREF = EngageLockOn();
 	}
 }
+
 void ABloodBornCharacter::GunFire()
 {
  	if (Attributes->Bullet > 0)
@@ -847,31 +872,63 @@ void ABloodBornCharacter::GunFire()
  	}
 }
 
-void ABloodBornCharacter::MakeBullets()
-{
-	if (Attributes && PlayerOverlay)
-	{
-		Attributes->MakeBullet(Attributes->GetBullet());
-		PlayerOverlay->SetBullet(Attributes->GetBullet());
-		PlayerOverlay->SetHealthBarPercent(Attributes->GetHealthPercent());
-		PlayerOverlay->SetHealthSliderBarPercent(Attributes->GetHealthSlider());
-		if (Attributes->Health == 0.0f)
-		{
-			Die();
-			ActionState = EActionState::EAS_Dead;
-		}
-	}
-}
-
 void ABloodBornCharacter::PlayFireMontage()
 {
-	
+
 	PlayMontageSection(FireMontage, FName("GunFire"));
 	if (PlayerOverlay)
 	{
 		PlayerOverlay->SetBullet(Attributes->GetBullet());
 	}
+}
 
+void ABloodBornCharacter::MakeBullets()
+{
+	if (EquippedGun && ActionState != EActionState::EAS_HitReaction && ActionState == EActionState::EAS_Unoccupied)
+	{
+		if (Attributes)
+		{
+			if (Attributes->Health > 100.f)
+			{
+				ActionState = EActionState::EAS_MakeBullet;
+				CharacterState = ECharacterState::ECS_EquippedOneHandedWeapon;
+				//  				if (ActionState == EActionState::EAS_Heal)
+				//  				{
+				GetCharacterMovement()->MaxWalkSpeed = 150.f;
+				GetCharacterMovement()->MaxAcceleration = 512.f;
+				PlayMakeBulletMontage();
+				// 				}
+			}
+		}
+	}
+	else
+	{
+		return;
+	}
+}
+
+void ABloodBornCharacter::Decline()
+{
+	if (Attributes && PlayerOverlay)
+	{
+		if (Attributes->Health >= 100.f)
+		{
+			Attributes->MakeBullet(Attributes->GetBullet());
+			PlayerOverlay->SetBullet(Attributes->GetBullet());
+			PlayerOverlay->SetHealthBarPercent(Attributes->GetHealthPercent());
+			PlayerOverlay->SetHealthSliderBarPercent(Attributes->GetHealthSlider());
+		}
+		else
+		{
+			return;
+		}
+	}
+}
+
+
+void ABloodBornCharacter::PlayMakeBulletMontage()
+{
+	PlayMontageSection(MakeBulletMontage, FName("MakeBullet"));
 }
 
 

@@ -96,6 +96,18 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void WeaponInvisible();
+	
+	UFUNCTION(BlueprintCallable)
+	void GunVisible();
+
+	UFUNCTION(BlueprintCallable)
+	void GunInvisible();
+
+	UFUNCTION(BlueprintCallable)
+	void AttackEnd();
+	
+	UFUNCTION(BlueprintCallable)
+	void HitReactEnd();
 
 	int32 Selection = 0;
 
@@ -112,9 +124,40 @@ public:
 
 	void UseBloodVial();
 	void Heal();
+	void Decline();
+
+	/**
+	* Animation Montages
+	*/
+	UPROPERTY(EditDefaultsOnly, Category = Combat)
+	UAnimMontage* NormalAttackMontage;
+
+	UPROPERTY(EditDefaultsOnly, Category = Combat)
+	UAnimMontage* StrongAttackMontage;	
+	
+	UPROPERTY(EditDefaultsOnly, Category = Combat)
+	UAnimMontage* HoldAttackMontage;
+
+	UPROPERTY(EditDefaultsOnly, Category = Combat)
+	UAnimMontage* DodgeMontage;
+
+	UPROPERTY(EditDefaultsOnly, Category = Combat)
+	UAnimMontage* HitReactMontage;
+
+	UPROPERTY(EditDefaultsOnly, Category = Combat)
+	UAnimMontage* DeathMontage;
+
+	UPROPERTY(EditDefaultsOnly, Category = Combat)
+	UAnimMontage* StepMontage;
+
+	UPROPERTY(EditDefaultsOnly, Category = Combat)
+	UAnimMontage* FireMontage;
 
 	UPROPERTY(EditDefaultsOnly, Category = Combat)
 	UAnimMontage* BloodVialMontage;
+
+	UPROPERTY(EditDefaultsOnly, Category = Combat)
+	UAnimMontage* MakeBulletMontage;
 
 protected:
 
@@ -177,11 +220,9 @@ protected:
 
 	void PlayBloodVialMontage();
 
-	UFUNCTION(BlueprintCallable)
-	void AttackEnd();
+	void PlayMakeBulletMontage();
 
-	UFUNCTION(BlueprintCallable)
-	void HitReactEnd();
+
 	
 	/*UFUNCTION(BlueprintCallable)
 	void HoldAttackStart();*/
@@ -238,6 +279,9 @@ public:
 
 	// float ApplyDamage(AActor* DamagedActor, float DamageAmount, EAttackType AttackType);
 
+	//락온된 액터
+	class AActor* LockOnEnemyREF = nullptr;
+
 private:
 	void SetHUDHealth();
 
@@ -273,35 +317,6 @@ private:
 	//UPROPERTY(EditAnywhere, Category = Weapon)
 	//TSubclassOf<ULegacyCameraShake> CameraShake;
 
-	/**
-	* Animation Montages
-	*/
-	UPROPERTY(EditDefaultsOnly, Category = Combat)
-	UAnimMontage* NormalAttackMontage;
-
-	UPROPERTY(EditDefaultsOnly, Category = Combat)
-	UAnimMontage* StrongAttackMontage;	
-	
-	UPROPERTY(EditDefaultsOnly, Category = Combat)
-	UAnimMontage* HoldAttackMontage;
-
-	UPROPERTY(EditDefaultsOnly, Category = Combat)
-	UAnimMontage* DodgeMontage;
-
-	UPROPERTY(EditDefaultsOnly, Category = Combat)
-	UAnimMontage* HitReactMontage;
-
-	UPROPERTY(EditDefaultsOnly, Category = Combat)
-	UAnimMontage* DeathMontage;
-
-	UPROPERTY(EditDefaultsOnly, Category = Combat)
-	UAnimMontage* StepMontage;
-
-	UPROPERTY(EditDefaultsOnly, Category = Combat)
-	UAnimMontage* FireMontage;
-
-
-
 
 	//float LastAttackTime;
 	//float LastDamageDealt;  // 마지막으로 가한 데미지
@@ -316,8 +331,7 @@ private:
 	//락온 해제
 	void DisEngageLockOn();
 
-	//락온된 액터
-	class AActor* LockOnEnemyREF = nullptr;
+
 	//락온시작시 락온 범위 찾기용 & 락온된 적과의 거리
 	float lockOnEnemyDistance = 800.0f;
 
