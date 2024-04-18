@@ -56,7 +56,7 @@ void UBossAnimInstance::AnimNotify_Boss_AttackStart()
 			Montage_SetPlayRate(NULL, 0.2f);
 		}
 	}
-	else if (mariaAIREF->attackState == EAttackState::QUICKSLASH) {
+	else if (mariaAIREF->attackState == EAttackState::QUICKSLASH || mariaAIREF->attackState == EAttackState::ASSULT) {
 		Montage_SetPlayRate(NULL, 0.1f);
 	}
 	else if (mariaAIREF->attackState == EAttackState::STRONGSLASH || mariaAIREF->attackState == EAttackState::JUMPATTACK) {
@@ -192,4 +192,15 @@ void UBossAnimInstance::AnimNotify_Boss_JumpTop()
 void UBossAnimInstance::AnimNotify_Boss_JumpLand()
 {
 	//착지 이펙트 켜기, 데미지 판정
+}
+
+void UBossAnimInstance::AnimNotify_Boss_AssultChargeEnd()
+{
+	Montage_SetPlayRate(NULL, 1.0f);
+	mariaREF->ABP_AssultChargeEnd();
+}
+
+void UBossAnimInstance::AnimNotify_Boss_AssultDodgeEnd()
+{
+	mariaREF->ABP_AssultDodgeEnd();
 }

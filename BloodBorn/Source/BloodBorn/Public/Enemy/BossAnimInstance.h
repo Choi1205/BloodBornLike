@@ -70,4 +70,9 @@ private:
 	void AnimNotify_Boss_JumpTop();
 	UFUNCTION()
 	void AnimNotify_Boss_JumpLand();
+	UFUNCTION()
+	void AnimNotify_Boss_AssultChargeEnd();
+	UFUNCTION()
+	void AnimNotify_Boss_AssultDodgeEnd();
+
 };

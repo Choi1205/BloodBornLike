@@ -115,9 +115,12 @@ private:
 
 	float strongAttack = 100.0f;
 
-	FVector landPlace;
+	FVector movePlace;
 
 	const float moveDeltaTime = 0.276996f;
+	const float assultDeltaTime = 0.490706f;
+
+	float temp = 0.0f;
 
 	class ALadyMariaAIController* mariaAI = nullptr;
 
@@ -132,7 +135,7 @@ public:
 	//////////////
 	// 변수구역 //
 	//////////////
-
+	
 	//페이즈는 1~3
 	EPhaseState phaseState = EPhaseState::PHASE1;
 
@@ -264,5 +267,9 @@ public:
 	void ABP_BossHitEnd();
 
 	void ABP_BossJumpTop();
+
+	void ABP_AssultChargeEnd();
+
+	void ABP_AssultDodgeEnd();
 
 };

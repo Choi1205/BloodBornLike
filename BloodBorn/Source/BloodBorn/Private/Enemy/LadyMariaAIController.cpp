@@ -33,9 +33,8 @@ void ALadyMariaAIController::Tick(float DeltaTime)
 		
 		//장거리 견제 명령
 		//3페이즈, 초장거리 상황일때, 공격이 가능하면 눈앞으로 대시해라.
-		if (EnemyREF->phaseState == EPhaseState::PHASE3 && EnemyREF->GetPlayerDistance() > longRange && stamina > moveableStamina && !bIsForwardDodge) {
+		if (EnemyREF->phaseState == EPhaseState::PHASE3 && EnemyREF->GetPlayerDistance() > longRange && stamina > moveableStamina) {
 			attackState = EAttackState::ASSULT;
-			EnemyREF->Assult();
 		}
 
 		//1페이즈의 합체검 상태 && 플레이어 거리가 500 초과면

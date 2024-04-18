@@ -17,6 +17,7 @@
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
 #include "Enemy/BGMActor.h"
+#include "Engine.h"
 
 ALadyMaria::ALadyMaria()
 {
@@ -159,6 +160,10 @@ void ALadyMaria::Tick(float DeltaTime)
 
 			}
 
+			if (mariaAI->attackState == EAttackState::ASSULT) {
+				Assult();
+			}
+
 			if (mariaAI->attackState == EAttackState::QUICKTHRUST || mariaAI->attackState == EAttackState::CHARGETHRUST) {
 				Thrust();
 			}
@@ -174,7 +179,14 @@ void ALadyMaria::Tick(float DeltaTime)
 					SetActorLocation(GetActorLocation() + GetActorForwardVector() * DeltaTime * 800, true);
 				}
 				else if (mariaAI->attackState == EAttackState::JUMPATTACK) {
-					FVector moveLoc = FMath::Lerp(GetActorLocation(), landPlace, (1/moveDeltaTime) * DeltaTime);
+					temp += DeltaTime;
+					FVector moveLoc = FMath::Lerp(GetActorLocation(), movePlace, 1 /(moveDeltaTime / temp));
+					UE_LOG(LogTemp, Warning, TEXT("%f"), 1 / moveDeltaTime);
+					SetActorLocation(moveLoc, true);
+				}
+				else if (mariaAI->attackState == EAttackState::ASSULT) {
+					temp += DeltaTime;
+					FVector moveLoc = FMath::Lerp(GetActorLocation(), movePlace, 1 /(assultDeltaTime / temp));
 					SetActorLocation(moveLoc, true);
 				}
 				else {
@@ -199,18 +211,12 @@ void ALadyMaria::Tick(float DeltaTime)
 //비긴플레이에서 호출. 플레이어 찾기
 ABloodBornCharacter* ALadyMaria::FindPlayer_BP()
 {
-	TArray<AActor*> players;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ABloodBornCharacter::StaticClass(), players);
+	for(TActorIterator<ABloodBornCharacter> iter(GetWorld()); iter; ++iter) {
+		return *iter;
+	}
 
-	if (players[0] != nullptr) {
-		//플레이어 포인터 형태로 반환한다.
-		return Cast<ABloodBornCharacter>(players[0]);
-	}
-	else {
-		findPlayerTimer = 5.0f;
-		return nullptr;
-	}
-	
+	findPlayerTimer = 5.0f;
+	return nullptr;
 }
 
 //거리 게터 함수
@@ -673,6 +679,21 @@ void ALadyMaria::ABP_BossJumpTop()
 {
 	//플레이어 위치를 이용, 착지위치 계산
 	//플레이어 위치에 착지 예정.
-	landPlace = playerREF->GetActorLocation();
-	//landPlace = playerREF->GetActorLocation() + (GetActorLocation() - playerREF->GetActorLocation()).GetSafeNormal() * 50.0f;
+	movePlace = playerREF->GetActorLocation() - playerREF->GetActorForwardVector() * 100.0f;
+	temp = 0.0f;
+}
+
+void ALadyMaria::ABP_AssultChargeEnd()
+{
+	//플레이어와 1/3거리 + 좌측으로 500.0f위치로 이동
+	FVector towardPlayer = playerREF->GetActorLocation() - GetActorLocation();
+
+	movePlace = GetActorLocation() + towardPlayer * 2.0f / 3.0f + GetActorRightVector() * -900.0f;
+	temp = 0.0f;
+}
+
+void ALadyMaria::ABP_AssultDodgeEnd()
+{
+	movePlace = playerREF->GetActorLocation() - playerREF->GetActorForwardVector() * 100.0f;
+	EffectOn();
 }
