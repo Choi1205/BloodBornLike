@@ -398,30 +398,45 @@ void ABloodBornCharacter::Dodge()
 		if (CharacterState == ECharacterState::ECS_EquippedOneHandedWeapon)
 		{
 			EquippedWeaponSaw->ItemMesh->SetVisibility(true);
-		}
-		if (CharacterState != ECharacterState::ECS_LockOn && CharacterState != ECharacterState::ECS_EquippedOneHandedWeapon && ActionState != EActionState::EAS_HitReaction && ActionState == EActionState::EAS_Unoccupied || ActionState == EActionState::EAS_Heal || ActionState == EActionState::EAS_MakeBullet)
-		{
-			if (ActionState == EActionState::EAS_Heal)
+			EquippedGun->ItemMesh->SetVisibility(true);
+			if (LockOnEnemyREF!=nullptr)
 			{
-				GetCharacterMovement()->MaxWalkSpeed = 1000.f;
-				GetCharacterMovement()->MaxAcceleration = 2048.f;
-			}
-			GetCharacterMovement()->MaxWalkSpeed = 1000.f;
-			PlayDodgeMontage();
-			ActionState = EActionState::EAS_Dodge;
-			if (Attributes && PlayerOverlay)
-			{
-				Attributes->UseStamina(Attributes->GetDodgeCost());
-				PlayerOverlay->SetStaminaBarPercent(Attributes->GetStaminaPercent());
+				CharacterState = ECharacterState::ECS_LockOn;
+				if ( CharacterState == ECharacterState::ECS_LockOn )
+				{
+					UE_LOG(LogTemp, Warning, TEXT("LockOn STATE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"));
+				}
 			}
 		}
 
-		if (CharacterState == ECharacterState::ECS_LockOn && ActionState != EActionState::EAS_HitReaction && ActionState == EActionState::EAS_Unoccupied)
+		if (CharacterState != ECharacterState::ECS_LockOn && CharacterState == ECharacterState::ECS_EquippedOneHandedWeapon && ActionState != EActionState::EAS_HitReaction && ActionState == EActionState::EAS_Unoccupied || ActionState == EActionState::EAS_Heal || ActionState == EActionState::EAS_MakeBullet)
+		{
+// 			
+// 			if (bIsLockOn == false)
+// 			{
+				if (ActionState == EActionState::EAS_Heal || ActionState == EActionState::EAS_MakeBullet)
+				{
+					GetCharacterMovement()->MaxWalkSpeed = 1000.f;
+					GetCharacterMovement()->MaxAcceleration = 2048.f;
+					// GetCharacterMovement()->MaxWalkSpeed = 1000.f;
+				}
+				PlayDodgeMontage();
+				ActionState = EActionState::EAS_Dodge;
+				if (Attributes && PlayerOverlay)
+				{
+					Attributes->UseStamina(Attributes->GetDodgeCost());
+					PlayerOverlay->SetStaminaBarPercent(Attributes->GetStaminaPercent());
+				}
+//			}
+		}
+
+		//ActionState = EActionState::EAS_Step;
+		if (CharacterState == ECharacterState::ECS_LockOn  && ActionState != EActionState::EAS_HitReaction && ActionState == EActionState::EAS_Unoccupied || ActionState == EActionState::EAS_Heal || ActionState == EActionState::EAS_MakeBullet/* || ActionState == EActionState::EAS_Step*/)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("11111111111111111111111111111"));
+			//bIsLockOn = true;
 
 			bIsDodge = true;
-
 			FVector currentVelocity = GetCharacterMovement()->Velocity;
 			FRotator currentRot = GetCharacterMovement()->GetLastUpdateRotation()/*GetActorRotation()*/;
 
@@ -431,7 +446,7 @@ void ABloodBornCharacter::Dodge()
 
 			GetCharacterMovement()->MaxWalkSpeed = 1000.f;
 			GetCharacterMovement()->MaxAcceleration = 4096.f;
-			UE_LOG(LogTemp, Warning, TEXT("movex and y :  %f, %f"), moveX, moveY);
+			//UE_LOG(LogTemp, Warning, TEXT("movex and y :  %f, %f"), moveX, moveY);
 			// PlayStepMontage();
 			if (Attributes)
 			{
@@ -444,6 +459,12 @@ void ABloodBornCharacter::Dodge()
 				GetCharacterMovement()->MaxWalkSpeed = 600.f;
 				GetCharacterMovement()->MaxAcceleration = 2048.f;
 			}), 0.4f, false);
+			
+			if (ActionState == EActionState::EAS_Step)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("EAS_Step"));
+
+			}
 		}
 	}
 }
@@ -650,7 +671,14 @@ void ABloodBornCharacter::PlayHoldAttackMontage()
 void ABloodBornCharacter::AttackEnd()
 {
 	GetCharacterMovement()->MaxWalkSpeed = 600.0f;
-	ActionState = EActionState::EAS_Unoccupied;
+ 	//if (CharacterState != ECharacterState::ECS_LockOn)
+ 	//{
+		ActionState = EActionState::EAS_Unoccupied;
+ 	//}
+ 	//else
+ 	//{
+ 	//	ActionState = EActionState::EAS_Step;
+ 	//}
 }
 
 void ABloodBornCharacter::HitReactEnd()
@@ -717,7 +745,6 @@ void ABloodBornCharacter::UseBloodVial()
  			if (Attributes->BloodVial > 0)
  			{
  				ActionState = EActionState::EAS_Heal;
-				CharacterState = ECharacterState::ECS_EquippedOneHandedWeapon;
 //  				if (ActionState == EActionState::EAS_Heal)
 //  				{
 				GetCharacterMovement()->MaxWalkSpeed = 150.f;
@@ -781,7 +808,16 @@ void ABloodBornCharacter::PlayBloodVialMontage()
 {
 	// PlayMontageSection(BloodVialMontage, FName("UseBloodVial"));
 	PlayMontageSection(BloodVialMontage, FName("Heal"));
-
+// 	if (CharacterState == ECharacterState::ECS_LockOn)
+// 	{
+// 		bIsLockOn = true;
+// 	}
+// 	else
+// 	{
+// 		CharacterState = ECharacterState::ECS_EquippedOneHandedWeapon;
+// 		bIsLockOn = false;
+// 	}
+	CharacterState = ECharacterState::ECS_EquippedOneHandedWeapon;
 }
 
 
@@ -838,7 +874,7 @@ void ABloodBornCharacter::LockOn()
 {
 	if (bIsLockOn)
 	{
-		CharacterState = ECharacterState::ECS_Unequipped;
+		// CharacterState = ECharacterState::ECS_Unequipped;
 		bIsLockOn = false;
 		DisEngageLockOn();
 		LockOnEnemyREF = nullptr;
@@ -855,7 +891,6 @@ void ABloodBornCharacter::GunFire()
 {
  	if (Attributes->Bullet > 0)
  	{
-		//사격애니메이션과 발포 이펙트를 넣고 락온 여부와 관계 없이 무조건 발동되게 하자
 		if (ActionState == EActionState::EAS_Unoccupied && LockOnEnemyREF != nullptr) {
 		
 			ActionState = EActionState::EAS_GunFire;
@@ -891,7 +926,7 @@ void ABloodBornCharacter::MakeBullets()
 			if (Attributes->Health > 100.f)
 			{
 				ActionState = EActionState::EAS_MakeBullet;
-				CharacterState = ECharacterState::ECS_EquippedOneHandedWeapon;
+
 				//  				if (ActionState == EActionState::EAS_Heal)
 				//  				{
 				GetCharacterMovement()->MaxWalkSpeed = 150.f;
@@ -929,6 +964,8 @@ void ABloodBornCharacter::Decline()
 void ABloodBornCharacter::PlayMakeBulletMontage()
 {
 	PlayMontageSection(MakeBulletMontage, FName("MakeBullet"));
+	CharacterState = ECharacterState::ECS_EquippedOneHandedWeapon;
+
 }
 
 
