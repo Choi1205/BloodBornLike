@@ -62,6 +62,14 @@ public:
 
 	class UAnimInstance* AnimInstance;
 
+	UPROPERTY(EditAnywhere)
+	class UWidgetComponent* floatingLightComp;
+
+	//UPROPERTY(EditAnywhere)
+	//class UWidgetComponent* floatingHPComp;
+
+	class UEnemyHPWidget* hpWidget;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -91,6 +99,8 @@ public:
 	virtual bool GetInStun() override;
 
 	virtual float GetHealth() override;
+
+	virtual void Lockon(bool value) override;
 
 private:
 	void AfterAttackMoving(float DeltaTime);

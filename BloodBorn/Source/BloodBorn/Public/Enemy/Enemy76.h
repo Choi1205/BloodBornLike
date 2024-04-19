@@ -25,6 +25,7 @@ public:
 	virtual void GotParryAttackCPP(float damage);
 	virtual bool GetInStun() override;
 	virtual float GetHealth() override;
+	virtual void Lockon(bool value) override;
 
 protected:
 

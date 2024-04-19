@@ -85,6 +85,9 @@ public:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class ALadyMariaJumpEffectActor> jumpEffect;
 
+	UPROPERTY(EditAnywhere)
+	class UWidgetComponent* floatingWidgetComp;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float maxHealthPoint = 2000.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
@@ -241,6 +244,8 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	virtual float GetHealth() override;
+
+	virtual void Lockon(bool value) override;
 
 	UFUNCTION()
 	void OnDealDamageOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);

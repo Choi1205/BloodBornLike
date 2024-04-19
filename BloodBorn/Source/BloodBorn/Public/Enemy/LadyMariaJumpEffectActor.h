@@ -64,6 +64,8 @@ public:
 
 	const float swordBurstActiveTime = 0.1f;
 
+	bool bIsJumping = false;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -71,5 +73,7 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+	void JumpingToggle();
 	
 };

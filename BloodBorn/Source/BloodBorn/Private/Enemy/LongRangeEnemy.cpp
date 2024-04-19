@@ -14,6 +14,7 @@
 #include "GameFramework/MovementComponent.h"
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
+#include "Components/WidgetComponent.h"
 
 // Sets default values
 ALongRangeEnemy::ALongRangeEnemy()
@@ -34,6 +35,11 @@ ALongRangeEnemy::ALongRangeEnemy()
 	bulletFirePoint->SetRelativeLocation(FVector(60.0f, 10.0f, 50.0f));
 
 	Attributes = CreateDefaultSubobject< UAttributeComponent>(TEXT("Attributes"));
+
+	floatingLightComp = CreateDefaultSubobject<UWidgetComponent>(TEXT("floatingWidgetComp"));
+	floatingLightComp->SetupAttachment(GetMesh(), FName("Spine1"));
+	floatingLightComp->SetWidgetSpace(EWidgetSpace::Screen);
+	floatingLightComp->SetVisibility(false);
 }
 
 // Called when the game starts or when spawned
@@ -225,6 +231,11 @@ bool ALongRangeEnemy::GetInStun()
 float ALongRangeEnemy::GetHealth()
 {
 	return health;
+}
+
+void ALongRangeEnemy::Lockon(bool value)
+{
+	floatingLightComp->SetVisibility(value);
 }
 
 void ALongRangeEnemy::GotDamage(float damage)

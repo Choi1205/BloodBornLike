@@ -20,6 +20,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
+#include "Components/WidgetComponent.h"
 
 // Sets default values
 ACPPTreeStayEnemy::ACPPTreeStayEnemy()
@@ -36,6 +37,11 @@ ACPPTreeStayEnemy::ACPPTreeStayEnemy()
 	Attributes = CreateDefaultSubobject< UAttributeComponent>(TEXT("Attributes"));
 
 	GetCharacterMovement()->MaxWalkSpeed = 500.0f;
+
+	floatingLightComp = CreateDefaultSubobject<UWidgetComponent>(TEXT("floatingWidgetComp"));
+	floatingLightComp->SetupAttachment(GetMesh(), FName("spine_01"));
+	floatingLightComp->SetWidgetSpace(EWidgetSpace::Screen);
+	floatingLightComp->SetVisibility(false);
 }
 
 // Called when the game starts or when spawned
@@ -157,6 +163,11 @@ bool ACPPTreeStayEnemy::GetInStun()
 float ACPPTreeStayEnemy::GetHealth()
 {
 	return healthPoint;
+}
+
+void ACPPTreeStayEnemy::Lockon(bool value)
+{
+	floatingLightComp->SetVisibility(value);
 }
 
 void ACPPTreeStayEnemy::AfterAttackMoving(float DeltaTime)

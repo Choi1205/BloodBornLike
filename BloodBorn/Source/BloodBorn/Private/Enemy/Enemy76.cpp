@@ -99,3 +99,7 @@ float AEnemy76::GetHealth()
 {
 	return 0.0f;
 }
+
+void AEnemy76::Lockon(bool value)
+{
+}

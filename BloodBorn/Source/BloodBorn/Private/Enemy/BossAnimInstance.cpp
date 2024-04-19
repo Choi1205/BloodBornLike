@@ -66,7 +66,7 @@ void UBossAnimInstance::AnimNotify_Boss_AttackStart()
 	
 	if (mariaAIREF->attackState == EAttackState::JUMPATTACK) {
 		mariaREF->bIsSuperArmor = true;
-		mariaREF->jumpEffectInstance->SetHidden(false);
+		mariaREF->jumpEffectInstance->JumpingToggle();
 	}
 
 	mariaREF->bIsAimmingWhileAttack = true;

@@ -19,6 +19,7 @@
 #include "Enemy/BGMActor.h"
 #include "Engine.h"
 #include "Enemy/LadyMariaJumpEffectActor.h"
+#include "Components/WidgetComponent.h"
 
 ALadyMaria::ALadyMaria()
 {
@@ -92,6 +93,11 @@ ALadyMaria::ALadyMaria()
 	rightEffect_H->SetRelativeLocation(FVector(0.0f, 90.0f, 0.0f));
 	rightEffect_H->SetRelativeRotation(FRotator(-90.0f, 90.0f, 90.0f));
 	rightEffect_H->bAutoActivate = false;
+
+	floatingWidgetComp = CreateDefaultSubobject<UWidgetComponent>(TEXT("floatingWidgetComp"));
+	floatingWidgetComp->SetupAttachment(GetMesh(), FName("Spine"));
+	floatingWidgetComp->SetWidgetSpace(EWidgetSpace::Screen);
+	floatingWidgetComp->SetVisibility(false);
 }
 
 void ALadyMaria::BeginPlay()
@@ -117,10 +123,7 @@ void ALadyMaria::BeginPlay()
 
 	FAttachmentTransformRules rules(EAttachmentRule::SnapToTarget, true);
 
-	jumpEffectInstance->AttachToComponent(GetMesh(), rules);
-	jumpEffectInstance->SetActorRelativeLocation(FVector(0.0f, 0.0f, 88.0f));
-	jumpEffectInstance->SetHidden(true);
-
+	jumpEffectInstance->AttachToComponent(GetMesh(), rules, FName("Hips"));
 }
 
 void ALadyMaria::Tick(float DeltaTime)
@@ -428,6 +431,11 @@ float ALadyMaria::GetHealth()
 	return healthPoint;
 }
 
+void ALadyMaria::Lockon(bool value)
+{
+	floatingWidgetComp->SetVisibility(value);
+}
+
 void ALadyMaria::OnDealDamageOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	ABloodBornCharacter* Player = Cast<ABloodBornCharacter>(OtherActor);//들어온 액터가 플레이어인지 확인
@@ -672,7 +680,7 @@ void ALadyMaria::ABP_BossJumpTop()
 	//플레이어 위치에 착지 예정.
 	movePlace = playerREF->GetActorLocation() - playerREF->GetActorForwardVector() * 100.0f;
 	temp = 0.0f;
-	jumpEffectInstance->SetHidden(true);
+	jumpEffectInstance->JumpingToggle();
 }
 
 void ALadyMaria::ABP_BossJumpLand()

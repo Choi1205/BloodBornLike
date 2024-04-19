@@ -28,6 +28,7 @@ ALadyMariaJumpEffectActor::ALadyMariaJumpEffectActor()
 
 	for(int32 i = 0; i < 4; i++) {
 		swordTrailArray[i]->SetupAttachment(rootComp);
+		swordTrailArray[i]->SetAutoActivate(false);
 		if(i % 2 == 0){
 			swordTrailArray[i]->SetRelativeLocation(FVector(0.0f, 100.0f, 0.0f));
 			swordTrailArray[i]->SetRelativeRotation(FRotator(30.0f, -90.0f, 0.0f));
@@ -49,6 +50,7 @@ ALadyMariaJumpEffectActor::ALadyMariaJumpEffectActor()
 
 	for (int32 i = 0; i < 4; i++) {
 		swordBurstArray[i]->SetupAttachment(rootComp);
+		swordBurstArray[i]->SetAutoActivate(false);
 		if (i % 2 == 0) {
 			swordBurstArray[i]->SetRelativeLocation(FVector(0.0f, 100.0f, 0.0f));
 			swordBurstArray[i]->SetRelativeRotation(FRotator(-30.0f, 90.0f, 0.0f));
@@ -73,29 +75,37 @@ void ALadyMariaJumpEffectActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	
-	swordTrailTimer1 += DeltaTime;
-	if (swordTrailTimer1 > swordTrailActiveTime){
-		swordTrailArray[0]->Activate(true);
-		swordTrailArray[1]->Activate(true);
-		swordTrailTimer1 = 0.0f;
+	if (bIsJumping) {
+		swordTrailTimer1 += DeltaTime;
+		if (swordTrailTimer1 > swordTrailActiveTime) {
+			swordTrailArray[0]->Activate(true);
+			swordTrailArray[1]->Activate(true);
+			swordTrailTimer1 = 0.0f;
+		}
+		swordTrailTimer2 += DeltaTime;
+		if (swordTrailTimer2 > swordTrailActiveTime) {
+			swordTrailArray[2]->Activate(true);
+			swordTrailArray[3]->Activate(true);
+			swordTrailTimer2 = 0.0f;
+		}
+		swordBurstTimer1 += DeltaTime;
+		if (swordBurstTimer1 > swordBurstActiveTime) {
+			swordBurstArray[0]->Activate(true);
+			swordBurstArray[1]->Activate(true);
+			swordBurstTimer1 = 0.0f;
+		}
+		swordBurstTimer2 += DeltaTime;
+		if (swordBurstTimer2 > swordBurstActiveTime) {
+			swordBurstArray[2]->Activate(true);
+			swordBurstArray[3]->Activate(true);
+			swordBurstTimer2 = 0.0f;
+		}
 	}
-	swordTrailTimer2 += DeltaTime;
-	if (swordTrailTimer2 > swordTrailActiveTime) {
-		swordTrailArray[2]->Activate(true);
-		swordTrailArray[3]->Activate(true);
-		swordTrailTimer2 = 0.0f;
-	}
-	swordBurstTimer1 += DeltaTime;
-	if (swordBurstTimer1 > swordBurstActiveTime) {
-		swordBurstArray[0]->Activate(true);
-		swordBurstArray[1]->Activate(true);
-		swordBurstTimer1 = 0.0f;
-	}
-	swordBurstTimer2 += DeltaTime;
-	if (swordBurstTimer2 > swordBurstActiveTime) {
-		swordBurstArray[2]->Activate(true);
-		swordBurstArray[3]->Activate(true);
-		swordBurstTimer2 = 0.0f;
-	}
+}
+
+void ALadyMariaJumpEffectActor::JumpingToggle()
+{
+	//실행될때마다 트루와 펄스가 번갈아가며 바뀐다. 
+	bIsJumping = !bIsJumping;
 }
 
