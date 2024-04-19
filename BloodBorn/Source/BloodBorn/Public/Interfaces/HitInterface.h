@@ -32,4 +32,6 @@ public:
 
 	//체력량을 확인
 	virtual float GetHealth() = 0;
+
+	//virtual void Lockon(bool value) = 0;
 };
