@@ -395,31 +395,44 @@ void ABloodBornCharacter::Dodge()
 	}
 	else
 	{
-		if (CharacterState == ECharacterState::ECS_EquippedOneHandedWeapon)
+		if (ActionState == EActionState::EAS_Heal || ActionState == EActionState::EAS_MakeBullet)
 		{
+// 			if (bIsLockOn/* == false*/)
+// 			{
+// 				CharacterState = ECharacterState::ECS_LockOn;
+// 				if ( CharacterState == ECharacterState::ECS_LockOn )
+// 				{
+// 					UE_LOG(LogTemp, Warning, TEXT("LockOn STATE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"));
+// 				}
+// 			}
+// 			else
+// 			{
+// 				CharacterState = ECharacterState::ECS_Unequipped;
+// 				
+// 			}
 			EquippedWeaponSaw->ItemMesh->SetVisibility(true);
 			EquippedGun->ItemMesh->SetVisibility(true);
-			if (LockOnEnemyREF!=nullptr)
-			{
-				CharacterState = ECharacterState::ECS_LockOn;
-				if ( CharacterState == ECharacterState::ECS_LockOn )
-				{
-					UE_LOG(LogTemp, Warning, TEXT("LockOn STATE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"));
-				}
-			}
+			GetCharacterMovement()->MaxWalkSpeed = 1000.f;
+			GetCharacterMovement()->MaxAcceleration = 2048.f;
 		}
 
-		if (CharacterState != ECharacterState::ECS_LockOn && CharacterState == ECharacterState::ECS_EquippedOneHandedWeapon && ActionState != EActionState::EAS_HitReaction && ActionState == EActionState::EAS_Unoccupied || ActionState == EActionState::EAS_Heal || ActionState == EActionState::EAS_MakeBullet)
+		
+		if (/*(CharacterState != ECharacterState::ECS_LockOn || CharacterState == ECharacterState::ECS_EquippedOneHandedWeapon)*/CharacterState == ECharacterState::ECS_Unequipped && ActionState != EActionState::EAS_HitReaction && (ActionState == EActionState::EAS_Unoccupied || ActionState == EActionState::EAS_Heal || ActionState == EActionState::EAS_MakeBullet))
 		{
 // 			
 // 			if (bIsLockOn == false)
 // 			{
-				if (ActionState == EActionState::EAS_Heal || ActionState == EActionState::EAS_MakeBullet)
-				{
-					GetCharacterMovement()->MaxWalkSpeed = 1000.f;
-					GetCharacterMovement()->MaxAcceleration = 2048.f;
-					// GetCharacterMovement()->MaxWalkSpeed = 1000.f;
-				}
+// 				if (ActionState == EActionState::EAS_Heal || ActionState == EActionState::EAS_MakeBullet)
+// 				{
+// 					EquippedWeaponSaw->ItemMesh->SetVisibility(true);
+// 					EquippedGun->ItemMesh->SetVisibility(true);
+// 
+// 					GetCharacterMovement()->MaxWalkSpeed = 1000.f;
+// 					GetCharacterMovement()->MaxAcceleration = 2048.f;
+// 					// GetCharacterMovement()->MaxWalkSpeed = 1000.f;
+// 				}
+				GetCharacterMovement()->MaxWalkSpeed = 1000.f;
+				GetCharacterMovement()->MaxAcceleration = 2048.f;
 				PlayDodgeMontage();
 				ActionState = EActionState::EAS_Dodge;
 				if (Attributes && PlayerOverlay)
@@ -431,7 +444,7 @@ void ABloodBornCharacter::Dodge()
 		}
 
 		//ActionState = EActionState::EAS_Step;
-		if (CharacterState == ECharacterState::ECS_LockOn  && ActionState != EActionState::EAS_HitReaction && ActionState == EActionState::EAS_Unoccupied || ActionState == EActionState::EAS_Heal || ActionState == EActionState::EAS_MakeBullet/* || ActionState == EActionState::EAS_Step*/)
+		if (CharacterState == ECharacterState::ECS_LockOn  && ActionState != EActionState::EAS_HitReaction && (ActionState == EActionState::EAS_Unoccupied || ActionState == EActionState::EAS_Heal || ActionState == EActionState::EAS_MakeBullet/* || ActionState == EActionState::EAS_Step*/))
 		{
 			UE_LOG(LogTemp, Warning, TEXT("11111111111111111111111111111"));
 			//bIsLockOn = true;
@@ -520,6 +533,16 @@ AActor* ABloodBornCharacter::EngageLockOn()
 			GetCharacterMovement()->bOrientRotationToMovement = false;
 			GetCharacterMovement()->bUseControllerDesiredRotation = true;
 			bIsLockOn = true;
+
+			CharacterState = ECharacterState::ECS_LockOn;
+
+			// 락온 ui 작업
+			// hit 인터페이스의 lockon 함수 호출 후 bool value가 true면 락온 실행(ui랑 체력바)
+			// false면 락온 해제됨 여기는 true만 ~ 
+
+			//IHitInterface* HitInterface = Cast<IHitInterface>(closestEnemy);
+			//HitInterface->Lockon(true);
+
 			return closestEnemy;
 		}
 		else {
@@ -536,6 +559,11 @@ AActor* ABloodBornCharacter::EngageLockOn()
 
 void ABloodBornCharacter::DisEngageLockOn()
 {
+	// 락온 ui 작업
+	// false면 락온 해제됨
+	// 여기서 hitinterface의 lockon 함수의 bool false인자를 전달헀음 밑에 
+	//IHitInterface* HitInterface = Cast<IHitInterface>(LockOnEnemyREF);
+	//HitInterface->Lockon(false);
 	GetWorld()->GetFirstPlayerController()->SetIgnoreLookInput(false);
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->bUseControllerDesiredRotation = false;
@@ -817,7 +845,7 @@ void ABloodBornCharacter::PlayBloodVialMontage()
 // 		CharacterState = ECharacterState::ECS_EquippedOneHandedWeapon;
 // 		bIsLockOn = false;
 // 	}
-	CharacterState = ECharacterState::ECS_EquippedOneHandedWeapon;
+//	CharacterState = ECharacterState::ECS_EquippedOneHandedWeapon;
 }
 
 
@@ -874,7 +902,7 @@ void ABloodBornCharacter::LockOn()
 {
 	if (bIsLockOn)
 	{
-		// CharacterState = ECharacterState::ECS_Unequipped;
+		CharacterState = ECharacterState::ECS_Unequipped;
 		bIsLockOn = false;
 		DisEngageLockOn();
 		LockOnEnemyREF = nullptr;
@@ -882,7 +910,6 @@ void ABloodBornCharacter::LockOn()
 	}
 	else
 	{
-		CharacterState = ECharacterState::ECS_LockOn;
 		LockOnEnemyREF = EngageLockOn();
 	}
 }
@@ -964,7 +991,7 @@ void ABloodBornCharacter::Decline()
 void ABloodBornCharacter::PlayMakeBulletMontage()
 {
 	PlayMontageSection(MakeBulletMontage, FName("MakeBullet"));
-	CharacterState = ECharacterState::ECS_EquippedOneHandedWeapon;
+	//CharacterState = ECharacterState::ECS_EquippedOneHandedWeapon;
 
 }
 

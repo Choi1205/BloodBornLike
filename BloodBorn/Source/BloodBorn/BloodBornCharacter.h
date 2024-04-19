@@ -126,6 +126,9 @@ public:
 	void Heal();
 	void Decline();
 
+	UPROPERTY(VisibleAnywhere)
+	class UWidgetComponent* lockonUI;
+
 	/**
 	* Animation Montages
 	*/
