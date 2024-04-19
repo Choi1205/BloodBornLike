@@ -18,6 +18,7 @@
 #include "NiagaraComponent.h"
 #include "Enemy/BGMActor.h"
 #include "Engine.h"
+#include "Enemy/LadyMariaJumpEffectActor.h"
 
 ALadyMaria::ALadyMaria()
 {
@@ -111,10 +112,15 @@ void ALadyMaria::BeginPlay()
 	playerREF = FindPlayer_BP();
 
 	bgmInstance = GetWorld()->SpawnActor<ABGMActor>(bgmActor, FVector::ZeroVector, FRotator::ZeroRotator, params);
-	/*
+	
+	jumpEffectInstance = GetWorld()->SpawnActor<ALadyMariaJumpEffectActor>(jumpEffect, FVector::ZeroVector, FRotator::ZeroRotator, params);
 
-	//탄환을 발사한다
-	ABulletActor* bullet = GetWorld()->SpawnActor<ABulletActor>(bulletFactory, bulletFirePoint->GetComponentLocation(), (playerREF->GetActorLocation() - bulletFirePoint->GetComponentLocation()).Rotation(), params);*/
+	FAttachmentTransformRules rules(EAttachmentRule::SnapToTarget, true);
+
+	jumpEffectInstance->AttachToComponent(GetMesh(), rules);
+	jumpEffectInstance->SetActorRelativeLocation(FVector(0.0f, 0.0f, 88.0f));
+	jumpEffectInstance->SetHidden(true);
+
 }
 
 void ALadyMaria::Tick(float DeltaTime)
@@ -427,11 +433,11 @@ void ALadyMaria::OnDealDamageOverlapBegin(class UPrimitiveComponent* OverlappedC
 	ABloodBornCharacter* Player = Cast<ABloodBornCharacter>(OtherActor);//들어온 액터가 플레이어인지 확인
 	if (Player && bIsCanDealDamage) {//플레이어이고, 공격도 가능하다면
 		//플레이어는 데미지를 입었다.
-		if (mariaAI->attackState == EAttackState::QUICKTHRUST) {
-			UGameplayStatics::ApplyDamage(Player, strongAttack, GetInstigator()->GetController(), this, UDamageType::StaticClass());
+		if (mariaAI->attackState == EAttackState::QUICKSLASH) {
+			UGameplayStatics::ApplyDamage(Player, weakAttack, GetInstigator()->GetController(), this, UDamageType::StaticClass());
 		}
 		else {
-			UGameplayStatics::ApplyDamage(Player, weakAttack, GetInstigator()->GetController(), this, UDamageType::StaticClass());
+			 UGameplayStatics::ApplyDamage(Player, strongAttack, GetInstigator()->GetController(), this, UDamageType::StaticClass());
 		}
 		bIsCanDealDamage = false;
 	}
@@ -526,22 +532,7 @@ void ALadyMaria::EffectOn()
 		rightEffect_V->SetRelativeRotation(FRotator(0.0f, -90.0f, 180.0f));
 		rightEffect_H->SetRelativeRotation(FRotator(0.0f, -90.0f, -90.0f));
 	}
-	/*else if (mariaAI->attackState == EAttackState::JUMPATTACK) {
-		TArray<FHitResult> hitInfos;
-		FCollisionQueryParams queryParams;
-		queryParams.AddIgnoredActor(this);
-		bool bResult = GetWorld()->SweepMultiByProfile(hitInfos, GetActorLocation(), GetActorLocation(), FQuat::Identity, FName(TEXT("Pawn")), FCollisionShape::MakeSphere(1000.0f), queryParams);
-		if (bResult) {
-			for (auto& hit : hitInfos) {
-				UE_LOG(LogTemp, Warning, TEXT("%s"), *hit.GetActor()->GetActorNameOrLabel());
-				ABloodBornCharacter* player = Cast<ABloodBornCharacter>(hit.GetActor());
-				if (player != nullptr) {
-					UGameplayStatics::ApplyDamage(player, strongAttack, GetInstigator()->GetController(), this, UDamageType::StaticClass());
-					break;
-				}
-			}
-		}
-	}*/
+	
 	rightEffect_V->Activate(true);
 	rightEffect_H->Activate(true);
 }
@@ -681,11 +672,32 @@ void ALadyMaria::ABP_BossJumpTop()
 	//플레이어 위치에 착지 예정.
 	movePlace = playerREF->GetActorLocation() - playerREF->GetActorForwardVector() * 100.0f;
 	temp = 0.0f;
+	jumpEffectInstance->SetHidden(true);
+}
+
+void ALadyMaria::ABP_BossJumpLand()
+{
+	TArray<FHitResult> hitInfos;
+	FCollisionQueryParams queryParams;
+	queryParams.AddIgnoredActor(this);
+	bool bResult = GetWorld()->SweepMultiByProfile(hitInfos, GetActorLocation(), GetActorLocation(), FQuat::Identity, FName(TEXT("Pawn")), FCollisionShape::MakeSphere(500.0f), queryParams);
+	DrawDebugSphere(GetWorld(), GetActorLocation(), 500.0f, 32, FColor::Red, false, 5.0f, 0, 1.0f);
+	if (bResult) {
+		for (auto& hit : hitInfos) {
+			UE_LOG(LogTemp, Warning, TEXT("%s"), *hit.GetActor()->GetActorNameOrLabel());
+			ABloodBornCharacter* player = Cast<ABloodBornCharacter>(hit.GetActor());
+			if (player != nullptr) {
+				UGameplayStatics::ApplyDamage(player, strongAttack, GetInstigator()->GetController(), this, UDamageType::StaticClass());
+				break;
+			}
+		}
+	}
+	instanceEffect = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), jumpAttackEffect, playerREF->GetActorLocation() + FVector(0, 0, -90.0f), FRotator::ZeroRotator, FVector(1.0f));
 }
 
 void ALadyMaria::ABP_AssultChargeEnd()
 {
-	//플레이어와 1/3거리 + 좌측으로 500.0f위치로 이동
+	//플레이어와 2/3거리 + 좌측으로 500.0f위치로 이동
 	FVector towardPlayer = playerREF->GetActorLocation() - GetActorLocation();
 
 	movePlace = GetActorLocation() + towardPlayer * 2.0f / 3.0f + GetActorRightVector() * -900.0f;
@@ -695,5 +707,6 @@ void ALadyMaria::ABP_AssultChargeEnd()
 void ALadyMaria::ABP_AssultDodgeEnd()
 {
 	movePlace = playerREF->GetActorLocation() - playerREF->GetActorForwardVector() * 100.0f;
+	bIsCanDealDamage = true;
 	EffectOn();
 }

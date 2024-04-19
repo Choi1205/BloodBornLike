@@ -68,6 +68,9 @@ public:
 	class UNiagaraSystem* bloodThrustEffect;
 
 	UPROPERTY(EditAnywhere)
+	class UNiagaraSystem* jumpAttackEffect;
+
+	UPROPERTY(EditAnywhere)
 	class UNiagaraComponent* instanceEffect;
 
 	UPROPERTY(EditAnywhere)
@@ -79,6 +82,8 @@ public:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class ABGMActor> bgmActor;
 
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class ALadyMariaJumpEffectActor> jumpEffect;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float maxHealthPoint = 2000.0f;
@@ -204,6 +209,8 @@ public:
 	UPROPERTY(EditAnywhere)
 	class UAnimMontage* AnimBossHit;
 
+	class ALadyMariaJumpEffectActor* jumpEffectInstance;
+
 	//////////////
 	// 함수구역 //
 	//////////////
@@ -267,6 +274,8 @@ public:
 	void ABP_BossHitEnd();
 
 	void ABP_BossJumpTop();
+
+	void ABP_BossJumpLand();
 
 	void ABP_AssultChargeEnd();
 

@@ -5,6 +5,7 @@
 #include "Enemy/LadyMaria.h"
 #include "Enemy/LadyMariaAIController.h"
 #include "Enemy/SmokeFXActor.h"
+#include "Enemy/LadyMariaJumpEffectActor.h"
 
 void UBossAnimInstance::NativeInitializeAnimation()
 {
@@ -65,6 +66,7 @@ void UBossAnimInstance::AnimNotify_Boss_AttackStart()
 	
 	if (mariaAIREF->attackState == EAttackState::JUMPATTACK) {
 		mariaREF->bIsSuperArmor = true;
+		mariaREF->jumpEffectInstance->SetHidden(false);
 	}
 
 	mariaREF->bIsAimmingWhileAttack = true;
@@ -192,6 +194,7 @@ void UBossAnimInstance::AnimNotify_Boss_JumpTop()
 void UBossAnimInstance::AnimNotify_Boss_JumpLand()
 {
 	//착지 이펙트 켜기, 데미지 판정
+	mariaREF->ABP_BossJumpLand();
 }
 
 void UBossAnimInstance::AnimNotify_Boss_AssultChargeEnd()
