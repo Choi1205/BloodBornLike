@@ -51,6 +51,9 @@ public:
 	bool SetFireGun = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float maxHealth = 40.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float health = 40.0f;
 
 	UPROPERTY(EditAnywhere)
@@ -62,8 +65,8 @@ public:
 	UPROPERTY(EditAnywhere)
 	class UWidgetComponent* floatingLightComp;
 
-	//UPROPERTY(EditAnywhere)
-	//class UWidgetComponent* floatingHPComp;
+	UPROPERTY(EditAnywhere)
+	class UWidgetComponent* floatingHPComp;
 
 	class UEnemyHPWidget* hpWidget;
 
@@ -113,4 +116,8 @@ private:
 	float lostPlayerTimer = 0.0f;
 
 	float hitTimer = 0.0f;
+
+	bool bIsLockedOn = false;
+
+	FTimerHandle showingTimer;
 };

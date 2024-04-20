@@ -155,6 +155,7 @@ void ALadyMaria::Tick(float DeltaTime)
 			//공격중이 아니라면 보스는 항상 플레이어를 바라본다.
 			if (mariaAI->attackState == EAttackState::IDLE) {
 				FRotator toward = (playerREF->GetActorLocation() - GetActorLocation()).Rotation();
+				toward.Pitch = 0.0f;
 				SetActorRotation(toward);
 
 				//행동을 멈추면 스테미너가 회복된다.
@@ -191,7 +192,7 @@ void ALadyMaria::Tick(float DeltaTime)
 					temp += DeltaTime;
 					FVector moveLoc = FMath::Lerp(GetActorLocation(), movePlace, 1 /(moveDeltaTime / temp));
 					UE_LOG(LogTemp, Warning, TEXT("%f"), 1 / moveDeltaTime);
-					SetActorLocation(moveLoc, true);
+					SetActorLocation(moveLoc);
 				}
 				else if (mariaAI->attackState == EAttackState::ASSULT) {
 					temp += DeltaTime;
@@ -202,8 +203,10 @@ void ALadyMaria::Tick(float DeltaTime)
 					SetActorLocation(GetActorLocation() + GetActorForwardVector() * DeltaTime * 400, true);
 				}
 			}
-			if (bIsAimmingWhileAttack) {
-				SetActorRotation((playerREF->GetActorLocation() - GetActorLocation()).Rotation());
+			if (bIsAimmingWhileAttack && mariaAI->attackState != EAttackState::JUMPATTACK) {
+				FRotator newRot = (playerREF->GetActorLocation() - GetActorLocation()).Rotation();
+				newRot.Pitch = 0.0f;
+				SetActorRotation(newRot);
 			}
 		}
 	}
@@ -499,7 +502,7 @@ void ALadyMaria::JumpAttack()
 		return;
 	}
 
-	//없으면 좌측베기를 재생
+	//없으면 점프공격을 재생
 	AnimInstance->Montage_Play(AnimJumpAttack);
 	//스테미나 소모
 	stamina -= 100.0f;
@@ -513,7 +516,7 @@ void ALadyMaria::Assult()
 		return;
 	}
 
-	//없으면 좌측베기를 재생
+	//없으면 돌진베기를 재생
 	AnimInstance->Montage_Play(AnimAssult);
 }
 
@@ -678,7 +681,7 @@ void ALadyMaria::ABP_BossJumpTop()
 {
 	//플레이어 위치를 이용, 착지위치 계산
 	//플레이어 위치에 착지 예정.
-	movePlace = playerREF->GetActorLocation() - playerREF->GetActorForwardVector() * 100.0f;
+	movePlace = playerREF->GetActorLocation() + playerREF->GetActorForwardVector() * 100.0f;
 	temp = 0.0f;
 	jumpEffectInstance->JumpingToggle();
 }
@@ -688,8 +691,8 @@ void ALadyMaria::ABP_BossJumpLand()
 	TArray<FHitResult> hitInfos;
 	FCollisionQueryParams queryParams;
 	queryParams.AddIgnoredActor(this);
-	bool bResult = GetWorld()->SweepMultiByProfile(hitInfos, GetActorLocation(), GetActorLocation(), FQuat::Identity, FName(TEXT("Pawn")), FCollisionShape::MakeSphere(500.0f), queryParams);
-	DrawDebugSphere(GetWorld(), GetActorLocation(), 500.0f, 32, FColor::Red, false, 5.0f, 0, 1.0f);
+	bool bResult = GetWorld()->SweepMultiByProfile(hitInfos, GetActorLocation() + GetActorForwardVector() * 200.0f , GetActorLocation() + GetActorForwardVector() * 200.0f, FQuat::Identity, FName(TEXT("Pawn")), FCollisionShape::MakeSphere(200.0f), queryParams);
+	DrawDebugSphere(GetWorld(), GetActorLocation() + GetActorForwardVector() * 200.0f, 200.0f, 32, FColor::Red, false, 5.0f, 0, 1.0f);
 	if (bResult) {
 		for (auto& hit : hitInfos) {
 			UE_LOG(LogTemp, Warning, TEXT("%s"), *hit.GetActor()->GetActorNameOrLabel());
@@ -700,7 +703,7 @@ void ALadyMaria::ABP_BossJumpLand()
 			}
 		}
 	}
-	instanceEffect = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), jumpAttackEffect, playerREF->GetActorLocation() + FVector(0, 0, -90.0f), FRotator::ZeroRotator, FVector(1.0f));
+	instanceEffect = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), jumpAttackEffect, GetActorLocation() + GetActorForwardVector() * 200.0f + FVector(0, 0, -90.0f), FRotator::ZeroRotator, FVector(1.0f));
 }
 
 void ALadyMaria::ABP_AssultChargeEnd()

@@ -55,6 +55,7 @@ void ABTAIController::OnHearNoise(APawn* PlayerPawn, const FVector& Location, fl
 	if (!GetBlackboardComponent()->GetValueAsBool(FName("CanSeePlayer"))) {
 		ACharacter* enemyChar = Cast<ACharacter>(GetPawn());
 		FRotator toward = (Location - enemyChar->GetActorLocation()).Rotation();
+		toward.Pitch = 0;
 		enemyChar->SetActorRotation(toward);
 	}
 }

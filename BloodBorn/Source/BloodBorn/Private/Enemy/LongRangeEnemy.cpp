@@ -15,6 +15,7 @@
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
 #include "Components/WidgetComponent.h"
+#include "Enemy/EnemyHPWidget.h"
 
 // Sets default values
 ALongRangeEnemy::ALongRangeEnemy()
@@ -36,10 +37,15 @@ ALongRangeEnemy::ALongRangeEnemy()
 
 	Attributes = CreateDefaultSubobject< UAttributeComponent>(TEXT("Attributes"));
 
-	floatingLightComp = CreateDefaultSubobject<UWidgetComponent>(TEXT("floatingWidgetComp"));
+	floatingLightComp = CreateDefaultSubobject<UWidgetComponent>(TEXT("floatingLightComp"));
 	floatingLightComp->SetupAttachment(GetMesh(), FName("Spine1"));
 	floatingLightComp->SetWidgetSpace(EWidgetSpace::Screen);
 	floatingLightComp->SetVisibility(false);
+
+	floatingHPComp = CreateDefaultSubobject<UWidgetComponent>(TEXT("floatingHPComp"));
+	floatingHPComp->SetupAttachment(GetMesh(), FName("HeadSocket"));
+	floatingHPComp->SetWidgetSpace(EWidgetSpace::Screen);
+	floatingHPComp->SetVisibility(false);
 }
 
 // Called when the game starts or when spawned
@@ -50,6 +56,8 @@ void ALongRangeEnemy::BeginPlay()
 	//시야에 들어온 폰이 있으면 OnSeePawn이 작동하도록 바인딩
 	PawnSensing->OnSeePawn.AddDynamic(this, &ALongRangeEnemy::OnSeePawn);
 	PawnSensing->OnHearNoise.AddDynamic(this, &ALongRangeEnemy::OnHearNoise);
+
+	hpWidget = Cast<UEnemyHPWidget>(floatingHPComp->GetWidget());
 }
 
 // Called every frame
@@ -130,6 +138,7 @@ void ALongRangeEnemy::OnHearNoise(APawn* PlayerPawn, const FVector& Location, fl
 	
 	if (!CanSeePlayer) {
 		FRotator toward = (Location - GetActorLocation()).Rotation();
+		toward.Pitch = 0.0f;
 		SetActorRotation(toward);
 	}
 }
@@ -166,13 +175,7 @@ void ALongRangeEnemy::FireBullet()
 	//탄환을 발사한다
 	GetWorld()->SpawnActor<ABulletActor>(bulletFactory, bulletFirePoint->GetComponentLocation(), (PlayerREF->GetActorLocation() - bulletFirePoint->GetComponentLocation()).Rotation(), params);
 }
-/*
-void ALongRangeEnemy::GotParryAttackCPP(float Damage)
-{
-	//패리되는 공격이 없으므로 데미지 처리만 호출
-	GotDamagedCPP(Damage);
-}
-*/
+
 void ALongRangeEnemy::GetHit(const FVector& ImpactPoint)
 {
 	UE_LOG(LogTemp, Warning, TEXT("ImpactPoint"));
@@ -235,22 +238,36 @@ float ALongRangeEnemy::GetHealth()
 
 void ALongRangeEnemy::Lockon(bool value)
 {
+	bIsLockedOn = value;
 	floatingLightComp->SetVisibility(value);
+	floatingHPComp->SetVisibility(value);
 }
 
 void ALongRangeEnemy::GotDamage(float damage)
 {
-	health -= damage;
+	health = FMath::Max(health - damage, 0.0f);
 
 	//출혈 이펙트 재생부. 블루프린트의 NiaSys에 미리 파티클을 등록해야한다.
 	bleeding = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), NiaSys, GetActorLocation(), FRotator::ZeroRotator);
 
-	if (health <= 0) {
+	if (health == 0.0f) {
 		PawnSensing->Deactivate();
 		AimmingTime = 0.0f;
 		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		Lockon(false);
 	}
 	else {
+		hpWidget->SetHealthBar(health/maxHealth, damage);
+		if (!bIsLockedOn) {
+			floatingHPComp->SetVisibility(true);
+
+			if (GetWorld()->GetTimerManager().IsTimerActive(showingTimer)) {
+				GetWorld()->GetTimerManager().ClearTimer(showingTimer);
+			}
+			GetWorld()->GetTimerManager().SetTimer(showingTimer, FTimerDelegate::CreateLambda([&]() {
+				floatingHPComp->SetVisibility(false);
+				}), 5.0f, false);
+		}
 		takeHit = true;
 	}
 }
