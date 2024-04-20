@@ -11,6 +11,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "Components/BoxComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/WidgetComponent.h"
 #include "Animation/AnimInstance.h"
 #include "Animation/AnimMontage.h"
 #include "Enemy/SmokeFXActor.h"
@@ -19,7 +20,8 @@
 #include "Enemy/BGMActor.h"
 #include "Engine.h"
 #include "Enemy/LadyMariaJumpEffectActor.h"
-#include "Components/WidgetComponent.h"
+#include "Enemy/BloodDecalActor.h"
+
 
 ALadyMaria::ALadyMaria()
 {
@@ -122,8 +124,9 @@ void ALadyMaria::BeginPlay()
 	jumpEffectInstance = GetWorld()->SpawnActor<ALadyMariaJumpEffectActor>(jumpEffect, FVector::ZeroVector, FRotator::ZeroRotator, params);
 
 	FAttachmentTransformRules rules(EAttachmentRule::SnapToTarget, true);
-
+	
 	jumpEffectInstance->AttachToComponent(GetMesh(), rules, FName("Hips"));
+	jumpEffectInstance->SetActorRotation(FRotator::ZeroRotator);
 }
 
 void ALadyMaria::Tick(float DeltaTime)
@@ -370,6 +373,7 @@ void ALadyMaria::GotDamage(float damage)
 		else {
 			if (mariaAI->bIsStun && damage >= 500.0f && !bIsHitHoldAttack) {
 				bIsHitHoldAttack = true;
+				MakeBloodDecal(GetActorLocation(), false);
 			}
 			else if (!mariaAI->bIsStun && !bIsSuperArmor) {
 				bIsCanDealDamage = false;
@@ -529,14 +533,6 @@ void ALadyMaria::AimGun()
 	}
 }
 
-void ALadyMaria::EffectMove()
-{
-	SetActorRotation((playerREF->GetActorLocation() - GetActorLocation()).Rotation());
-	float aim = FMath::Min(distanceToPlayer + 25.0f, 1000.0f);
-	rightEffect_V->SetRelativeLocation(FVector(0.0f, aim, 0.0f));
-	rightEffect_H->SetRelativeLocation(FVector(0.0f, aim, 0.0f));
-}
-
 void ALadyMaria::EffectOn()
 {
 	if (mariaAI->attackState == EAttackState::QUICKTHRUST || mariaAI->attackState == EAttackState::CHARGETHRUST) {
@@ -546,6 +542,37 @@ void ALadyMaria::EffectOn()
 	
 	rightEffect_V->Activate(true);
 	rightEffect_H->Activate(true);
+}
+
+void ALadyMaria::MakeBloodDecal(FVector makePlace, bool bIsForPlayer)
+{
+	FActorSpawnParameters params;
+	params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	ABloodDecalActor* decal = GetWorld()->SpawnActor<ABloodDecalActor>(bloodDecal, makePlace, GetActorRotation(), params);
+
+	if (bIsForPlayer) {
+		TArray<AActor*> attachedBlood;
+		playerREF->GetAttachedActors(attachedBlood);
+		for (int32 i = 0; i < attachedBlood.Num(); i++) {
+			ABloodDecalActor* blood = Cast<ABloodDecalActor>(attachedBlood[i]);
+			if (blood != nullptr) {
+				blood->Destroy();
+			}
+			//if (attachedBlood[i]->GetName().Contains("BloodDecal")) {
+			//	attachedBlood[i]->SetLifeSpan(0.0f);
+			//	attachedBlood[i]->Destroy();
+			//	break;
+			//}
+		}
+		decal->ForAttachPlayer();
+		FAttachmentTransformRules rules(EAttachmentRule::SnapToTarget, true);
+		decal->AttachToComponent(playerREF->GetMesh(), rules, FName("Spine2"));
+	}
+	else {
+		FVector decalLoc = decal->GetActorLocation();
+		decalLoc.Z = 12.0f;
+		decal->SetActorLocation(decalLoc);
+	}
 }
 
 void ALadyMaria::ABP_FireGun()
@@ -598,6 +625,9 @@ void ALadyMaria::ABP_2ndSlowEnd()
 				FVector effectLoc = startLoc + GetActorForwardVector() * 50.0f * i;
 				FRotator effectRot = GetActorForwardVector().Rotation();
 				instanceEffect = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), bloodThrustEffect, effectLoc, effectRot, FVector(3.0f));
+				if (i % 4 == 0) {
+					MakeBloodDecal(effectLoc, false);
+				}
 			}
 		}
 		else {
@@ -691,19 +721,22 @@ void ALadyMaria::ABP_BossJumpLand()
 	TArray<FHitResult> hitInfos;
 	FCollisionQueryParams queryParams;
 	queryParams.AddIgnoredActor(this);
-	bool bResult = GetWorld()->SweepMultiByProfile(hitInfos, GetActorLocation() + GetActorForwardVector() * 200.0f , GetActorLocation() + GetActorForwardVector() * 200.0f, FQuat::Identity, FName(TEXT("Pawn")), FCollisionShape::MakeSphere(200.0f), queryParams);
-	DrawDebugSphere(GetWorld(), GetActorLocation() + GetActorForwardVector() * 200.0f, 200.0f, 32, FColor::Red, false, 5.0f, 0, 1.0f);
+	FVector attackPlace = GetActorLocation() + GetActorForwardVector() * 200.0f;
+	bool bResult = GetWorld()->SweepMultiByProfile(hitInfos, attackPlace, attackPlace, FQuat::Identity, FName(TEXT("Pawn")), FCollisionShape::MakeSphere(200.0f), queryParams);
+	DrawDebugSphere(GetWorld(), attackPlace, 200.0f, 32, FColor::Red, false, 5.0f, 0, 1.0f);
 	if (bResult) {
 		for (auto& hit : hitInfos) {
 			UE_LOG(LogTemp, Warning, TEXT("%s"), *hit.GetActor()->GetActorNameOrLabel());
 			ABloodBornCharacter* player = Cast<ABloodBornCharacter>(hit.GetActor());
 			if (player != nullptr) {
 				UGameplayStatics::ApplyDamage(player, strongAttack, GetInstigator()->GetController(), this, UDamageType::StaticClass());
+				//MakeBloodDecal(FVector::ZeroVector, true);
 				break;
 			}
 		}
 	}
-	instanceEffect = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), jumpAttackEffect, GetActorLocation() + GetActorForwardVector() * 200.0f + FVector(0, 0, -90.0f), FRotator::ZeroRotator, FVector(1.0f));
+	instanceEffect = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), jumpAttackEffect, attackPlace + FVector(0, 0, -90.0f), FRotator::ZeroRotator, FVector(1.0f));
+	MakeBloodDecal(attackPlace, false);
 }
 
 void ALadyMaria::ABP_AssultChargeEnd()

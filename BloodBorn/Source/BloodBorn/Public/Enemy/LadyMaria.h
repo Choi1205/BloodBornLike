@@ -86,6 +86,9 @@ public:
 	TSubclassOf<class ALadyMariaJumpEffectActor> jumpEffect;
 
 	UPROPERTY(EditAnywhere)
+	TSubclassOf<class ABloodDecalActor> bloodDecal;
+
+	UPROPERTY(EditAnywhere)
 	class UWidgetComponent* floatingWidgetComp;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
@@ -260,9 +263,9 @@ public:
 
 	void AimGun();
 
-	void EffectMove();
-
 	void EffectOn();
+
+	void MakeBloodDecal(FVector makePlace, bool bIsForPlayer);
 
 	/////////////////
 	// ABP함수구역 //
