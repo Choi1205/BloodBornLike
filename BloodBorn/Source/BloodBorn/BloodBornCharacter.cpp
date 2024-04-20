@@ -540,8 +540,8 @@ AActor* ABloodBornCharacter::EngageLockOn()
 			// hit 인터페이스의 lockon 함수 호출 후 bool value가 true면 락온 실행(ui랑 체력바)
 			// false면 락온 해제됨 여기는 true만 ~ 
 
-			//IHitInterface* HitInterface = Cast<IHitInterface>(closestEnemy);
-			//HitInterface->Lockon(true);
+			IHitInterface* HitInterface = Cast<IHitInterface>(closestEnemy);
+			HitInterface->Lockon(true);
 
 			return closestEnemy;
 		}
@@ -562,8 +562,8 @@ void ABloodBornCharacter::DisEngageLockOn()
 	// 락온 ui 작업
 	// false면 락온 해제됨
 	// 여기서 hitinterface의 lockon 함수의 bool false인자를 전달헀음 밑에 
-	//IHitInterface* HitInterface = Cast<IHitInterface>(LockOnEnemyREF);
-	//HitInterface->Lockon(false);
+	IHitInterface* HitInterface = Cast<IHitInterface>(LockOnEnemyREF);
+	HitInterface->Lockon(false);
 	GetWorld()->GetFirstPlayerController()->SetIgnoreLookInput(false);
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->bUseControllerDesiredRotation = false;
@@ -813,11 +813,6 @@ void ABloodBornCharacter::UseBloodVial()
 
 void ABloodBornCharacter::Heal()
 {
-	// 왜 이거까지 추가했는데도 playrate 0.1로 하고 테스트해봤는데도 닷지가 되는거냐고 
-// 	if (CharacterState == ECharacterState::ECS_EquippedTwoHandedWeapon)
-// 	{
-	//CharacterState = ECharacterState::ECS_EquippedOneHandedWeapon;
-
 	if (Attributes && PlayerOverlay)
 	{
 		if (Attributes->BloodVial > 0)
@@ -828,7 +823,6 @@ void ABloodBornCharacter::Heal()
 			PlayerOverlay->SetHealthSliderBarPercent(Attributes->GetHealthSlider());
 		}
 	}
-//}
 }
 
 
