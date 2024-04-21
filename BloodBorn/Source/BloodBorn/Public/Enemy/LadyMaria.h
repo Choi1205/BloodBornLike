@@ -71,6 +71,15 @@ public:
 	class UNiagaraSystem* jumpAttackEffect;
 
 	UPROPERTY(EditAnywhere)
+	class UNiagaraSystem* jumpAttackFireEffect;
+
+	UPROPERTY(EditAnywhere)
+	class UNiagaraSystem* phase3Effect;
+
+	UPROPERTY(EditAnywhere)
+	class UNiagaraSystem* HoldAttackHitEffect;
+
+	UPROPERTY(EditAnywhere)
 	class UNiagaraComponent* instanceEffect;
 
 	UPROPERTY(EditAnywhere)
@@ -180,6 +189,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TSubclassOf<class ASmokeFXActor> smokeVFX;
 
+	class ALadyMariaJumpEffectActor* jumpEffectInstance;
+
 	class UAnimInstance* AnimInstance;
 
 	UPROPERTY(EditAnywhere)
@@ -195,7 +206,7 @@ public:
 	class UAnimMontage* AnimChargeThrust;
 
 	UPROPERTY(EditAnywhere)
-	class UAnimMontage* AnimGunShot;
+	class UAnimMontage* AnimFireGun;
 
 	UPROPERTY(EditAnywhere)
 	class UAnimMontage* AnimAssult;
@@ -215,7 +226,75 @@ public:
 	UPROPERTY(EditAnywhere)
 	class UAnimMontage* AnimBossHit;
 
-	class ALadyMariaJumpEffectActor* jumpEffectInstance;
+	UPROPERTY(EditAnywhere)
+	class USoundBase* swordSwingSound1;
+
+	UPROPERTY(EditAnywhere)
+	class USoundBase* swordSwingSound2;
+
+	UPROPERTY(EditAnywhere)
+	class USoundBase* swordSwingSound3;
+
+	UPROPERTY(EditAnywhere)
+	class USoundBase* swordSwingSound4;
+
+	UPROPERTY(EditAnywhere)
+	class USoundBase* bloodSound1;
+
+	UPROPERTY(EditAnywhere)
+	class USoundBase* bloodSound2;
+
+	UPROPERTY(EditAnywhere)
+	class USoundBase* bloodExplodeSound;
+
+	UPROPERTY(EditAnywhere)
+	class USoundBase* fireSound1;
+
+	UPROPERTY(EditAnywhere)
+	class USoundBase* fireSound2;
+
+	UPROPERTY(EditAnywhere)
+	class USoundBase* fireExplodeSound;
+
+	UPROPERTY(EditAnywhere)
+	class USoundBase* dodgeSound1;
+
+	UPROPERTY(EditAnywhere)
+	class USoundBase* dodgeSound2;
+
+	UPROPERTY(EditAnywhere)
+	class USoundBase* dodgeSound3;
+
+	UPROPERTY(EditAnywhere)
+	class USoundBase* gunFireSound1;
+
+	UPROPERTY(EditAnywhere)
+	class USoundBase* hitSound1;
+
+	UPROPERTY(EditAnywhere)
+	class USoundBase* hitSound2;
+
+	UPROPERTY(EditAnywhere)
+	class USoundBase* hitVoice1;
+
+	UPROPERTY(EditAnywhere)
+	class USoundBase* hitVoice2;
+
+	UPROPERTY(EditAnywhere)
+	class USoundBase* parryedSound;
+
+	UPROPERTY(EditAnywhere)
+	class USoundBase* hitHoldAttackSound;
+
+	UPROPERTY(EditAnywhere)
+	class USoundBase* dieSound1;
+
+	UPROPERTY(EditAnywhere)
+	class USoundBase* dieSound2;
+
+	UPROPERTY(EditAnywhere)
+	class USoundBase* dieVoice;
+
 
 	//////////////
 	// 窃荐备开 //
@@ -266,6 +345,8 @@ public:
 	void EffectOn();
 
 	void MakeBloodDecal(FVector makePlace, bool bIsForPlayer);
+
+	void SwingSoundPlay();
 
 	/////////////////
 	// ABP窃荐备开 //

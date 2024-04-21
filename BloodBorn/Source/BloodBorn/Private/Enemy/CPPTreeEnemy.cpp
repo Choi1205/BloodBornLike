@@ -6,6 +6,8 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/SphereComponent.h"
 #include "Components/BoxComponent.h"
+#include "Components/WidgetComponent.h"
+#include "Components/AttributeComponent.h"
 #include "Perception/PawnSensingComponent.h"
 #include "Enemy/BTAIController.h"
 #include "BehaviorTree/BlackboardComponent.h"
@@ -13,14 +15,12 @@
 #include "AITypes.h"
 #include "Animation/AnimInstance.h"
 #include "Animation/AnimMontage.h"
-#include "Components/AttributeComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "GameFramework/Character.h"
-#include "Kismet/GameplayStatics.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
-#include "Components/WidgetComponent.h"
 #include "Enemy/EnemyHPWidget.h"
 
 // Sets default values
@@ -157,10 +157,11 @@ void ACPPTreeEnemy::GotParryAttackCPP(float damage)
 			CanParryed = false;
 			BTAIController->GetBlackboardComponent()->SetValueAsBool(FName("InStun"), true);
 			BTAIController->GetBlackboardComponent()->SetValueAsBool(FName("TakingHit"), false);
+			UGameplayStatics::PlaySound2D(GetWorld(), parryedSound);
 		}
 	}
 	//패리판정 및 스턴판정이 들어감
-	UE_LOG(LogTemp, Warning, TEXT("Gun Attack Damage : %.0f"), damage);
+	//UE_LOG(LogTemp, Warning, TEXT("Gun Attack Damage : %.0f"), damage);
 }
 
 bool ACPPTreeEnemy::GetInStun()
@@ -223,6 +224,16 @@ void ACPPTreeEnemy::GotDamage(float damage)
 			BTAIController->UnPossess();
 			BTAIController = nullptr;
 			Lockon(false);
+
+			if (damage >= 500) {
+				UGameplayStatics::PlaySound2D(GetWorld(), hitHoldAttackSound);
+			}
+			if (FMath::RandRange(0, 1) == 0) {
+				UGameplayStatics::PlaySound2D(GetWorld(), dieSound1);
+			}
+			else {
+				UGameplayStatics::PlaySound2D(GetWorld(), dieSound2);
+			}
 		}
 		else {
 			if (!BTAIController->GetBlackboardComponent()->GetValueAsBool(FName("InStun"))) {
@@ -231,6 +242,18 @@ void ACPPTreeEnemy::GotDamage(float damage)
 				}
 				BTAIController->GetBlackboardComponent()->SetValueAsBool(FName("TakingHit"), true);
 				AnimInstance->Montage_Play(EnemyHitAnimation);
+			}
+
+			if (damage >= 500) {
+				UGameplayStatics::PlaySound2D(GetWorld(), hitHoldAttackSound);
+			}
+			else {
+				if (FMath::RandRange(0, 1) == 0) {
+					UGameplayStatics::PlaySound2D(GetWorld(), hitSound1);
+				}
+				else {
+					UGameplayStatics::PlaySound2D(GetWorld(), hitSound2);
+				}
 			}
 
 			hpWidget->SetHealthBar(healthPoint / maxHealth, damage);

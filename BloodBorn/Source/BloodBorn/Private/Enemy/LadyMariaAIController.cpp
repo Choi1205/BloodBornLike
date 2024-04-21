@@ -40,7 +40,7 @@ void ALadyMariaAIController::Tick(float DeltaTime)
 		//1페이즈의 합체검 상태 && 플레이어 거리가 500 초과면
 		if (EnemyREF->GetPlayerDistance() > midRange && !bIsDualSword && gunFireTimer == gunFireCooldown) {
 			//총을 쏴라.
-			EnemyREF->AimGun();
+			attackState = EAttackState::AIMMINGGUN;
 			gunFireTimer = 0.0f;
 		}
 		//2페이즈부터는 장거리 견제로 찌르기가 나간다. 아주 멀면 발동 안함
@@ -51,8 +51,20 @@ void ALadyMariaAIController::Tick(float DeltaTime)
 				chargeTimer = 0.0f;
 			}
 			else {
-				attackState = EAttackState::JUMPATTACK;
-				chargeTimer = 0.0f;
+				if (EnemyREF->phaseState == EPhaseState::PHASE2) {
+					attackState = EAttackState::JUMPATTACK;
+					chargeTimer = 0.0f;
+				}
+				else if (EnemyREF->phaseState == EPhaseState::PHASE3) {
+					if (RandomNextMoveTF(50)) {
+						attackState = EAttackState::ASSULT;
+						chargeTimer = 0.0f;
+					}
+					else {
+						attackState = EAttackState::JUMPATTACK;
+						chargeTimer = 0.0f;
+					}
+				}
 			}
 		}
 

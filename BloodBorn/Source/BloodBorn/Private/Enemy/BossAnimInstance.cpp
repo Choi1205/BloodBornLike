@@ -89,6 +89,8 @@ void UBossAnimInstance::AnimNotify_Boss_SlowEnd()
 		mariaREF->EffectOn();
 	}
 
+	mariaREF->SwingSoundPlay();
+
 	mariaREF->bIsCanDealDamage = true;
 	mariaREF->bIsAimmingWhileAttack = false;
 }

@@ -70,6 +70,24 @@ public:
 
 	class UEnemyHPWidget* hpWidget;
 
+	UPROPERTY(EditAnywhere)
+	class USoundBase* fireSound1;
+
+	UPROPERTY(EditAnywhere)
+	class USoundBase* fireSound2;
+
+	UPROPERTY(EditAnywhere)
+	class USoundBase* hitSound1;
+
+	UPROPERTY(EditAnywhere)
+	class USoundBase* hitSound2;
+
+	UPROPERTY(EditAnywhere)
+	class USoundBase* dieSound1;
+	
+	UPROPERTY(EditAnywhere)
+	class USoundBase* dieSound2;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

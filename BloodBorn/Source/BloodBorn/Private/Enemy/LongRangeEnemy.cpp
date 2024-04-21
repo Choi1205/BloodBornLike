@@ -2,19 +2,19 @@
 
 
 #include "Enemy/LongRangeEnemy.h"
-#include "Perception/PawnSensingComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
-#include "BloodBorn/BloodBornCharacter.h"
+#include "Kismet/GameplayStatics.h"
 #include "Components/SceneComponent.h"
 #include "Components/CapsuleComponent.h"
-#include "Enemy/BulletActor.h"
 #include "Components/AttributeComponent.h"
-#include "Kismet/KismetSystemLibrary.h"
+#include "Components/WidgetComponent.h"
+#include "Perception/PawnSensingComponent.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/MovementComponent.h"
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
-#include "Components/WidgetComponent.h"
+#include "BloodBorn/BloodBornCharacter.h"
+#include "Enemy/BulletActor.h"
 #include "Enemy/EnemyHPWidget.h"
 
 // Sets default values
@@ -174,6 +174,13 @@ void ALongRangeEnemy::FireBullet()
 
 	//탄환을 발사한다
 	GetWorld()->SpawnActor<ABulletActor>(bulletFactory, bulletFirePoint->GetComponentLocation(), (PlayerREF->GetActorLocation() - bulletFirePoint->GetComponentLocation()).Rotation(), params);
+
+	if (FMath::RandRange(0, 1) == 0) {
+		UGameplayStatics::PlaySound2D(GetWorld(), fireSound1);
+	}
+	else {
+		UGameplayStatics::PlaySound2D(GetWorld(), fireSound2);
+	}
 }
 
 void ALongRangeEnemy::GetHit(const FVector& ImpactPoint)
@@ -251,12 +258,24 @@ void ALongRangeEnemy::GotDamage(float damage)
 	bleeding = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), NiaSys, GetActorLocation(), FRotator::ZeroRotator);
 
 	if (health == 0.0f) {
+		if (FMath::RandRange(0, 1) == 0) {
+			UGameplayStatics::PlaySound2D(GetWorld(), dieSound1);
+		}
+		else {
+			UGameplayStatics::PlaySound2D(GetWorld(), dieSound2);
+		}
 		PawnSensing->Deactivate();
 		AimmingTime = 0.0f;
 		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		Lockon(false);
 	}
 	else {
+		if (FMath::RandRange(0, 1) == 0) {
+			UGameplayStatics::PlaySound2D(GetWorld(), hitSound1);
+		}
+		else {
+			UGameplayStatics::PlaySound2D(GetWorld(), hitSound2);
+		}
 		hpWidget->SetHealthBar(health/maxHealth, damage);
 		if (!bIsLockedOn) {
 			floatingHPComp->SetVisibility(true);
