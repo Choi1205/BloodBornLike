@@ -35,6 +35,7 @@ void UAttributeComponent::UseStamina(float StaminaCost)
 	if(StaminaCost > 49){
 		staCoolDown = 2.0f;
 	}
+	StaminaSlider = FMath::Clamp(Stamina - StaminaCost, 0.0f, MaxStamina);
 }
 
 float UAttributeComponent::GetHealthPercent()
@@ -52,9 +53,19 @@ float UAttributeComponent::GetHealthSlider()
 	return Health / MaxHealth;
 }
 
+float UAttributeComponent::GetStaminaSlider()
+{
+	return Stamina / MaxStamina;
+}
+
 float UAttributeComponent::GetRegainHealthPercent()
 {
 	return PredictedHP / MaxHealth;
+}
+
+float UAttributeComponent::GetDecreaseStaminaPercent()
+{
+	return DecreaseStamina / MaxStamina;
 }
 
 void UAttributeComponent::RegainHealth(float RegainHP)
@@ -129,4 +140,9 @@ void UAttributeComponent::RegenStamina(float DeltaTime)
 	if (staCoolDown <= 0.f) {
 		Stamina = FMath::Clamp(Stamina + StaminaRegenRate * DeltaTime, 0.0f, MaxStamina);
 	}
+}
+
+void UAttributeComponent::DeclineStamina(float DeltaTime)
+{
+	DecreaseStamina = FMath::Clamp(Stamina - StaminaDecreaseRate * DeltaTime, 0.0f, MaxStamina);  // 0.0f가 아니라 Stamina? 
 }

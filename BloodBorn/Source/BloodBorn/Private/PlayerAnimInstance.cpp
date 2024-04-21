@@ -115,13 +115,13 @@ void UPlayerAnimInstance::AnimNotify_WeaponInvisible()
 void UPlayerAnimInstance::AnimNotify_HoldAttackStart()
 {
 	PlayerCharacter->HoldAttackStart(PlayerCharacter->LockOnEnemyREF, 10.0f, EAttackType::Normal);
-	Montage_SetPlayRate(PlayerCharacter->FireMontage, 0.4f);
+	Montage_SetPlayRate(PlayerCharacter->HoldAttackMontage, 0.4f);
 }
 
 void UPlayerAnimInstance::AnimNotify_HoldAttackFinish()
 {
 	PlayerCharacter->HoldAttackEnd(PlayerCharacter->LockOnEnemyREF, 500.0f, EAttackType::HoldAttack);
-	Montage_SetPlayRate(PlayerCharacter->FireMontage, 1.0f);
+	Montage_SetPlayRate(PlayerCharacter->HoldAttackMontage, 1.0f);
 }
 
 void UPlayerAnimInstance::AnimNotify_RaiseArm()

@@ -15,6 +15,7 @@ public:
 	UAttributeComponent();
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	void RegenStamina(float DeltaTime);
+	void DeclineStamina(float DeltaTime);
 
 	// Current Health
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Actor Attributes")
@@ -38,7 +39,14 @@ public:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Actor Attributes")
 	float MaxStamina;
+
+	// 천천히 줄어드는 스테미너
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Actor Attributes")
+	float DecreaseStamina;
 	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Actor Attributes")
+	float StaminaSlider;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Actor Attributes")
 	int32 BloodVial = 20;
 
@@ -64,6 +72,9 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Actor Attributes")
 	float StaminaRegenRate = 8.f; // 초당 생성
 
+	UPROPERTY(EditAnywhere, Category = "Actor Attributes")
+	float StaminaDecreaseRate = 10.0f;
+
 	UPROPERTY(VisibleAnywhere, Category = "Actor Attributes")
 	float LastDamageReceived;
 
@@ -82,8 +93,10 @@ public:
 	float GetStaminaPercent();
 
 	float GetHealthSlider();
+	float GetStaminaSlider();
 
 	float GetRegainHealthPercent();
+	float GetDecreaseStaminaPercent();
 
 	//float MaxRegainableHealth;
 
@@ -102,8 +115,12 @@ public:
 	FORCEINLINE float GetHealth() const { return Health; }
 	///
 	FORCEINLINE float GetHealthSlider() const { return HealthSlider; }
+	FORCEINLINE float GetStaminaSlider() const { return StaminaSlider; }
 	///
 	FORCEINLINE float GetLastDamageReceived() const { return LastDamageReceived; }
+
+	FORCEINLINE float GetDecreaseStamina() const { return DecreaseStamina; }
+
 
 
 	FORCEINLINE float GetRegainableHealth() const { return RegainableHealth; }

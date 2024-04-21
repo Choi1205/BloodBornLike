@@ -50,6 +50,19 @@ void UPlayerOverlay::SetPredictedHPBarPercent(float Percent)
 	}
 }
 
+void UPlayerOverlay::SetDecreaseStaminaBarPercent(float Percent)
+{
+	if (DecreaseStaminaBar)
+	{
+		DecreaseStaminaBar->SetPercent(Percent);
+	}
+}
+// 
+// void UPlayerOverlay::ShowDiedWidget(bool bshow)
+// {
+// 
+// }
+
 void UPlayerOverlay::SetHealthSliderBarPercent(float Percent)
 {
 	if (HealthSliderBar)
@@ -57,3 +70,12 @@ void UPlayerOverlay::SetHealthSliderBarPercent(float Percent)
 		HealthSliderBar->SetValue(Percent);
 	}
 }
+
+void UPlayerOverlay::SetStaminaSliderBarPercent(float Percent)
+{
+	if (StaminaSliderBar)
+	{
+		StaminaSliderBar->SetValue(Percent);
+	}
+}
+

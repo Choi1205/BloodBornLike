@@ -20,8 +20,10 @@ public:
 	void SetVial(int32 Vial);
 	void SetBullet(int32 Bullet);
 	void SetHealthSliderBarPercent(float Percent);
+	void SetStaminaSliderBarPercent(float Percent);
 
 	void SetPredictedHPBarPercent(float Percent);
+	void SetDecreaseStaminaBarPercent(float Percent);
 
 protected:
 	UPROPERTY(meta = (BindWidget))
@@ -40,5 +42,20 @@ protected:
 	class UProgressBar* PredictedHP;
 
 	UPROPERTY(meta = (BindWidget))
+	class UProgressBar* DecreaseStaminaBar;
+
+	UPROPERTY(meta = (BindWidget))
 	class USlider* HealthSliderBar;
+
+	UPROPERTY(meta = (BindWidget))
+	class USlider* StaminaSliderBar;
+
+// 	UPROPERTY(meta = (BindWidget), Transient)
+// 	class UWidgetAnimation* anim_died;
+// 
+// 	UPROPERTY(meta = (BindWidget), Transient)
+// 	class UWidgetAnimation* anim_diedBack;
+// 
+// 	void ShowDiedWidget(bool bshow);
+
 };

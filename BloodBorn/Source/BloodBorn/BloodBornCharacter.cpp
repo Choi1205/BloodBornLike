@@ -22,6 +22,8 @@
 #include "HUD/PlayerOverlay.h"
 #include "Interfaces/HitInterface.h"
 #include "BBLegacyCameraShake.h"
+#include "../../../../../../../Source/Runtime/Engine/Classes/Engine/World.h"
+#include "../../../../../../../Source/Runtime/Engine/Classes/Kismet/GameplayStatics.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -91,7 +93,16 @@ void ABloodBornCharacter::HoldAttackStart(AActor* DamagedActor, float DamageAmou
 {
 	attackType = 0;
 	EquippedWeaponSaw->ApplyDamage(LockOnEnemyREF, DamageAmount, AttackType);
-	FollowCamera->FieldOfView = 70;
+	//FollowCamera->FieldOfView = 70;
+
+	UWorld* World = GetWorld();
+	const float CurrentFOV = FollowCamera->FieldOfView;
+	UE_LOG(LogTemp, Log, TEXT("Current FOV: %f"), CurrentFOV);
+	const float InterpSpeed = 1.0f;
+		FollowCamera->FieldOfView = FMath::FInterpTo(CurrentFOV,
+			70.f,
+			World->GetTimeSeconds(),
+			InterpSpeed);
 	UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->StartCameraShake(UBBLegacyCameraShake::StaticClass(), 0.15f);
 }
 
@@ -99,7 +110,13 @@ void ABloodBornCharacter::HoldAttackEnd(AActor* DamagedActor, float DamageAmount
 {
 	attackType = 2;
 	EquippedWeaponSaw->ApplyDamage(LockOnEnemyREF, DamageAmount, AttackType);
-	FollowCamera->FieldOfView = 90;
+	// FollowCamera->FieldOfView = 90;
+
+	UWorld* World = GetWorld();
+	const float CurrentFOV = FollowCamera->FieldOfView;
+	UE_LOG(LogTemp, Log, TEXT("Current FOV: %f"), CurrentFOV);
+	const float InterpSpeed = 2.0f;
+	FollowCamera->FieldOfView = FMath::FInterpTo(CurrentFOV, 90.0f, World->GetTimeSeconds(), InterpSpeed);
 	UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->StartCameraShake(UBBLegacyCameraShake::StaticClass(), 0.07f);
 }
 
@@ -154,6 +171,8 @@ void ABloodBornCharacter::BeginPlay()
 			{
 				PlayerOverlay->SetHealthBarPercent(Attributes->GetHealthPercent());
 				PlayerOverlay->SetStaminaBarPercent(Attributes->GetStaminaPercent());
+				PlayerOverlay->SetStaminaSliderBarPercent(Attributes->GetStaminaSlider());
+				PlayerOverlay->SetDecreaseStaminaBarPercent(Attributes->GetDecreaseStaminaPercent());
 				PlayerOverlay->SetHealthSliderBarPercent(Attributes->GetHealthSlider());
 				PlayerOverlay->SetVial(Attributes->GetBloodVial());
 				PlayerOverlay->SetBullet(Attributes->GetBullet());
@@ -172,7 +191,10 @@ void ABloodBornCharacter::Tick(float DeltaTime)
 // 		if (Attributes->Stamina < Attributes->MaxStamina)
 // 		{
 		Attributes->RegenStamina(DeltaTime);
+		Attributes->DeclineStamina(DeltaTime);
 		PlayerOverlay->SetStaminaBarPercent(Attributes->GetStaminaPercent());
+		PlayerOverlay->SetStaminaSliderBarPercent(Attributes->GetStaminaSlider());
+		PlayerOverlay->SetDecreaseStaminaBarPercent(Attributes->GetDecreaseStaminaPercent());
 //		}
 	}
 
@@ -439,6 +461,10 @@ void ABloodBornCharacter::Dodge()
 				{
 					Attributes->UseStamina(Attributes->GetDodgeCost());
 					PlayerOverlay->SetStaminaBarPercent(Attributes->GetStaminaPercent());
+					PlayerOverlay->SetStaminaSliderBarPercent(Attributes->GetStaminaSlider());
+					PlayerOverlay->SetDecreaseStaminaBarPercent(Attributes->GetDecreaseStaminaPercent());
+					PlayerOverlay->SetHealthSliderBarPercent(Attributes->GetHealthSlider());
+
 				}
 //			}
 		}
@@ -465,6 +491,8 @@ void ABloodBornCharacter::Dodge()
 			{
 				Attributes->UseStamina(Attributes->GetDodgeCost());
 				PlayerOverlay->SetStaminaBarPercent(Attributes->GetStaminaPercent());
+				PlayerOverlay->SetStaminaSliderBarPercent(Attributes->GetStaminaSlider());
+
 			}
 			FTimerHandle endtimer;
 			GetWorldTimerManager().SetTimer(endtimer, FTimerDelegate::CreateLambda([&](){
@@ -625,6 +653,9 @@ void ABloodBornCharacter::NormalAttack()
 			{
 				Attributes->UseStamina(Attributes->GetNormalAttackCost());
 				PlayerOverlay->SetStaminaBarPercent(Attributes->GetStaminaPercent());
+				PlayerOverlay->SetStaminaSliderBarPercent(Attributes->GetStaminaSlider());
+				PlayerOverlay->SetDecreaseStaminaBarPercent(Attributes->GetDecreaseStaminaPercent());
+				PlayerOverlay->SetHealthSliderBarPercent(Attributes->GetHealthSlider());
 			}
 		}
 		staCooldown = 2.0f;
@@ -679,6 +710,9 @@ void ABloodBornCharacter::StrongAttack()
 			{
 				Attributes->UseStamina(Attributes->GetHeavyAttackCost());
 				PlayerOverlay->SetStaminaBarPercent(Attributes->GetStaminaPercent());
+				PlayerOverlay->SetStaminaSliderBarPercent(Attributes->GetStaminaSlider());
+				PlayerOverlay->SetDecreaseStaminaBarPercent(Attributes->GetDecreaseStaminaPercent());
+
 			}
 		}
 		staCooldown = 2.0f;
@@ -868,6 +902,7 @@ void ABloodBornCharacter::Die()
 	 PlayDeathMontage();
 	 GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	 GetCharacterMovement()->DisableMovement();
+	 UGameplayStatics::OpenLevel(GetWorld(), FName("PlayerLevel"));
 }
 
 
