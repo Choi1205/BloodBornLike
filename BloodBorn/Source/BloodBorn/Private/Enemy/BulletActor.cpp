@@ -26,7 +26,7 @@ ABulletActor::ABulletActor()
 	particleComp = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("Particle Component"));
 	particleComp->SetupAttachment(bulletBody);
 	particleComp->SetWorldScale3D(FVector(10.0f));
-	//particleComp->SetAutoActivate(false);
+	particleComp->SetAutoActivate(false);
 }
 
 // Called when the game starts or when spawned
@@ -37,6 +37,8 @@ void ABulletActor::BeginPlay()
 	bulletBody->OnComponentBeginOverlap.AddDynamic(this, &ABulletActor::CallHit);
 	
 	SetLifeSpan(3.0f);
+
+	particleComp->Activate(true);
 }
 
 // Called every frame

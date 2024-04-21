@@ -55,6 +55,9 @@ public:
 	UPROPERTY(EditAnywhere)
 	class UAnimMontage* EnemyHitAnimation;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float maxHealth = 40.0f;
+
 	UPROPERTY(EditAnywhere)
 	float healthPoint = 60.0f;
 
@@ -65,10 +68,28 @@ public:
 	UPROPERTY(EditAnywhere)
 	class UWidgetComponent* floatingLightComp;
 
-	//UPROPERTY(EditAnywhere)
-	//class UWidgetComponent* floatingHPComp;
+	UPROPERTY(EditAnywhere)
+	class UWidgetComponent* floatingHPComp;
 
 	class UEnemyHPWidget* hpWidget;
+
+	UPROPERTY(EditAnywhere)
+	class USoundBase* hitSound1;
+
+	UPROPERTY(EditAnywhere)
+	class USoundBase* hitSound2;
+
+	UPROPERTY(EditAnywhere)
+	class USoundBase* parryedSound;
+
+	UPROPERTY(EditAnywhere)
+	class USoundBase* hitHoldAttackSound;
+
+	UPROPERTY(EditAnywhere)
+	class USoundBase* dieSound1;
+
+	UPROPERTY(EditAnywhere)
+	class USoundBase* dieSound2;
 
 protected:
 	// Called when the game starts or when spawned
@@ -111,4 +132,7 @@ private:
 	UPROPERTY(EditAnywhere)
 	float Damage = 20.0f;
 
+	bool bIsLockedOn = false;
+
+	FTimerHandle showingTimer;
 };

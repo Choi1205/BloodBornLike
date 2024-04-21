@@ -51,6 +51,9 @@ public:
 	bool SetFireGun = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float maxHealth = 40.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float health = 40.0f;
 
 	UPROPERTY(EditAnywhere)
@@ -62,10 +65,28 @@ public:
 	UPROPERTY(EditAnywhere)
 	class UWidgetComponent* floatingLightComp;
 
-	//UPROPERTY(EditAnywhere)
-	//class UWidgetComponent* floatingHPComp;
+	UPROPERTY(EditAnywhere)
+	class UWidgetComponent* floatingHPComp;
 
 	class UEnemyHPWidget* hpWidget;
+
+	UPROPERTY(EditAnywhere)
+	class USoundBase* fireSound1;
+
+	UPROPERTY(EditAnywhere)
+	class USoundBase* fireSound2;
+
+	UPROPERTY(EditAnywhere)
+	class USoundBase* hitSound1;
+
+	UPROPERTY(EditAnywhere)
+	class USoundBase* hitSound2;
+
+	UPROPERTY(EditAnywhere)
+	class USoundBase* dieSound1;
+	
+	UPROPERTY(EditAnywhere)
+	class USoundBase* dieSound2;
 
 protected:
 	// Called when the game starts or when spawned
@@ -113,4 +134,8 @@ private:
 	float lostPlayerTimer = 0.0f;
 
 	float hitTimer = 0.0f;
+
+	bool bIsLockedOn = false;
+
+	FTimerHandle showingTimer;
 };

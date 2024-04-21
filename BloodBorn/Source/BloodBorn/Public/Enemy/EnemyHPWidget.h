@@ -3,15 +3,29 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Blueprint/UserWidgetBlueprint.h"
+#include "Blueprint/UserWidget.h"
 #include "EnemyHPWidget.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class BLOODBORN_API UEnemyHPWidget : public UUserWidgetBlueprint
+class BLOODBORN_API UEnemyHPWidget : public UUserWidget
 {
 	GENERATED_BODY()
 	
+public:
+
+	UPROPERTY(VisibleAnywhere, meta=(BindWidget))
+	class UProgressBar* pb_healthBar;
+
+	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
+	class UTextBlock* damageText;
+
+	int32 damageStack = 0;
+
+	FTimerHandle showingTimer;
+
+	void SetHealthBar(float precentValue, float damage);
+
 };

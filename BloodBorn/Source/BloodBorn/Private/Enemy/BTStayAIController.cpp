@@ -44,6 +44,7 @@ void ABTStayAIController::OnHearNoise(APawn* PlayerPawn, const FVector& Location
 	if (!GetBlackboardComponent()->GetValueAsBool(FName("CanSeePlayer"))) {
 		ACharacter* enemyChar = Cast<ACharacter>(GetPawn());
 		FRotator toward = (Location - enemyChar->GetActorLocation()).Rotation();
+		toward.Pitch = 0;
 		enemyChar->SetActorRotation(toward);
 	}
 }

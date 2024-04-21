@@ -6,6 +6,8 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/SphereComponent.h"
 #include "Components/BoxComponent.h"
+#include "Components/WidgetComponent.h"
+#include "Components/AttributeComponent.h"
 #include "Perception/PawnSensingComponent.h"
 #include "Enemy/BTStayAIController.h"
 #include "BehaviorTree/BlackboardComponent.h"
@@ -13,14 +15,13 @@
 #include "AITypes.h"
 #include "Animation/AnimInstance.h"
 #include "Animation/AnimMontage.h"
-#include "Components/AttributeComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "GameFramework/Character.h"
-#include "Kismet/GameplayStatics.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
-#include "Components/WidgetComponent.h"
+#include "Enemy/EnemyHPWidget.h"
 
 // Sets default values
 ACPPTreeStayEnemy::ACPPTreeStayEnemy()
@@ -42,6 +43,11 @@ ACPPTreeStayEnemy::ACPPTreeStayEnemy()
 	floatingLightComp->SetupAttachment(GetMesh(), FName("spine_01"));
 	floatingLightComp->SetWidgetSpace(EWidgetSpace::Screen);
 	floatingLightComp->SetVisibility(false);
+
+	floatingHPComp = CreateDefaultSubobject<UWidgetComponent>(TEXT("floatingHPComp"));
+	floatingHPComp->SetupAttachment(GetMesh(), FName("headSocket"));
+	floatingHPComp->SetWidgetSpace(EWidgetSpace::Screen);
+	floatingHPComp->SetVisibility(false);
 }
 
 // Called when the game starts or when spawned
@@ -54,6 +60,8 @@ void ACPPTreeStayEnemy::BeginPlay()
 	DamageCollision->OnComponentBeginOverlap.AddDynamic(this, &ACPPTreeStayEnemy::OnDealDamageOverlapBegin);
 
 	AnimInstance = GetMesh()->GetAnimInstance();
+
+	hpWidget = Cast<UEnemyHPWidget>(floatingHPComp->GetWidget());
 }
 
 // Called every frame
@@ -149,10 +157,11 @@ void ACPPTreeStayEnemy::GotParryAttackCPP(float damage)
 			CanParryed = false;
 			BTStayAIController->GetBlackboardComponent()->SetValueAsBool(FName("InStun"), true);
 			BTStayAIController->GetBlackboardComponent()->SetValueAsBool(FName("TakingHit"), false);
+			UGameplayStatics::PlaySound2D(GetWorld(), parryedSound);
 		}
 	}
 	//패리판정 및 스턴판정이 들어감
-	UE_LOG(LogTemp, Warning, TEXT("Gun Attack Damage : %.0f"), damage);
+	//UE_LOG(LogTemp, Warning, TEXT("Gun Attack Damage : %.0f"), damage);
 }
 
 bool ACPPTreeStayEnemy::GetInStun()
@@ -167,7 +176,9 @@ float ACPPTreeStayEnemy::GetHealth()
 
 void ACPPTreeStayEnemy::Lockon(bool value)
 {
+	bIsLockedOn = value;
 	floatingLightComp->SetVisibility(value);
+	floatingHPComp->SetVisibility(value);
 }
 
 void ACPPTreeStayEnemy::AfterAttackMoving(float DeltaTime)
@@ -175,6 +186,8 @@ void ACPPTreeStayEnemy::AfterAttackMoving(float DeltaTime)
 	if (healthPoint > 0) {
 		FVector playerLocation = GetWorld()->GetFirstPlayerController()->GetPawn()->GetActorLocation();
 		FVector towardPlayer = playerLocation - GetActorLocation();
+		FRotator towardRot = towardPlayer.Rotation();
+		towardRot.Pitch = 0;
 
 		FVector randomLocation = BTStayAIController->GetBlackboardComponent()->GetValueAsVector(FName("RandomPatrolLocation"));
 		FVector nextMovePoint = randomLocation - GetActorLocation();
@@ -183,7 +196,7 @@ void ACPPTreeStayEnemy::AfterAttackMoving(float DeltaTime)
 
 		UE_LOG(LogTemp, Warning, TEXT("%f"), GetCharacterMovement()->MaxWalkSpeed);
 		AddMovementInput(nextMovePoint.GetSafeNormal(1.0));
-		SetActorRotation(towardPlayer.Rotation());
+		SetActorRotation(towardRot);
 
 		randomTime -= DeltaTime;
 
@@ -193,7 +206,7 @@ void ACPPTreeStayEnemy::AfterAttackMoving(float DeltaTime)
 
 void ACPPTreeStayEnemy::GotDamage(float damage)
 {
-	healthPoint -= damage;
+	healthPoint = FMath::Max(healthPoint - damage, 0.0f);
 
 	CanDealDamage = false;
 
@@ -201,7 +214,7 @@ void ACPPTreeStayEnemy::GotDamage(float damage)
 	bleeding = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), NiaSys, GetActorLocation(), FRotator::ZeroRotator);
 
 	if (BTStayAIController != nullptr) {
-		if (healthPoint <= 0) {
+		if (healthPoint == 0) {
 			if (AnimInstance->Montage_IsPlaying(NULL)) {
 				AnimInstance->Montage_Stop(NULL);
 			}
@@ -210,6 +223,17 @@ void ACPPTreeStayEnemy::GotDamage(float damage)
 			AnimInstance->Montage_Play(EnemyDyingAnimation);
 			BTStayAIController->UnPossess();
 			BTStayAIController = nullptr;
+			Lockon(false);
+
+			if (damage >= 500) {
+				UGameplayStatics::PlaySound2D(GetWorld(), hitHoldAttackSound);
+			}
+			if (FMath::RandRange(0, 1) == 0) {
+				UGameplayStatics::PlaySound2D(GetWorld(), dieSound1);
+			}
+			else {
+				UGameplayStatics::PlaySound2D(GetWorld(), dieSound2);
+			}
 		}
 		else {
 			if (!BTStayAIController->GetBlackboardComponent()->GetValueAsBool(FName("InStun"))) {
@@ -218,6 +242,31 @@ void ACPPTreeStayEnemy::GotDamage(float damage)
 				}
 				BTStayAIController->GetBlackboardComponent()->SetValueAsBool(FName("TakingHit"), true);
 				AnimInstance->Montage_Play(EnemyHitAnimation);
+			}
+
+			if (damage >= 500) {
+				UGameplayStatics::PlaySound2D(GetWorld(), hitHoldAttackSound);
+			}
+			else {
+				if (FMath::RandRange(0, 1) == 0) {
+					UGameplayStatics::PlaySound2D(GetWorld(), hitSound1);
+				}
+				else {
+					UGameplayStatics::PlaySound2D(GetWorld(), hitSound2);
+				}
+			}
+
+			hpWidget->SetHealthBar(healthPoint / maxHealth, damage);
+
+			if (!bIsLockedOn) {
+				floatingHPComp->SetVisibility(true);
+
+				if (GetWorld()->GetTimerManager().IsTimerActive(showingTimer)) {
+					GetWorld()->GetTimerManager().ClearTimer(showingTimer);
+				}
+				GetWorld()->GetTimerManager().SetTimer(showingTimer, FTimerDelegate::CreateLambda([&]() {
+					floatingHPComp->SetVisibility(false);
+					}), 5.0f, false);
 			}
 		}
 	}

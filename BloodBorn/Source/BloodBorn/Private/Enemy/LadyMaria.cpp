@@ -11,6 +11,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "Components/BoxComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/WidgetComponent.h"
 #include "Animation/AnimInstance.h"
 #include "Animation/AnimMontage.h"
 #include "Enemy/SmokeFXActor.h"
@@ -19,7 +20,8 @@
 #include "Enemy/BGMActor.h"
 #include "Engine.h"
 #include "Enemy/LadyMariaJumpEffectActor.h"
-#include "Components/WidgetComponent.h"
+#include "Enemy/BloodDecalActor.h"
+
 
 ALadyMaria::ALadyMaria()
 {
@@ -29,6 +31,10 @@ ALadyMaria::ALadyMaria()
 	hair->SetupAttachment(GetMesh(), TEXT("HairSocket"));
 	hair->SetCollisionProfileName(TEXT("NoCollision"));
 	hair->SetVisibility(true);
+
+	GetMesh()->SetRelativeLocation(FVector(0.0, 0.0, -88.0f));
+	GetMesh()->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f));
+	GetMesh()->SetWorldScale3D(FVector(1.3f));
 
 	rightSword1 = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("RightSword1"));
 	rightSword1->SetupAttachment(GetMesh(), TEXT("RightHandSocket"));
@@ -122,8 +128,9 @@ void ALadyMaria::BeginPlay()
 	jumpEffectInstance = GetWorld()->SpawnActor<ALadyMariaJumpEffectActor>(jumpEffect, FVector::ZeroVector, FRotator::ZeroRotator, params);
 
 	FAttachmentTransformRules rules(EAttachmentRule::SnapToTarget, true);
-
+	
 	jumpEffectInstance->AttachToComponent(GetMesh(), rules, FName("Hips"));
+	jumpEffectInstance->SetActorRotation(FRotator::ZeroRotator);
 }
 
 void ALadyMaria::Tick(float DeltaTime)
@@ -155,6 +162,7 @@ void ALadyMaria::Tick(float DeltaTime)
 			//공격중이 아니라면 보스는 항상 플레이어를 바라본다.
 			if (mariaAI->attackState == EAttackState::IDLE) {
 				FRotator toward = (playerREF->GetActorLocation() - GetActorLocation()).Rotation();
+				toward.Pitch = 0.0f;
 				SetActorRotation(toward);
 
 				//행동을 멈추면 스테미너가 회복된다.
@@ -172,8 +180,10 @@ void ALadyMaria::Tick(float DeltaTime)
 			if (mariaAI->attackState == EAttackState::ASSULT) {
 				Assult();
 			}
-
-			if (mariaAI->attackState == EAttackState::QUICKTHRUST || mariaAI->attackState == EAttackState::CHARGETHRUST) {
+			else if (mariaAI->attackState == EAttackState::AIMMINGGUN) {
+				AimGun();
+			}
+			else if (mariaAI->attackState == EAttackState::QUICKTHRUST || mariaAI->attackState == EAttackState::CHARGETHRUST) {
 				Thrust();
 			}
 			else if (mariaAI->attackState == EAttackState::JUMPATTACK) {
@@ -191,7 +201,7 @@ void ALadyMaria::Tick(float DeltaTime)
 					temp += DeltaTime;
 					FVector moveLoc = FMath::Lerp(GetActorLocation(), movePlace, 1 /(moveDeltaTime / temp));
 					UE_LOG(LogTemp, Warning, TEXT("%f"), 1 / moveDeltaTime);
-					SetActorLocation(moveLoc, true);
+					SetActorLocation(moveLoc);
 				}
 				else if (mariaAI->attackState == EAttackState::ASSULT) {
 					temp += DeltaTime;
@@ -202,8 +212,11 @@ void ALadyMaria::Tick(float DeltaTime)
 					SetActorLocation(GetActorLocation() + GetActorForwardVector() * DeltaTime * 400, true);
 				}
 			}
-			if (bIsAimmingWhileAttack) {
-				SetActorRotation((playerREF->GetActorLocation() - GetActorLocation()).Rotation());
+
+			if (bIsAimmingWhileAttack && mariaAI->attackState != EAttackState::JUMPATTACK) {
+				FRotator newRot = (playerREF->GetActorLocation() - GetActorLocation()).Rotation();
+				newRot.Pitch = 0.0f;
+				SetActorRotation(newRot);
 			}
 		}
 	}
@@ -266,6 +279,18 @@ void ALadyMaria::ForwardDodge()
 {
 	mariaAI->attackState = EAttackState::FORWARDDODGE;
 	AnimInstance->Montage_Play(AnimDodgeForward);
+	int32 num = FMath::RandRange(0, 2);
+	switch (num) {
+	case 0:
+		UGameplayStatics::PlaySound2D(GetWorld(), dodgeSound1);
+		break;
+	case 1:
+		UGameplayStatics::PlaySound2D(GetWorld(), dodgeSound2);
+		break;
+	case 2:
+		UGameplayStatics::PlaySound2D(GetWorld(), dodgeSound3);
+		break;
+	}
 }
 
 void ALadyMaria::GetHit(const FVector& ImpactPoint)
@@ -347,6 +372,8 @@ void ALadyMaria::GotDamage(float damage)
 		rightSword3->SetVisibility(true);
 		rightDamageCollision->SetRelativeLocation(FVector(0.0f, 68.0f, 0.0f));
 		rightDamageCollision->SetBoxExtent(FVector(2.0f, 60.0f, 4.5f));
+		rightEffect_V->SetAsset(phase3Effect);
+		rightEffect_H->SetAsset(phase3Effect);
 	}
 	//피격 이펙트 생성
 	instanceEffect = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), hitEffect, GetActorLocation(), FRotator::ZeroRotator, FVector(3.0f));
@@ -363,10 +390,24 @@ void ALadyMaria::GotDamage(float damage)
 			mariaAI->UnPossess();
 			mariaAI = nullptr;
 			bgmInstance->slowKillThis();
+
+			if (damage >= 500) {
+				UGameplayStatics::PlaySound2D(GetWorld(), hitHoldAttackSound);
+			}
+			if (FMath::RandRange(0, 1) == 0) {
+				UGameplayStatics::PlaySound2D(GetWorld(), dieSound1);
+			}
+			else {
+				UGameplayStatics::PlaySound2D(GetWorld(), dieSound2);
+			}
+			UGameplayStatics::PlaySound2D(GetWorld(), dieVoice);
 		}
 		else {
 			if (mariaAI->bIsStun && damage >= 500.0f && !bIsHitHoldAttack) {
 				bIsHitHoldAttack = true;
+				MakeBloodDecal(GetActorLocation(), false);
+				instanceEffect = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), HoldAttackHitEffect, GetActorLocation(), FRotator::ZeroRotator, FVector(3.0f));
+				UGameplayStatics::PlaySound2D(GetWorld(), hitHoldAttackSound);
 			}
 			else if (!mariaAI->bIsStun && !bIsSuperArmor) {
 				bIsCanDealDamage = false;
@@ -382,6 +423,12 @@ void ALadyMaria::GotDamage(float damage)
 				bIsMovingWhileAttack = false;
 				AnimInstance->Montage_Play(AnimBossHit);
 				AnimInstance->Montage_SetPlayRate(AnimBossHit, 1.0f);
+				if (FMath::RandRange(0, 1) == 0) {
+					UGameplayStatics::PlaySound2D(GetWorld(), hitSound1);
+				}
+				else {
+					UGameplayStatics::PlaySound2D(GetWorld(), hitSound2);
+				}
 			}
 		}
 	}
@@ -402,6 +449,18 @@ void ALadyMaria::GotParryAttackCPP(float damage)
 			mariaAI->bIsLeftMove = false;
 			AnimInstance->Montage_Play(AnimDodgeRight);
 		}
+		int32 num = FMath::RandRange(0, 2);
+		switch (num) {
+		case 0:
+			UGameplayStatics::PlaySound2D(GetWorld(), dodgeSound1);
+			break;
+		case 1:
+			UGameplayStatics::PlaySound2D(GetWorld(), dodgeSound2);
+			break;
+		case 2:
+			UGameplayStatics::PlaySound2D(GetWorld(), dodgeSound3);
+			break;
+		}
 	}
 	else {
 		GotDamage(damage);
@@ -413,11 +472,12 @@ void ALadyMaria::GotParryAttackCPP(float damage)
 				}
 				bIsCanParryed = false;
 				mariaAI->bIsStun = true;
+				UGameplayStatics::PlaySound2D(GetWorld(), parryedSound);
 			}
 		}
 		
 		//패리판정 및 스턴판정이 들어감
-		UE_LOG(LogTemp, Warning, TEXT("Gun Attack Damage : %.0f"), damage);
+		//UE_LOG(LogTemp, Warning, TEXT("Gun Attack Damage : %.0f"), damage);
 	}
 }
 
@@ -499,7 +559,7 @@ void ALadyMaria::JumpAttack()
 		return;
 	}
 
-	//없으면 좌측베기를 재생
+	//없으면 점프공격을 재생
 	AnimInstance->Montage_Play(AnimJumpAttack);
 	//스테미나 소모
 	stamina -= 100.0f;
@@ -513,25 +573,20 @@ void ALadyMaria::Assult()
 		return;
 	}
 
-	//없으면 좌측베기를 재생
+	//없으면 돌진베기를 재생
 	AnimInstance->Montage_Play(AnimAssult);
 }
 
 void ALadyMaria::AimGun()
 {
-	//장거리에서만 발동되므로, 행동중이 아니고, 재생중인 몽타주가 없는 경우(회피중이 아닌경우)
-	if (mariaAI->attackState == EAttackState::IDLE && !AnimInstance->IsAnyMontagePlaying()) {
-		mariaAI->attackState = EAttackState::AIMMINGGUN;
-		AnimInstance->Montage_Play(AnimGunShot);
+	//만약 재생중이던 몽타주가 있으면
+	if (AnimInstance->IsAnyMontagePlaying()) {
+		//공격 취소
+		return;
 	}
-}
 
-void ALadyMaria::EffectMove()
-{
-	SetActorRotation((playerREF->GetActorLocation() - GetActorLocation()).Rotation());
-	float aim = FMath::Min(distanceToPlayer + 25.0f, 1000.0f);
-	rightEffect_V->SetRelativeLocation(FVector(0.0f, aim, 0.0f));
-	rightEffect_H->SetRelativeLocation(FVector(0.0f, aim, 0.0f));
+	//없으면 사격 개시
+	AnimInstance->Montage_Play(AnimFireGun);
 }
 
 void ALadyMaria::EffectOn()
@@ -543,6 +598,73 @@ void ALadyMaria::EffectOn()
 	
 	rightEffect_V->Activate(true);
 	rightEffect_H->Activate(true);
+	if (phaseState == EPhaseState::PHASE2) {
+		if (FMath::RandRange(0, 1) == 0) {
+			UGameplayStatics::PlaySound2D(GetWorld(), bloodSound1);
+		}
+		else {
+			UGameplayStatics::PlaySound2D(GetWorld(), bloodSound2);
+		}
+	}
+	else if (phaseState == EPhaseState::PHASE3) {
+		if (FMath::RandRange(0, 1) == 0) {
+			UGameplayStatics::PlaySound2D(GetWorld(), fireSound1);
+		}
+		else {
+			UGameplayStatics::PlaySound2D(GetWorld(), fireSound2);
+		}
+	}
+}
+
+void ALadyMaria::MakeBloodDecal(FVector makePlace, bool bIsForPlayer)
+{
+	FActorSpawnParameters params;
+	params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	ABloodDecalActor* decal = GetWorld()->SpawnActor<ABloodDecalActor>(bloodDecal, makePlace, GetActorRotation(), params);
+
+	if (bIsForPlayer) {
+		TArray<AActor*> attachedBlood;
+		playerREF->GetAttachedActors(attachedBlood);
+		for (int32 i = 0; i < attachedBlood.Num(); i++) {
+			ABloodDecalActor* blood = Cast<ABloodDecalActor>(attachedBlood[i]);
+			if (blood != nullptr) {
+				blood->Destroy();
+			}
+			//if (attachedBlood[i]->GetName().Contains("BloodDecal")) {
+			//	attachedBlood[i]->SetLifeSpan(0.0f);
+			//	attachedBlood[i]->Destroy();
+			//	break;
+			//}
+		}
+		decal->ForAttachPlayer();
+		FAttachmentTransformRules rules(EAttachmentRule::SnapToTarget, true);
+		decal->AttachToComponent(playerREF->GetMesh(), rules, FName("Spine2"));
+	}
+	else {
+		FVector decalLoc = decal->GetActorLocation();
+		decalLoc.Z = 12.0f;
+		decal->SetActorLocation(decalLoc);
+	}
+}
+
+void ALadyMaria::SwingSoundPlay()
+{
+	int32 num = FMath::RandRange(0, 3);
+	switch (num)
+	{
+	case 0:
+		UGameplayStatics::PlaySound2D(GetWorld(), swordSwingSound1);
+		break;
+	case 1:
+		UGameplayStatics::PlaySound2D(GetWorld(), swordSwingSound2);
+		break;
+	case 2:
+		UGameplayStatics::PlaySound2D(GetWorld(), swordSwingSound3);
+		break;
+	case 3:
+		UGameplayStatics::PlaySound2D(GetWorld(), swordSwingSound4);
+		break;
+	}
 }
 
 void ALadyMaria::ABP_FireGun()
@@ -558,6 +680,8 @@ void ALadyMaria::ABP_FireGun()
 		bullet->SetBulletSpeed(2000.0f);
 		bullet->SetFirePower(40.0f);
 	}
+	UGameplayStatics::PlaySound2D(GetWorld(), gunFireSound1);
+	mariaAI->attackState = EAttackState::IDLE;
 }
 
 void ALadyMaria::ABP_2ndSlowEnd()
@@ -594,7 +718,20 @@ void ALadyMaria::ABP_2ndSlowEnd()
 				//50부터 1000까지
 				FVector effectLoc = startLoc + GetActorForwardVector() * 50.0f * i;
 				FRotator effectRot = GetActorForwardVector().Rotation();
+				effectRot.Roll += FMath::RandRange(-180.0f, 180.0f);
 				instanceEffect = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), bloodThrustEffect, effectLoc, effectRot, FVector(3.0f));
+				if (i % 4 == 0) {
+					MakeBloodDecal(effectLoc, false);
+					if (phaseState == EPhaseState::PHASE3) {
+						instanceEffect = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), jumpAttackFireEffect, effectLoc, effectRot + FRotator(90.0f, 0.0f, 0.0f), FVector(3.0f));
+					}
+				}
+			}
+			if (phaseState == EPhaseState::PHASE2) {
+				UGameplayStatics::PlaySound2D(GetWorld(), bloodExplodeSound);
+			}
+			else{
+				UGameplayStatics::PlaySound2D(GetWorld(), fireExplodeSound);
 			}
 		}
 		else {
@@ -678,9 +815,10 @@ void ALadyMaria::ABP_BossJumpTop()
 {
 	//플레이어 위치를 이용, 착지위치 계산
 	//플레이어 위치에 착지 예정.
-	movePlace = playerREF->GetActorLocation() - playerREF->GetActorForwardVector() * 100.0f;
+	movePlace = playerREF->GetActorLocation() + playerREF->GetActorForwardVector() * 100.0f;
 	temp = 0.0f;
 	jumpEffectInstance->JumpingToggle();
+	EffectOn();
 }
 
 void ALadyMaria::ABP_BossJumpLand()
@@ -688,19 +826,29 @@ void ALadyMaria::ABP_BossJumpLand()
 	TArray<FHitResult> hitInfos;
 	FCollisionQueryParams queryParams;
 	queryParams.AddIgnoredActor(this);
-	bool bResult = GetWorld()->SweepMultiByProfile(hitInfos, GetActorLocation(), GetActorLocation(), FQuat::Identity, FName(TEXT("Pawn")), FCollisionShape::MakeSphere(500.0f), queryParams);
-	DrawDebugSphere(GetWorld(), GetActorLocation(), 500.0f, 32, FColor::Red, false, 5.0f, 0, 1.0f);
+	FVector attackPlace = GetActorLocation() + GetActorForwardVector() * 200.0f;
+	bool bResult = GetWorld()->SweepMultiByProfile(hitInfos, attackPlace, attackPlace, FQuat::Identity, FName(TEXT("Pawn")), FCollisionShape::MakeSphere(200.0f), queryParams);
+	DrawDebugSphere(GetWorld(), attackPlace, 200.0f, 32, FColor::Red, false, 5.0f, 0, 1.0f);
 	if (bResult) {
 		for (auto& hit : hitInfos) {
 			UE_LOG(LogTemp, Warning, TEXT("%s"), *hit.GetActor()->GetActorNameOrLabel());
 			ABloodBornCharacter* player = Cast<ABloodBornCharacter>(hit.GetActor());
 			if (player != nullptr) {
 				UGameplayStatics::ApplyDamage(player, strongAttack, GetInstigator()->GetController(), this, UDamageType::StaticClass());
+				//MakeBloodDecal(FVector::ZeroVector, true);
 				break;
 			}
 		}
 	}
-	instanceEffect = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), jumpAttackEffect, playerREF->GetActorLocation() + FVector(0, 0, -90.0f), FRotator::ZeroRotator, FVector(1.0f));
+	if (phaseState == EPhaseState::PHASE2) {
+		instanceEffect = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), jumpAttackEffect, attackPlace + FVector(0, 0, -90.0f), FRotator::ZeroRotator, FVector(1.0f));
+		MakeBloodDecal(attackPlace, false);
+		UGameplayStatics::PlaySound2D(GetWorld(), bloodExplodeSound);
+	}
+	else {
+		instanceEffect = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), jumpAttackFireEffect, attackPlace + FVector(0, 0, -90.0f), FRotator::ZeroRotator, FVector(5.0f));
+		UGameplayStatics::PlaySound2D(GetWorld(), fireExplodeSound);
+	}
 }
 
 void ALadyMaria::ABP_AssultChargeEnd()
@@ -710,6 +858,19 @@ void ALadyMaria::ABP_AssultChargeEnd()
 
 	movePlace = GetActorLocation() + towardPlayer * 2.0f / 3.0f + GetActorRightVector() * -900.0f;
 	temp = 0.0f;
+
+	int32 num = FMath::RandRange(0, 2);
+	switch (num) {
+	case 1:
+		UGameplayStatics::PlaySound2D(GetWorld(), dodgeSound1);
+		break;
+	case 2:
+		UGameplayStatics::PlaySound2D(GetWorld(), dodgeSound2);
+		break;
+	case 3:
+		UGameplayStatics::PlaySound2D(GetWorld(), dodgeSound3);
+		break;
+	}
 }
 
 void ALadyMaria::ABP_AssultDodgeEnd()
