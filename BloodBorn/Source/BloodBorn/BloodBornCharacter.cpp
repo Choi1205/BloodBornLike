@@ -104,7 +104,7 @@ void ABloodBornCharacter::HoldAttackStart(AActor* DamagedActor, float DamageAmou
 // 			World->GetTimeSeconds(),
 // 			InterpSpeed);
 	//UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->StartCameraShake(UBBLegacyCameraShake::StaticClass(), 0.15f);
-	UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->StartCameraShake(UBBLegacyCameraShake::StaticClass(), 1.f);
+	//UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->StartCameraShake(UBBLegacyCameraShake::StaticClass(), 1.f);
 }
 
 void ABloodBornCharacter::HoldAttackEnd(AActor* DamagedActor, float DamageAmount, EAttackType AttackType)
@@ -119,7 +119,7 @@ void ABloodBornCharacter::HoldAttackEnd(AActor* DamagedActor, float DamageAmount
 // 	const float InterpSpeed = 0.07f;
 // 	FollowCamera->FieldOfView = FMath::FInterpTo(CurrentFOV, 90.0f, World->GetTimeSeconds(), InterpSpeed);
 	//UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->StartCameraShake(UBBLegacyCameraShake::StaticClass(), 0.07f);
-	//UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->StartCameraShake(UBBLegacyCameraShake::StaticClass(), 1.f);
+	UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->StartCameraShake(UBBLegacyCameraShake::StaticClass(), 0.25f);
 }
 
 void ABloodBornCharacter::WeaponVisible()
@@ -247,6 +247,13 @@ void ABloodBornCharacter::Tick(float DeltaTime)
 
 	if(staCooldown > 0.0f){
 		staCooldown -= DeltaTime;
+	}
+
+	if (bIsZoomIn) {
+		CameraZoomInStart(DeltaTime);
+	}
+	if (bIsZoomOut) {
+		CameraZoomOutStart(DeltaTime);
 	}
 }
 
@@ -1141,5 +1148,33 @@ bool ABloodBornCharacter::IsInRallyWindow() const
 		UE_LOG(LogTemp, Warning, TEXT("NOTInRallyDuration"));
 
 		return false;
+	}
+}
+
+void ABloodBornCharacter::CameraZoomInStart(float deltaTime)
+{
+	cameraZoomInTimer += deltaTime * zoomInInt;
+	zoomInInt+=0.5f;
+	FollowCamera->FieldOfView = FMath::Lerp(startFOV, endFOV, cameraZoomInTimer/ cameraZoomInAnimTime);
+	UE_LOG(LogTemp, Warning, TEXT("ZoomIn : %f"), cameraZoomInTimer / cameraZoomInAnimTime);
+	if (cameraZoomInTimer > cameraZoomInAnimTime) {
+		bIsZoomIn = false;
+		cameraZoomInTimer = 0.0f;
+		zoomInInt = 1.0f;
+		FTimerHandle zoomOutHandle;
+		GetWorldTimerManager().SetTimer(zoomOutHandle, FTimerDelegate::CreateLambda([&](){
+			bIsZoomOut = true;
+		}), 0.9f, false);
+	}
+}
+
+void ABloodBornCharacter::CameraZoomOutStart(float deltaTime)
+{
+	cameraZoomOutTimer += deltaTime;
+	FollowCamera->FieldOfView = FMath::Lerp(endFOV, startFOV, cameraZoomOutTimer / cameraZoomOutAnimTime);
+	UE_LOG(LogTemp, Warning, TEXT("ZoomOut : %f"), cameraZoomOutTimer / cameraZoomOutAnimTime);
+	if (cameraZoomOutTimer > cameraZoomOutAnimTime) {
+		cameraZoomOutTimer = 0.0f;
+		bIsZoomOut = false;
 	}
 }

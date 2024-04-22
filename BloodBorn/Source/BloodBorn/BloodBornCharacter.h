@@ -286,6 +286,24 @@ public:
 	//락온된 액터
 	class AActor* LockOnEnemyREF = nullptr;
 
+
+	//카메라 작업부분
+	float cameraZoomInAnimTime = 0.1f;
+	float cameraZoomInTimer = 0.0f;
+	float cameraZoomOutAnimTime = 0.5f;
+	float cameraZoomOutTimer = 0.0f;
+
+	float zoomInInt = 1;
+
+	float startFOV = 90.0f;
+	float endFOV = 70.0f;
+
+	bool bIsZoomIn = false;
+	bool bIsZoomOut = false;
+
+	void CameraZoomInStart(float deltaTime);
+	void CameraZoomOutStart(float deltaTime);
+
 private:
 	void SetHUDHealth();
 

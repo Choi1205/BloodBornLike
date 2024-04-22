@@ -116,6 +116,7 @@ void UPlayerAnimInstance::AnimNotify_HoldAttackStart()
 {
 	PlayerCharacter->HoldAttackStart(PlayerCharacter->LockOnEnemyREF, 10.0f, EAttackType::Normal);
 	Montage_SetPlayRate(PlayerCharacter->HoldAttackMontage, 0.4f);
+	PlayerCharacter->bIsZoomIn = true;
 }
 
 void UPlayerAnimInstance::AnimNotify_HoldAttackFinish()
