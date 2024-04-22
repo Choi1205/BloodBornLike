@@ -3,6 +3,7 @@
 #include "BloodBornGameMode.h"
 #include "BloodBorn/BloodBornCharacter.h"
 #include "UObject/ConstructorHelpers.h"
+#include "HUD/DieOverlay.h"
 
 ABloodBornGameMode::ABloodBornGameMode()
 {
@@ -11,5 +12,21 @@ ABloodBornGameMode::ABloodBornGameMode()
 	if (PlayerPawnBPClass.Class != NULL)
 	{
 		DefaultPawnClass = PlayerPawnBPClass.Class;
+	}
+}
+
+void ABloodBornGameMode::ShowClearUI()
+{
+	if (clearOverlay != nullptr) {
+		UDieOverlay* clearOverlayUI = CreateWidget<UDieOverlay>(GetWorld(), clearOverlay);
+		if (clearOverlayUI != nullptr) {
+			clearOverlayUI->AddToViewport();
+			clearOverlayUI->PlayAnimation(clearOverlayUI->anim_died);
+
+			/*FTimerHandle clearUITimer;
+			GetWorld()->GetTimerManager().SetTimer(clearUITimer, FTimerDelegate::CreateLambda([&]() {
+				clearOverlayUI->Destruct();
+				}), 5.0f, false);*/
+		}
 	}
 }

@@ -372,4 +372,6 @@ public:
 
 	void ABP_AssultDodgeEnd();
 
+	void ABP_Boss_Dead();
+
 };

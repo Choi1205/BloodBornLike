@@ -887,3 +887,8 @@ void ALadyMaria::ABP_AssultDodgeEnd()
 	bIsCanDealDamage = true;
 	EffectOn();
 }
+
+void ALadyMaria::ABP_Boss_Dead()
+{
+	Destroy();
+}

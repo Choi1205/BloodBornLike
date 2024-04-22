@@ -6,6 +6,7 @@
 #include "Enemy/LadyMariaAIController.h"
 #include "Enemy/SmokeFXActor.h"
 #include "Enemy/LadyMariaJumpEffectActor.h"
+#include "BloodBornGameMode.h"
 
 void UBossAnimInstance::NativeInitializeAnimation()
 {
@@ -211,4 +212,11 @@ void UBossAnimInstance::AnimNotify_Boss_AssultChargeEnd()
 void UBossAnimInstance::AnimNotify_Boss_AssultDodgeEnd()
 {
 	mariaREF->ABP_AssultDodgeEnd();
+}
+
+void UBossAnimInstance::AnimNotify_Boss_Dead()
+{
+	ABloodBornGameMode* gameMode = Cast<ABloodBornGameMode>(GetWorld()->GetAuthGameMode());
+	gameMode->ShowClearUI();
+	mariaREF->ABP_Boss_Dead();
 }
