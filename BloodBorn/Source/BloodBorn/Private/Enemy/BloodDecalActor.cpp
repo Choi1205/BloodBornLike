@@ -13,5 +13,5 @@ void ABloodDecalActor::BeginPlay()
 
 void ABloodDecalActor::ForAttachPlayer()
 {
-	GetDecal()->DecalSize = FVector(100.0f, 100.0f, 120.0f);
+	GetDecal()->DecalSize = FVector(70.0f, 70.0f, 120.0f);
 }

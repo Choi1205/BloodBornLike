@@ -342,7 +342,7 @@ float ALadyMaria::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent
 void ALadyMaria::GotDamage(float damage)
 {
 	//내장뽑기 공격 모션중에는 다른 데미지를 받지 않는다.
-	if (!bIsHitHoldAttack) {
+	if (bIsHitHoldAttack) {
 		//HP를 데미지 만큼 깍는다
 		healthPoint = FMath::Max(healthPoint - damage, 0.0f);
 	}
@@ -403,8 +403,8 @@ void ALadyMaria::GotDamage(float damage)
 			UGameplayStatics::PlaySound2D(GetWorld(), dieVoice);
 		}
 		else {
-			if (mariaAI->bIsStun && damage >= 500.0f && !bIsHitHoldAttack) {
-				bIsHitHoldAttack = true;
+			if (mariaAI->bIsStun && damage >= 500.0f && bIsHitHoldAttack) {
+				bIsHitHoldAttack = false;
 				MakeBloodDecal(GetActorLocation(), false);
 				instanceEffect = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), HoldAttackHitEffect, GetActorLocation(), FRotator::ZeroRotator, FVector(3.0f));
 				UGameplayStatics::PlaySound2D(GetWorld(), hitHoldAttackSound);
@@ -484,6 +484,11 @@ void ALadyMaria::GotParryAttackCPP(float damage)
 bool ALadyMaria::GetInStun()
 {
 	return mariaAI->bIsStun;
+}
+
+bool ALadyMaria::GetHoldAttackOK()
+{
+	return bIsHitHoldAttack;
 }
 
 float ALadyMaria::GetHealth()
@@ -710,6 +715,9 @@ void ALadyMaria::ABP_2ndSlowEnd()
 					ABloodBornCharacter* player = Cast<ABloodBornCharacter>(hit.GetActor());
 					if (player != nullptr) {
 						UGameplayStatics::ApplyDamage(player, strongAttack, GetInstigator()->GetController(), this, UDamageType::StaticClass());
+						if (phaseState == EPhaseState::PHASE2) {
+							MakeBloodDecal(FVector::ZeroVector, true);
+						}
 						break;
 					}
 				}
@@ -835,7 +843,7 @@ void ALadyMaria::ABP_BossJumpLand()
 			ABloodBornCharacter* player = Cast<ABloodBornCharacter>(hit.GetActor());
 			if (player != nullptr) {
 				UGameplayStatics::ApplyDamage(player, strongAttack, GetInstigator()->GetController(), this, UDamageType::StaticClass());
-				//MakeBloodDecal(FVector::ZeroVector, true);
+				MakeBloodDecal(FVector::ZeroVector, true);
 				break;
 			}
 		}

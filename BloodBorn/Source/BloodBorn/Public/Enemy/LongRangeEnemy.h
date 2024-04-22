@@ -121,6 +121,8 @@ public:
 
 	virtual bool GetInStun() override;
 
+	virtual bool GetHoldAttackOK() override;
+
 	virtual float GetHealth() override;
 
 	virtual void Lockon(bool value) override;

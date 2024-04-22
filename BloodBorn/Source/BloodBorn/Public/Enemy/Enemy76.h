@@ -24,6 +24,7 @@ public:
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 	virtual void GotParryAttackCPP(float damage);
 	virtual bool GetInStun() override;
+	virtual bool GetHoldAttackOK() override;
 	virtual float GetHealth() override;
 	virtual void Lockon(bool value) override;
 

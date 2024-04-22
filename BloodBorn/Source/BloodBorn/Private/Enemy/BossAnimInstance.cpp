@@ -163,7 +163,7 @@ void UBossAnimInstance::AnimNotify_Boss_GunFire()
 
 void UBossAnimInstance::AnimNotify_Boss_HitHoldAttackEnd()
 {
-	mariaREF->bIsHitHoldAttack = false;
+	mariaREF->bIsHitHoldAttack = true;
 	mariaAIREF->bIsStun = false;
 	mariaAIREF->attackState = EAttackState::IDLE;
 }

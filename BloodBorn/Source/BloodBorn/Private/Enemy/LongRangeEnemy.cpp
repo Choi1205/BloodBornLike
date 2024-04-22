@@ -238,6 +238,11 @@ bool ALongRangeEnemy::GetInStun()
 	return false;
 }
 
+bool ALongRangeEnemy::GetHoldAttackOK()
+{
+	return false;
+}
+
 float ALongRangeEnemy::GetHealth()
 {
 	return health;

@@ -95,6 +95,11 @@ bool AEnemy76::GetInStun()
 	return false;
 }
 
+bool AEnemy76::GetHoldAttackOK()
+{
+	return false;
+}
+
 float AEnemy76::GetHealth()
 {
 	return 0.0f;

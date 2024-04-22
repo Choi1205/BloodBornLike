@@ -169,6 +169,11 @@ bool ACPPTreeStayEnemy::GetInStun()
 	return BTStayAIController->GetBlackboardComponent()->GetValueAsBool(FName("InStun"));
 }
 
+bool ACPPTreeStayEnemy::GetHoldAttackOK()
+{
+	return true;
+}
+
 float ACPPTreeStayEnemy::GetHealth()
 {
 	return healthPoint;

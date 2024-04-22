@@ -166,7 +166,7 @@ public:
 	bool bIsCanParryed = false;
 
 	UPROPERTY(BlueprintReadWrite)
-	bool bIsHitHoldAttack = false;
+	bool bIsHitHoldAttack = true;
 
 	UPROPERTY(BlueprintReadWrite)
 	bool bIsCanDealDamage = false;
@@ -323,6 +323,8 @@ public:
 	virtual void GotParryAttackCPP(float damage) override;
 
 	virtual bool GetInStun() override;
+
+	virtual bool GetHoldAttackOK() override;
 
 	UFUNCTION(BlueprintCallable)
 	virtual float GetHealth() override;
