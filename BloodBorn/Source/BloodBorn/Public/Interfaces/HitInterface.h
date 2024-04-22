@@ -30,6 +30,8 @@ public:
 	//스턴상태인지 확인
 	virtual bool GetInStun() = 0;
 
+	virtual bool GetHoldAttackOK() = 0;
+
 	//체력량을 확인
 	virtual float GetHealth() = 0;
 
