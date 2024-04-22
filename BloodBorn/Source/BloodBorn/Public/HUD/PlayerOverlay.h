@@ -50,12 +50,4 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	class USlider* StaminaSliderBar;
 
-// 	UPROPERTY(meta = (BindWidget), Transient)
-// 	class UWidgetAnimation* anim_died;
-// 
-// 	UPROPERTY(meta = (BindWidget), Transient)
-// 	class UWidgetAnimation* anim_diedBack;
-// 
-// 	void ShowDiedWidget(bool bshow);
-
 };

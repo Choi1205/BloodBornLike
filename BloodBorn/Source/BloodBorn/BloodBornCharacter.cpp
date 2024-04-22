@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+/// Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "BloodBornCharacter.h"
 #include "Engine/LocalPlayer.h"
@@ -96,14 +96,15 @@ void ABloodBornCharacter::HoldAttackStart(AActor* DamagedActor, float DamageAmou
 	//FollowCamera->FieldOfView = 70;
 
 	UWorld* World = GetWorld();
-	const float CurrentFOV = FollowCamera->FieldOfView;
-	UE_LOG(LogTemp, Log, TEXT("Current FOV: %f"), CurrentFOV);
-	const float InterpSpeed = 1.0f;
-		FollowCamera->FieldOfView = FMath::FInterpTo(CurrentFOV,
-			70.f,
-			World->GetTimeSeconds(),
-			InterpSpeed);
-	UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->StartCameraShake(UBBLegacyCameraShake::StaticClass(), 0.15f);
+// 	const float CurrentFOV = FollowCamera->FieldOfView;
+// 	UE_LOG(LogTemp, Log, TEXT("Current FOV: %f"), CurrentFOV);
+// 	const float InterpSpeed = 0.07f;
+// 		FollowCamera->FieldOfView = FMath::FInterpTo(CurrentFOV,
+// 			70.f,
+// 			World->GetTimeSeconds(),
+// 			InterpSpeed);
+	//UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->StartCameraShake(UBBLegacyCameraShake::StaticClass(), 0.15f);
+	UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->StartCameraShake(UBBLegacyCameraShake::StaticClass(), 1.f);
 }
 
 void ABloodBornCharacter::HoldAttackEnd(AActor* DamagedActor, float DamageAmount, EAttackType AttackType)
@@ -112,12 +113,13 @@ void ABloodBornCharacter::HoldAttackEnd(AActor* DamagedActor, float DamageAmount
 	EquippedWeaponSaw->ApplyDamage(LockOnEnemyREF, DamageAmount, AttackType);
 	// FollowCamera->FieldOfView = 90;
 
-	UWorld* World = GetWorld();
-	const float CurrentFOV = FollowCamera->FieldOfView;
-	UE_LOG(LogTemp, Log, TEXT("Current FOV: %f"), CurrentFOV);
-	const float InterpSpeed = 2.0f;
-	FollowCamera->FieldOfView = FMath::FInterpTo(CurrentFOV, 90.0f, World->GetTimeSeconds(), InterpSpeed);
-	UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->StartCameraShake(UBBLegacyCameraShake::StaticClass(), 0.07f);
+// 	UWorld* World = GetWorld();
+// 	const float CurrentFOV = FollowCamera->FieldOfView;
+// 	UE_LOG(LogTemp, Log, TEXT("Current FOV: %f"), CurrentFOV);
+// 	const float InterpSpeed = 0.07f;
+// 	FollowCamera->FieldOfView = FMath::FInterpTo(CurrentFOV, 90.0f, World->GetTimeSeconds(), InterpSpeed);
+	//UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->StartCameraShake(UBBLegacyCameraShake::StaticClass(), 0.07f);
+	//UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->StartCameraShake(UBBLegacyCameraShake::StaticClass(), 1.f);
 }
 
 void ABloodBornCharacter::WeaponVisible()
@@ -178,6 +180,7 @@ void ABloodBornCharacter::BeginPlay()
 				PlayerOverlay->SetBullet(Attributes->GetBullet());
 				UE_LOG(LogTemp, Warning, TEXT("hpbar valid"));
 			}
+			DieOverlay = BBPlayerHUD->GetDieOverlay();
 		}
 	}
 }
@@ -902,8 +905,37 @@ void ABloodBornCharacter::Die()
 	 PlayDeathMontage();
 	 GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	 GetCharacterMovement()->DisableMovement();
-	 UGameplayStatics::OpenLevel(GetWorld(), FName("PlayerLevel"));
+
+	 FTimerHandle dietimer;
+	 GetWorldTimerManager().SetTimer(dietimer, FTimerDelegate::CreateLambda([&]() {
+
+		 if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
+		 {
+
+			 ABBPlayerHUD* BBPlayerHUD = Cast<ABBPlayerHUD>(PlayerController->GetHUD());
+			 if (BBPlayerHUD)
+			 {
+				 BBPlayerHUD->ShowDieOverlay();
+			 }
+		 }
+		 }), 3.0f, false);
+	
+
+	 FTimerHandle OpenLevelTimer;
+	 GetWorldTimerManager().SetTimer(OpenLevelTimer, FTimerDelegate::CreateLambda([&]() {
+		 UGameplayStatics::OpenLevel(GetWorld(), FName("PlayerLevel"));
+		 }
+	 ), 7.0f, false);
 }
+
+// 
+// void ABloodBornCharacter::OpenLevelFunction()
+// {
+// 	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
+// 	{
+// 		UGameplayStatics::OpenLevel(GetWorld(), FName("PlayerLevel"));
+// 	}
+// }
 
 
 void ABloodBornCharacter::PlayDeathMontage()

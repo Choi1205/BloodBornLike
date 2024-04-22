@@ -57,11 +57,7 @@ void UPlayerOverlay::SetDecreaseStaminaBarPercent(float Percent)
 		DecreaseStaminaBar->SetPercent(Percent);
 	}
 }
-// 
-// void UPlayerOverlay::ShowDiedWidget(bool bshow)
-// {
-// 
-// }
+
 
 void UPlayerOverlay::SetHealthSliderBarPercent(float Percent)
 {

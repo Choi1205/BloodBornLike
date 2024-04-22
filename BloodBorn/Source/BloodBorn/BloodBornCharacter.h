@@ -21,6 +21,7 @@ class AGun;
 class ABloodVial;
 class UAttributeComponent;
 class UPlayerOverlay;
+class UDieOverlay;
 
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
@@ -229,7 +230,7 @@ protected:
 	
 	/*UFUNCTION(BlueprintCallable)
 	void HoldAttackStart();*/
-
+// 	void OpenLevelFunction();
 
 protected:
 	// APawn interface
@@ -303,6 +304,9 @@ private:
 
 	UPROPERTY()
 	UPlayerOverlay* PlayerOverlay;
+
+	UPROPERTY()
+	UDieOverlay* DieOverlay;
 
 	UPROPERTY(VisibleInstanceOnly)
 	AItem* OverlappingItem;
