@@ -22,8 +22,11 @@
 #include "HUD/PlayerOverlay.h"
 #include "Interfaces/HitInterface.h"
 #include "BBLegacyCameraShake.h"
-#include "../../../../../../../Source/Runtime/Engine/Classes/Engine/World.h"
-#include "../../../../../../../Source/Runtime/Engine/Classes/Kismet/GameplayStatics.h"
+/*#include "../../../../../../../Source/Runtime/Engine/Classes/Engine/World.h"*/
+#include "Kismet/GameplayStatics.h"
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraComponent.h"
+
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -866,6 +869,18 @@ void ABloodBornCharacter::Heal()
 			PlayerOverlay->SetHealthBarPercent(Attributes->GetHealthPercent());
 			PlayerOverlay->SetHealthSliderBarPercent(Attributes->GetHealthSlider());
 		}
+/*		instanceEffect = UNiagaraFunctionLibrary::SpawnSystemAttached(healEffect, GetRootComponent(), FName("healSocket"), EAttachLocation::KeepWorldPosition, true, true);*/
+		FVector HealLocation;
+		FRotator HealRotation;
+		GetMesh()->GetSocketWorldLocationAndRotation(FName("healSocket"), HealLocation, HealRotation);
+
+		// Niagara 시스템 생성
+		instanceEffect = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(),	healEffect,	HealLocation, HealRotation /*, FVector::OneVector*/);
+
+		FTimerHandle healtimer;
+		GetWorldTimerManager().SetTimer(healtimer, FTimerDelegate::CreateLambda([&]() {
+			instanceEffect = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), regainHealEffect, GetActorLocation(), FRotator::ZeroRotator, FVector(0.5f));
+		}), 0.2f, false);
 	}
 }
 
@@ -908,10 +923,26 @@ void ABloodBornCharacter::PlayHitReactMontage()
 
 void ABloodBornCharacter::Die()
 {
-	 UE_LOG(LogTemp, Warning, TEXT("DEAD!!!!!!!!!!!!!"));
 	 PlayDeathMontage();
 	 GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	 GetCharacterMovement()->DisableMovement();
+	 //DisableInput(Ge); 카메라 움직임 멈추기?
+	 CameraBoom->bUsePawnControlRotation = false;
+
+	 //instanceEffect = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), deadEffect, GetActorLocation(), FRotator::ZeroRotator, FVector(1.0f));
+	 FVector CharacterLocation = GetActorLocation();
+
+	 float CharacterHeight = GetCapsuleComponent()->GetScaledCapsuleHalfHeight() - 55.0f;
+	 FVector SpawnLocation = CharacterLocation - FVector(0.0f, 0.0f, CharacterHeight);
+
+	 instanceEffect = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+		 GetWorld(),
+		 deadEffect,
+		 SpawnLocation,
+		 FRotator::ZeroRotator,
+		 FVector(0.75f)
+	 );
+
 
 	 FTimerHandle dietimer;
 	 GetWorldTimerManager().SetTimer(dietimer, FTimerDelegate::CreateLambda([&]() {
@@ -925,7 +956,7 @@ void ABloodBornCharacter::Die()
 				 BBPlayerHUD->ShowDieOverlay();
 			 }
 		 }
-		 }), 3.0f, false);
+	 }), 3.0f, false);
 	
 
 	 FTimerHandle OpenLevelTimer;
@@ -1047,6 +1078,17 @@ void ABloodBornCharacter::Decline()
 			PlayerOverlay->SetBullet(Attributes->GetBullet());
 			PlayerOverlay->SetHealthBarPercent(Attributes->GetHealthPercent());
 			PlayerOverlay->SetHealthSliderBarPercent(Attributes->GetHealthSlider());
+
+			FVector BulletLocation;
+			FRotator BulletRotation;
+			GetMesh()->GetSocketWorldLocationAndRotation(FName("MakeBulletSocket"), BulletLocation, BulletRotation);
+			// Niagara 시스템 생성
+			instanceEffect = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), makeBulletEffect, BulletLocation, BulletRotation /*, FVector::OneVector*/);
+
+			FTimerHandle bullettimer;
+			GetWorldTimerManager().SetTimer(bullettimer, FTimerDelegate::CreateLambda([&]() {
+				instanceEffect = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), finishBulletEffect, GetActorLocation(), FRotator::ZeroRotator, FVector(0.7f));
+			}), 0.2f, false);
 		}
 		else
 		{
@@ -1102,6 +1144,8 @@ void ABloodBornCharacter::OnSuccessfulAttack(float Damage, EAttackType AttackTyp
 		//{
 			// 회복 가능한 체력을 플레이어에게 적용
 			Attributes->RegainHealth(RegainedHealth);
+			// 회복 나이아가라
+			instanceEffect = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), regainHealEffect, GetActorLocation(), FRotator::ZeroRotator, FVector(0.5f));
 			SetHUDHealth();
 			if (PlayerOverlay && Attributes)
 			{

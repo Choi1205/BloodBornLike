@@ -163,6 +163,24 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = Combat)
 	UAnimMontage* MakeBulletMontage;
 
+	UPROPERTY(EditAnywhere)
+	class UNiagaraSystem* regainHealEffect;
+
+	UPROPERTY(EditAnywhere)
+	class UNiagaraSystem* healEffect;
+	
+	UPROPERTY(EditAnywhere)
+	class UNiagaraSystem* makeBulletEffect;
+
+	UPROPERTY(EditAnywhere)
+	class UNiagaraSystem* finishBulletEffect;
+	
+	UPROPERTY(EditAnywhere)
+	class UNiagaraSystem* deadEffect;
+
+	UPROPERTY(EditAnywhere)
+	class UNiagaraComponent* instanceEffect;
+
 protected:
 
 	/** 
