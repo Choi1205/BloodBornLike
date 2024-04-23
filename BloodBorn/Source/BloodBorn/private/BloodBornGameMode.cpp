@@ -5,6 +5,7 @@
 #include "UObject/ConstructorHelpers.h"
 #include "HUD/DieOverlay.h"
 #include "HUD/PauseWidget.h"
+#include "Kismet/GameplayStatics.h"
 
 void ABloodBornGameMode::BeginPlay()
 {
@@ -34,12 +35,14 @@ void ABloodBornGameMode::ShowPauseUI()
 {
 	pauseWidget->SetVisibility(ESlateVisibility::Visible);
 	GetWorld()->GetFirstPlayerController()->SetShowMouseCursor(true);
+	UGameplayStatics::PlaySound2D(GetWorld(), openMenu);
 }
 
 void ABloodBornGameMode::HidePauseUI()
 {
 	pauseWidget->SetVisibility(ESlateVisibility::Hidden);
 	GetWorld()->GetFirstPlayerController()->SetShowMouseCursor(false);
+	UGameplayStatics::PlaySound2D(GetWorld(), closeMenu);
 }
 
 void ABloodBornGameMode::ShowClearUI()
@@ -51,4 +54,16 @@ void ABloodBornGameMode::ShowClearUI()
 			clearOverlayUI->PlayAnimation(clearOverlayUI->anim_died);
 		}
 	}
+}
+
+void ABloodBornGameMode::RestartGame()
+{
+	UGameplayStatics::PlaySound2D(GetWorld(), OKBtn);
+	UGameplayStatics::OpenLevel(GetWorld(), FName("DemoMapDay_Copy"));
+}
+
+void ABloodBornGameMode::EndGame()
+{
+	UGameplayStatics::PlaySound2D(GetWorld(), OKBtn);
+	GetWorld()->GetFirstPlayerController()->ConsoleCommand("Quit");
 }

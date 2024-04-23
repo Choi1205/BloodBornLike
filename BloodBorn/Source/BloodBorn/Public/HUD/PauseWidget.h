@@ -30,6 +30,8 @@ public:
 
 private:
 
+	class ABloodBornGameMode* gm;
+
 	UFUNCTION()
 	void ResumeGame();
 
