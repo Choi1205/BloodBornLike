@@ -81,6 +81,21 @@ ABloodBornCharacter::ABloodBornCharacter()
 	RallyWindowDuration = 20.0f;
 	// LastDamageReceived = 0.0f;
 
+	regainHealEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("RegainHeal Effect"));
+	regainHealEffect->SetupAttachment(GetMesh(), FName("NeckSocket"));
+	regainHealEffect->bAutoActivate = false;
+
+	healEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Heal Effect"));
+	healEffect->SetupAttachment(GetMesh(), FName("healSocket"));
+	healEffect->bAutoActivate = false;
+
+	makeBulletEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("MakeBullet Effect"));
+	makeBulletEffect->SetupAttachment(GetMesh(), FName("MakeBulletSocket"));
+	makeBulletEffect->bAutoActivate = false;
+
+	finishBulletEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("FinishBullet Effect"));
+	finishBulletEffect->SetupAttachment(GetMesh(), FName("NeckSocket"));
+	finishBulletEffect->bAutoActivate = false;
 
 }
 
@@ -578,7 +593,7 @@ AActor* ABloodBornCharacter::EngageLockOn()
 
 		if (closestEnemy) {
 			//락온 대상이 있으면 녹색 디버그 구체 생성
-			DrawDebugSphere(GetWorld(), GetActorLocation(), 750.0f, 100, FColor::Green, false, 3.0f);
+			//DrawDebugSphere(GetWorld(), GetActorLocation(), 750.0f, 100, FColor::Green, false, 3.0f);
 			GetWorld()->GetFirstPlayerController()->SetIgnoreLookInput(true);
 			GetCharacterMovement()->bOrientRotationToMovement = false;
 			GetCharacterMovement()->bUseControllerDesiredRotation = true;
@@ -595,15 +610,15 @@ AActor* ABloodBornCharacter::EngageLockOn()
 
 			return closestEnemy;
 		}
-		else {
-			//스피어 트레이스 대상은 있었으나 락온 대상이 없으면 노란색 디버그 구체 생성
-			DrawDebugSphere(GetWorld(), GetActorLocation(), 750.0f, 100, FColor::Yellow, false, 3.0f);
-		}
+// 		else {
+// 			//스피어 트레이스 대상은 있었으나 락온 대상이 없으면 노란색 디버그 구체 생성
+// 			//DrawDebugSphere(GetWorld(), GetActorLocation(), 750.0f, 100, FColor::Yellow, false, 3.0f);
+// 		}
 	}
-	else {
-		//스피어 트레이스 대상이 없으면 빨간 디버그 구체 생성
-		DrawDebugSphere(GetWorld(), GetActorLocation(), 750.0f, 100, FColor::Red, false, 3.0f);
-	}
+// 	else {
+// 		//스피어 트레이스 대상이 없으면 빨간 디버그 구체 생성
+// 		//DrawDebugSphere(GetWorld(), GetActorLocation(), 750.0f, 100, FColor::Red, false, 3.0f);
+// 	}
 	return nullptr;
 }
 
@@ -806,7 +821,17 @@ void ABloodBornCharacter::HandleDamage(float DamageAmount)
 		}
 		else{
 			PlayHitReactMontage();
-			GetCharacterMovement()->MaxWalkSpeed = 600.0f;
+
+			int32 RandomNumber = FMath::RandRange(0, 99);
+
+			if (RandomNumber < 30) {
+				UGameplayStatics::PlaySound2D(GetWorld(), hitSound1); // 30%의 확률로 hitSound1 재생
+			}
+			else if (RandomNumber < 40) {
+				UGameplayStatics::PlaySound2D(GetWorld(), hitSound2); // 10%의 확률로 hitSound2 재생
+			}
+
+			GetCharacterMovement()->MaxWalkSpeed = 600.0f;  // 이건 왜 있는거지 
 			UE_LOG(LogTemp, Warning, TEXT("Player Hit! : %f"), DamageAmount);
 			ActionState = EActionState::EAS_HitReaction;
 			LastHitTime = GetWorld()->GetTimeSeconds();  // 마지막 공격을 받은 시간 업데이트
@@ -877,19 +902,21 @@ void ABloodBornCharacter::Heal()
 			PlayerOverlay->SetVial(Attributes->GetBloodVial());
 			PlayerOverlay->SetHealthBarPercent(Attributes->GetHealthPercent());
 			PlayerOverlay->SetHealthSliderBarPercent(Attributes->GetHealthSlider());
-		}
+	
 /*		instanceEffect = UNiagaraFunctionLibrary::SpawnSystemAttached(healEffect, GetRootComponent(), FName("healSocket"), EAttachLocation::KeepWorldPosition, true, true);*/
-		FVector HealLocation;
-		FRotator HealRotation;
-		GetMesh()->GetSocketWorldLocationAndRotation(FName("healSocket"), HealLocation, HealRotation);
+// 		FVector HealLocation;
+// 		FRotator HealRotation;
+// 		GetMesh()->GetSocketWorldLocationAndRotation(FName("healSocket"), HealLocation, HealRotation);
 
-		// Niagara 시스템 생성
-		instanceEffect = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(),	healEffect,	HealLocation, HealRotation /*, FVector::OneVector*/);
+		// Niagara
+/*		instanceEffect = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(),	healEffect,	HealLocation, HealRotation / *, FVector::OneVector* /);*/
+			healEffect->Activate(true);
 
-		FTimerHandle healtimer;
-		GetWorldTimerManager().SetTimer(healtimer, FTimerDelegate::CreateLambda([&]() {
-			instanceEffect = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), regainHealEffect, GetActorLocation(), FRotator::ZeroRotator, FVector(0.5f));
-		}), 0.2f, false);
+			FTimerHandle healtimer;
+			GetWorldTimerManager().SetTimer(healtimer, FTimerDelegate::CreateLambda([&]() {
+				regainHealEffect->Activate(true);
+			}), 0.2f, false);
+		}
 	}
 }
 
@@ -944,13 +971,15 @@ void ABloodBornCharacter::Die()
 	 float CharacterHeight = GetCapsuleComponent()->GetScaledCapsuleHalfHeight() - 55.0f;
 	 FVector SpawnLocation = CharacterLocation - FVector(0.0f, 0.0f, CharacterHeight);
 
-	 instanceEffect = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
-		 GetWorld(),
-		 deadEffect,
-		 SpawnLocation,
-		 FRotator::ZeroRotator,
-		 FVector(0.75f)
-	 );
+	 UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), deadEffect, SpawnLocation, FRotator::ZeroRotator, FVector(0.85f));
+// 
+// 	 instanceEffect = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+// 		 GetWorld(),
+// 		 deadEffect,
+// 		 SpawnLocation,
+// 		 FRotator::ZeroRotator,
+// 		 FVector(0.75f)
+// 	 );
 
 
 	 FTimerHandle dietimer;
@@ -959,20 +988,22 @@ void ABloodBornCharacter::Die()
 		 if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
 		 {
 
+			 UGameplayStatics::PlaySound2D(GetWorld(), deathSound);
 			 ABBPlayerHUD* BBPlayerHUD = Cast<ABBPlayerHUD>(PlayerController->GetHUD());
 			 if (BBPlayerHUD)
 			 {
 				 BBPlayerHUD->ShowDieOverlay();
 			 }
+
 		 }
 	 }), 3.0f, false);
 	
 
 	 FTimerHandle OpenLevelTimer;
 	 GetWorldTimerManager().SetTimer(OpenLevelTimer, FTimerDelegate::CreateLambda([&]() {
-		 UGameplayStatics::OpenLevel(GetWorld(), FName("PlayerLevel"));
+		 UGameplayStatics::OpenLevel(GetWorld(), FName("76TestLV"));
 		 }
-	 ), 7.0f, false);
+	 ), 8.f, false);
 }
 
 // 
@@ -1097,15 +1128,18 @@ void ABloodBornCharacter::Decline()
 			PlayerOverlay->SetHealthBarPercent(Attributes->GetHealthPercent());
 			PlayerOverlay->SetHealthSliderBarPercent(Attributes->GetHealthSlider());
 
-			FVector BulletLocation;
-			FRotator BulletRotation;
-			GetMesh()->GetSocketWorldLocationAndRotation(FName("MakeBulletSocket"), BulletLocation, BulletRotation);
-			// Niagara 시스템 생성
-			instanceEffect = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), makeBulletEffect, BulletLocation, BulletRotation /*, FVector::OneVector*/);
+// 			FVector BulletLocation;
+// 			FRotator BulletRotation;
+// 			GetMesh()->GetSocketWorldLocationAndRotation(FName("MakeBulletSocket"), BulletLocation, BulletRotation);
+// 			// Niagara 시스템
+// 			instanceEffect = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), makeBulletEffect, BulletLocation, BulletRotation /*, FVector::OneVector*/);
+			
+			makeBulletEffect->Activate(true);
 
 			FTimerHandle bullettimer;
 			GetWorldTimerManager().SetTimer(bullettimer, FTimerDelegate::CreateLambda([&]() {
-				instanceEffect = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), finishBulletEffect, GetActorLocation(), FRotator::ZeroRotator, FVector(0.7f));
+				/*instanceEffect = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), finishBulletEffect, GetActorLocation(), FRotator::ZeroRotator, FVector(0.7f));*/
+				finishBulletEffect->Activate(true);
 			}), 0.2f, false);
 		}
 		else
@@ -1161,14 +1195,15 @@ void ABloodBornCharacter::OnSuccessfulAttack(float Damage, EAttackType AttackTyp
 		//if (RegainableHealth > 0.0f)
 		//{
 			// 회복 가능한 체력을 플레이어에게 적용
-			Attributes->RegainHealth(RegainedHealth);
-			// 회복 나이아가라
-			instanceEffect = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), regainHealEffect, GetActorLocation(), FRotator::ZeroRotator, FVector(0.5f));
-			SetHUDHealth();
-			if (PlayerOverlay && Attributes)
-			{
-				PlayerOverlay->SetPredictedHPBarPercent(Attributes->GetRegainHealthPercent());
-			}
+		Attributes->RegainHealth(RegainedHealth);
+		// 회복 나이아가라
+/*			instanceEffect = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), regainHealEffect, GetActorLocation(), FRotator::ZeroRotator, FVector(0.5f));*/
+		regainHealEffect->Activate(true);
+		SetHUDHealth();
+		if (PlayerOverlay && Attributes)
+		{
+			PlayerOverlay->SetPredictedHPBarPercent(Attributes->GetRegainHealthPercent());
+		}
 		//}
 	}
 	else

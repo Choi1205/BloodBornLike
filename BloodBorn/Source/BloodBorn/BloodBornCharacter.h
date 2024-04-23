@@ -167,22 +167,22 @@ public:
 	UAnimMontage* MakeBulletMontage;
 
 	UPROPERTY(EditAnywhere)
-	class UNiagaraSystem* regainHealEffect;
+	class UNiagaraComponent* regainHealEffect;
 
 	UPROPERTY(EditAnywhere)
-	class UNiagaraSystem* healEffect;
+	class UNiagaraComponent* healEffect;
 	
 	UPROPERTY(EditAnywhere)
-	class UNiagaraSystem* makeBulletEffect;
+	class UNiagaraComponent* makeBulletEffect;
 
 	UPROPERTY(EditAnywhere)
-	class UNiagaraSystem* finishBulletEffect;
+	class UNiagaraComponent* finishBulletEffect;
 	
 	UPROPERTY(EditAnywhere)
 	class UNiagaraSystem* deadEffect;
 
-	UPROPERTY(EditAnywhere)
-	class UNiagaraComponent* instanceEffect;
+// 	UPROPERTY(EditAnywhere)
+// 	class UNiagaraComponent* instanceEffect;
 
 protected:
 
@@ -364,6 +364,15 @@ private:
 	
 	UPROPERTY(VisibleAnywhere, Category = Weapon)
 	ABloodVial* EquippedBV;
+
+	UPROPERTY(EditAnywhere, Category = Sounds)
+	class USoundBase* hitSound1;
+
+	UPROPERTY(EditAnywhere, Category = Sounds)
+	class USoundBase* hitSound2;
+	
+	UPROPERTY(EditAnywhere, Category = Sounds)
+	class USoundBase* deathSound;
 
 	//UPROPERTY(EditAnywhere, Category = Weapon)
 	//TSubclassOf<ULegacyCameraShake> CameraShake;
