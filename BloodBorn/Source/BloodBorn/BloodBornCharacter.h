@@ -77,6 +77,9 @@ class ABloodBornCharacter : public ACharacter, public IPickupInterface
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* MakeBulletAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* PauseAction;
+
 
 public:
 	ABloodBornCharacter();
@@ -212,6 +215,8 @@ protected:
 	void GunFire();
 	void MakeBullets();
 
+	void ShowMenu();
+
 	void HandleDamage(float DamageAmount);  // ,, virtual?
 
 	// void UseBloodVial();
@@ -318,6 +323,9 @@ public:
 
 	bool bIsZoomIn = false;
 	bool bIsZoomOut = false;
+
+	//메뉴화면 카메라 고정 변수
+	bool bIsShowingMenu = false;
 
 	void CameraZoomInStart(float deltaTime);
 	void CameraZoomOutStart(float deltaTime);

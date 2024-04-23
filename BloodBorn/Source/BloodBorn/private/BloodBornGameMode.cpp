@@ -4,6 +4,21 @@
 #include "BloodBorn/BloodBornCharacter.h"
 #include "UObject/ConstructorHelpers.h"
 #include "HUD/DieOverlay.h"
+#include "HUD/PauseWidget.h"
+
+void ABloodBornGameMode::BeginPlay()
+{
+	Super::BeginPlay();
+	
+	if (pauseWidget_bp != nullptr) {
+		pauseWidget = CreateWidget<UPauseWidget>(GetWorld(), pauseWidget_bp);
+		if (pauseWidget != nullptr) {
+			pauseWidget->AddToViewport();
+			pauseWidget->SetVisibility(ESlateVisibility::Hidden);
+		}
+	}
+
+}
 
 ABloodBornGameMode::ABloodBornGameMode()
 {
@@ -15,6 +30,18 @@ ABloodBornGameMode::ABloodBornGameMode()
 	}
 }
 
+void ABloodBornGameMode::ShowPauseUI()
+{
+	pauseWidget->SetVisibility(ESlateVisibility::Visible);
+	GetWorld()->GetFirstPlayerController()->SetShowMouseCursor(true);
+}
+
+void ABloodBornGameMode::HidePauseUI()
+{
+	pauseWidget->SetVisibility(ESlateVisibility::Hidden);
+	GetWorld()->GetFirstPlayerController()->SetShowMouseCursor(false);
+}
+
 void ABloodBornGameMode::ShowClearUI()
 {
 	if (clearOverlay != nullptr) {
@@ -22,11 +49,6 @@ void ABloodBornGameMode::ShowClearUI()
 		if (clearOverlayUI != nullptr) {
 			clearOverlayUI->AddToViewport();
 			clearOverlayUI->PlayAnimation(clearOverlayUI->anim_died);
-
-			/*FTimerHandle clearUITimer;
-			GetWorld()->GetTimerManager().SetTimer(clearUITimer, FTimerDelegate::CreateLambda([&]() {
-				clearOverlayUI->Destruct();
-				}), 5.0f, false);*/
 		}
 	}
 }

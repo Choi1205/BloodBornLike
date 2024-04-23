@@ -26,6 +26,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
+#include "BloodBornGameMode.h"
 
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
@@ -298,6 +299,9 @@ void ABloodBornCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 		// 은탄 생성
 		EnhancedInputComponent->BindAction(MakeBulletAction, ETriggerEvent::Started, this, &ABloodBornCharacter::MakeBullets);
 
+		// 중단 메뉴 표시
+		EnhancedInputComponent->BindAction(PauseAction, ETriggerEvent::Started, this, &ABloodBornCharacter::ShowMenu);
+
 	}
 	else
 	{
@@ -344,6 +348,9 @@ void ABloodBornCharacter::Move(const FInputActionValue& Value)
 
 void ABloodBornCharacter::Look(const FInputActionValue& Value)
 {
+	if (bIsShowingMenu) {
+		return;
+	}
 	// input is a Vector2D
 	FVector2D LookAxisVector = Value.Get<FVector2D>();
 
@@ -1066,6 +1073,15 @@ void ABloodBornCharacter::MakeBullets()
 	{
 		return;
 	}
+}
+
+//메뉴표시 버튼을 누르면 메뉴가 표시된다. 메뉴가 표시되면 마우스 조작 이외의 입력이 막힌다.
+void ABloodBornCharacter::ShowMenu()
+{
+	bIsShowingMenu = true;
+
+	ABloodBornGameMode* gm = Cast<ABloodBornGameMode>(GetWorld()->GetAuthGameMode());
+	gm->ShowPauseUI();
 }
 
 void ABloodBornCharacter::Decline()
