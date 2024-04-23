@@ -3,10 +3,9 @@
 
 #include "HUD/PauseWidget.h"
 #include "Components/Button.h"
-#include "Kismet/GameplayStatics.h"
 #include "BloodBornGameMode.h"
-#include "../BloodBornCharacter.h"
 #include "EngineUtils.h"
+#include "../BloodBornCharacter.h"
 
 void UPauseWidget::NativeConstruct()
 {
@@ -17,11 +16,12 @@ void UPauseWidget::NativeConstruct()
 	RestartBtn->OnClicked.AddDynamic(this, &UPauseWidget::RestartGame);
 
 	QuitBtn->OnClicked.AddDynamic(this, &UPauseWidget::QuitGame);
+
+	gm = Cast<ABloodBornGameMode>(GetWorld()->GetAuthGameMode());
 }
 
 void UPauseWidget::ResumeGame()
 {
-	ABloodBornGameMode* gm = Cast<ABloodBornGameMode>(GetWorld()->GetAuthGameMode());
 	gm->HidePauseUI();
 
 	ABloodBornCharacter* player = nullptr;
@@ -36,10 +36,10 @@ void UPauseWidget::ResumeGame()
 
 void UPauseWidget::RestartGame()
 {
-	UGameplayStatics::OpenLevel(GetWorld(), FName("DemoMapDay_Copy"));
+	gm->RestartGame();
 }
 
 void UPauseWidget::QuitGame()
 {
-	GetWorld()->GetFirstPlayerController()->ConsoleCommand("Quit");
+	gm->EndGame();
 }

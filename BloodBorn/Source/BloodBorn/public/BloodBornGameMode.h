@@ -25,10 +25,20 @@ public:
 
 	class UPauseWidget* pauseWidget;
 
-	UFUNCTION(BlueprintCallable)
+	UPROPERTY(EditAnywhere)
+	class USoundBase* openMenu;
+
+	UPROPERTY(EditAnywhere)
+	class USoundBase* closeMenu;
+
+	UPROPERTY(EditAnywhere)
+	class USoundBase* OKBtn;
+
 	void ShowPauseUI();
 	void HidePauseUI();
 	void ShowClearUI();
+	void RestartGame();
+	void EndGame();
 };
 
 
