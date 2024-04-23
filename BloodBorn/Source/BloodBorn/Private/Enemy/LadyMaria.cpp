@@ -376,7 +376,7 @@ void ALadyMaria::GotDamage(float damage)
 		rightEffect_H->SetAsset(phase3Effect);
 	}
 	//피격 이펙트 생성
-	instanceEffect = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), hitEffect, GetActorLocation(), FRotator::ZeroRotator, FVector(3.0f));
+	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), hitEffect, GetActorLocation(), FRotator::ZeroRotator, FVector(3.0f));
 
 	//AI제거 방어코드
 	if (mariaAI != nullptr) {
@@ -401,12 +401,15 @@ void ALadyMaria::GotDamage(float damage)
 				UGameplayStatics::PlaySound2D(GetWorld(), dieSound2);
 			}
 			UGameplayStatics::PlaySound2D(GetWorld(), dieVoice);
+			//deadCloud = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), deadEffect, GetActorLocation(), FRotator::ZeroRotator, FVector(1.0f));
+			deadCloud = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), deadEffect, GetActorLocation() + GetActorForwardVector() * 150.0f, FRotator::ZeroRotator, FVector(1.0f));
+			deadCloud->Activate();
 		}
 		else {
 			if (mariaAI->bIsStun && damage >= 500.0f && bIsHitHoldAttack) {
 				bIsHitHoldAttack = false;
 				MakeBloodDecal(GetActorLocation(), false);
-				instanceEffect = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), HoldAttackHitEffect, GetActorLocation(), FRotator::ZeroRotator, FVector(3.0f));
+				UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), HoldAttackHitEffect, GetActorLocation(), FRotator::ZeroRotator, FVector(3.0f));
 				UGameplayStatics::PlaySound2D(GetWorld(), hitHoldAttackSound);
 			}
 			else if (!mariaAI->bIsStun && !bIsSuperArmor) {
@@ -628,7 +631,7 @@ void ALadyMaria::MakeBloodDecal(FVector makePlace, bool bIsForPlayer)
 	ABloodDecalActor* decal = GetWorld()->SpawnActor<ABloodDecalActor>(bloodDecal, makePlace, GetActorRotation(), params);
 
 	if (bIsForPlayer) {
-		TArray<AActor*> attachedBlood;
+		/*TArray<AActor*> attachedBlood;
 		playerREF->GetAttachedActors(attachedBlood);
 		for (int32 i = 0; i < attachedBlood.Num(); i++) {
 			ABloodDecalActor* blood = Cast<ABloodDecalActor>(attachedBlood[i]);
@@ -640,14 +643,14 @@ void ALadyMaria::MakeBloodDecal(FVector makePlace, bool bIsForPlayer)
 			//	attachedBlood[i]->Destroy();
 			//	break;
 			//}
-		}
+		}*/
 		decal->ForAttachPlayer();
 		FAttachmentTransformRules rules(EAttachmentRule::SnapToTarget, true);
 		decal->AttachToComponent(playerREF->GetMesh(), rules, FName("Spine2"));
 	}
 	else {
 		FVector decalLoc = decal->GetActorLocation();
-		decalLoc.Z = 12.0f;
+		decalLoc.Z = 20.0f;
 		decal->SetActorLocation(decalLoc);
 	}
 }
@@ -727,11 +730,11 @@ void ALadyMaria::ABP_2ndSlowEnd()
 				FVector effectLoc = startLoc + GetActorForwardVector() * 50.0f * i;
 				FRotator effectRot = GetActorForwardVector().Rotation();
 				effectRot.Roll += FMath::RandRange(-180.0f, 180.0f);
-				instanceEffect = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), bloodThrustEffect, effectLoc, effectRot, FVector(3.0f));
+				UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), bloodThrustEffect, effectLoc, effectRot, FVector(3.0f));
 				if (i % 4 == 0) {
 					MakeBloodDecal(effectLoc, false);
 					if (phaseState == EPhaseState::PHASE3) {
-						instanceEffect = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), jumpAttackFireEffect, effectLoc, effectRot + FRotator(90.0f, 0.0f, 0.0f), FVector(3.0f));
+						UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), jumpAttackFireEffect, effectLoc, effectRot + FRotator(90.0f, 0.0f, 0.0f), FVector(3.0f));
 					}
 				}
 			}
@@ -849,12 +852,12 @@ void ALadyMaria::ABP_BossJumpLand()
 		}
 	}
 	if (phaseState == EPhaseState::PHASE2) {
-		instanceEffect = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), jumpAttackEffect, attackPlace + FVector(0, 0, -90.0f), FRotator::ZeroRotator, FVector(1.0f));
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), jumpAttackEffect, attackPlace + FVector(0, 0, -90.0f), FRotator::ZeroRotator, FVector(1.0f));
 		MakeBloodDecal(attackPlace, false);
 		UGameplayStatics::PlaySound2D(GetWorld(), bloodExplodeSound);
 	}
 	else {
-		instanceEffect = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), jumpAttackFireEffect, attackPlace + FVector(0, 0, -90.0f), FRotator::ZeroRotator, FVector(5.0f));
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), jumpAttackFireEffect, attackPlace + FVector(0, 0, -90.0f), FRotator::ZeroRotator, FVector(5.0f));
 		UGameplayStatics::PlaySound2D(GetWorld(), fireExplodeSound);
 	}
 }
@@ -886,4 +889,11 @@ void ALadyMaria::ABP_AssultDodgeEnd()
 	movePlace = playerREF->GetActorLocation() - playerREF->GetActorForwardVector() * 100.0f;
 	bIsCanDealDamage = true;
 	EffectOn();
+}
+
+void ALadyMaria::ABP_Boss_Dead()
+{
+	deadCloud->Deactivate();
+	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), deadBlowEffect, GetActorLocation(), FRotator::ZeroRotator, FVector(1.0f));
+	Destroy();
 }

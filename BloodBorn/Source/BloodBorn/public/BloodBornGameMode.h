@@ -13,6 +13,11 @@ class ABloodBornGameMode : public AGameModeBase
 
 public:
 	ABloodBornGameMode();
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class UDieOverlay> clearOverlay;
+
+	void ShowClearUI();
 };
 
 

@@ -74,5 +74,7 @@ private:
 	void AnimNotify_Boss_AssultChargeEnd();
 	UFUNCTION()
 	void AnimNotify_Boss_AssultDodgeEnd();
+	UFUNCTION()
+	void AnimNotify_Boss_Dead();
 
 };
