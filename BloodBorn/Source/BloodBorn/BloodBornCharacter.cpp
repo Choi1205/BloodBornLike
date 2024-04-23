@@ -193,6 +193,8 @@ void ABloodBornCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	//FlushPersistentDebugLines(GetWorld());
+
 	if (Attributes && PlayerOverlay)
 	{
 // 		if (Attributes->Stamina < Attributes->MaxStamina)
