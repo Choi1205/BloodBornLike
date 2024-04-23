@@ -2,6 +2,9 @@
 
 #include "Components/AttributeComponent.h"
 #include "BloodBorn/BloodBornCharacter.h"
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraComponent.h"
+
 
 
 UAttributeComponent::UAttributeComponent()
@@ -10,13 +13,13 @@ UAttributeComponent::UAttributeComponent()
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = /*true*/false;
 
+
 }
 
 void UAttributeComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	//player = Cast<ABloodBornCharacter>(GetOwner());
 }
 
 void UAttributeComponent::ReceiveDamage(float Damage)
@@ -89,6 +92,7 @@ void UAttributeComponent::RegainHealth(float RegainHP)
 
 	// 회복 가능한 체력 갱신
 	RegainableHealth -= RegainHP;
+
 
 
 }

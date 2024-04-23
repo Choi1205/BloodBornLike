@@ -53,6 +53,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Actor Attributes")
 	int32 Bullet = 20;
 
+// 	UPROPERTY(EditAnywhere)
+// 	class UNiagaraSystem* healEffect;
+// 
+// 	UPROPERTY(EditAnywhere)
+// 	class UNiagaraComponent* instanceEffect;
+
 protected:
 	virtual void BeginPlay() override;
 
