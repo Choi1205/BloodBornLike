@@ -100,6 +100,10 @@ ALadyMaria::ALadyMaria()
 	rightEffect_H->SetRelativeRotation(FRotator(-90.0f, 90.0f, 90.0f));
 	rightEffect_H->bAutoActivate = false;
 
+	deadCloud = CreateDefaultSubobject<UNiagaraComponent>(TEXT("DeadCloud"));
+	deadCloud->SetupAttachment(GetMesh(), TEXT("Hips"));
+	deadCloud->bAutoActivate = false;
+
 	floatingWidgetComp = CreateDefaultSubobject<UWidgetComponent>(TEXT("floatingWidgetComp"));
 	floatingWidgetComp->SetupAttachment(GetMesh(), FName("Spine"));
 	floatingWidgetComp->SetWidgetSpace(EWidgetSpace::Screen);
@@ -401,8 +405,6 @@ void ALadyMaria::GotDamage(float damage)
 				UGameplayStatics::PlaySound2D(GetWorld(), dieSound2);
 			}
 			UGameplayStatics::PlaySound2D(GetWorld(), dieVoice);
-			//deadCloud = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), deadEffect, GetActorLocation(), FRotator::ZeroRotator, FVector(1.0f));
-			deadCloud = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), deadEffect, GetActorLocation() + GetActorForwardVector() * 150.0f, FRotator::ZeroRotator, FVector(1.0f));
 			deadCloud->Activate();
 		}
 		else {
@@ -822,6 +824,11 @@ void ALadyMaria::ABP_BossHitEnd()
 	mariaAI->attackState = EAttackState::IDLE;
 }
 
+void ALadyMaria::ABP_BossJumpStart()
+{
+	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), jumpWindStartEffect, GetActorLocation(), FRotator::ZeroRotator, FVector(1.0f));
+}
+
 void ALadyMaria::ABP_BossJumpTop()
 {
 	//플레이어 위치를 이용, 착지위치 계산
@@ -851,6 +858,9 @@ void ALadyMaria::ABP_BossJumpLand()
 			}
 		}
 	}
+
+	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), jumpWindEndEffect, GetActorLocation(), FRotator::ZeroRotator, FVector(1.0f));
+
 	if (phaseState == EPhaseState::PHASE2) {
 		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), jumpAttackEffect, attackPlace + FVector(0, 0, -90.0f), FRotator::ZeroRotator, FVector(1.0f));
 		MakeBloodDecal(attackPlace, false);
@@ -893,7 +903,12 @@ void ALadyMaria::ABP_AssultDodgeEnd()
 
 void ALadyMaria::ABP_Boss_Dead()
 {
+	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), deadBlowEffect, GetActorLocation() + GetActorForwardVector() * 200.0f, FRotator::ZeroRotator, FVector(1.0f));
+	GetMesh()->SetVisibility(false, true);
+	deadCloud->SetVisibility(true);
 	deadCloud->Deactivate();
-	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), deadBlowEffect, GetActorLocation(), FRotator::ZeroRotator, FVector(1.0f));
+	FTimerHandle destoryTimer;
+	GetWorldTimerManager().SetTimer(destoryTimer, FTimerDelegate::CreateLambda([&](){
 	Destroy();
+	}), 4.0f, false);
 }

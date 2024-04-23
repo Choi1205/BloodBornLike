@@ -188,6 +188,7 @@ void UBossAnimInstance::AnimNotify_Boss_InStunEnd()
 void UBossAnimInstance::AnimNotify_Boss_JumpStart()
 {
 	//ÀÌÆåÆ® ÄÑ±â
+	mariaREF->ABP_BossJumpStart();
 }
 
 void UBossAnimInstance::AnimNotify_Boss_JumpTop()

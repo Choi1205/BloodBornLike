@@ -68,6 +68,12 @@ public:
 	class UNiagaraSystem* bloodThrustEffect;
 
 	UPROPERTY(EditAnywhere)
+	class UNiagaraSystem* jumpWindStartEffect;
+
+	UPROPERTY(EditAnywhere)
+	class UNiagaraSystem* jumpWindEndEffect;
+
+	UPROPERTY(EditAnywhere)
 	class UNiagaraSystem* jumpAttackEffect;
 
 	UPROPERTY(EditAnywhere)
@@ -80,13 +86,10 @@ public:
 	class UNiagaraSystem* HoldAttackHitEffect;
 
 	UPROPERTY(EditAnywhere)
-	class UNiagaraSystem* deadEffect;
-
-	UPROPERTY(EditAnywhere)
 	class UNiagaraSystem* deadBlowEffect;
 
 	UPROPERTY(EditAnywhere)
-	class UNiagaraComponent* instanceEffect;
+	class UNiagaraComponent* deadCloud;
 
 	UPROPERTY(EditAnywhere)
 	class UNiagaraComponent* rightEffect_V;
@@ -110,8 +113,6 @@ public:
 	float maxHealthPoint = 2000.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float healthPoint = 2000.0f;
-
-	UNiagaraComponent* deadCloud;
 
 protected:
 	virtual void BeginPlay() override;
@@ -370,6 +371,8 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void ABP_BossHitEnd();
+
+	void ABP_BossJumpStart();
 
 	void ABP_BossJumpTop();
 
