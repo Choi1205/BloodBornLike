@@ -80,6 +80,12 @@ public:
 	class UNiagaraSystem* HoldAttackHitEffect;
 
 	UPROPERTY(EditAnywhere)
+	class UNiagaraSystem* deadEffect;
+
+	UPROPERTY(EditAnywhere)
+	class UNiagaraSystem* deadBlowEffect;
+
+	UPROPERTY(EditAnywhere)
 	class UNiagaraComponent* instanceEffect;
 
 	UPROPERTY(EditAnywhere)
@@ -105,6 +111,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float healthPoint = 2000.0f;
 
+	UNiagaraComponent* deadCloud;
 
 protected:
 	virtual void BeginPlay() override;
