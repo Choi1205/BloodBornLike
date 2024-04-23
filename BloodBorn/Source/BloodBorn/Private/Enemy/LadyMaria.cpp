@@ -628,7 +628,7 @@ void ALadyMaria::MakeBloodDecal(FVector makePlace, bool bIsForPlayer)
 	ABloodDecalActor* decal = GetWorld()->SpawnActor<ABloodDecalActor>(bloodDecal, makePlace, GetActorRotation(), params);
 
 	if (bIsForPlayer) {
-		TArray<AActor*> attachedBlood;
+		/*TArray<AActor*> attachedBlood;
 		playerREF->GetAttachedActors(attachedBlood);
 		for (int32 i = 0; i < attachedBlood.Num(); i++) {
 			ABloodDecalActor* blood = Cast<ABloodDecalActor>(attachedBlood[i]);
@@ -640,14 +640,14 @@ void ALadyMaria::MakeBloodDecal(FVector makePlace, bool bIsForPlayer)
 			//	attachedBlood[i]->Destroy();
 			//	break;
 			//}
-		}
+		}*/
 		decal->ForAttachPlayer();
 		FAttachmentTransformRules rules(EAttachmentRule::SnapToTarget, true);
 		decal->AttachToComponent(playerREF->GetMesh(), rules, FName("Spine2"));
 	}
 	else {
 		FVector decalLoc = decal->GetActorLocation();
-		decalLoc.Z = 12.0f;
+		decalLoc.Z = 20.0f;
 		decal->SetActorLocation(decalLoc);
 	}
 }

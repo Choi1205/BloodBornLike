@@ -8,7 +8,7 @@ void ABloodDecalActor::BeginPlay()
 {
 	int32 num = FMath::RandRange(0, bloodArray.Num()-1);
 	SetDecalMaterial(bloodArray[num]);
-	GetDecal()->DecalSize = FVector(4, 256, 256);
+	GetDecal()->DecalSize = FVector(10.0f, 256.0f, 256.0f);
 }
 
 void ABloodDecalActor::ForAttachPlayer()
