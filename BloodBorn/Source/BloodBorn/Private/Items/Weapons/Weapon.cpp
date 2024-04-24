@@ -8,6 +8,13 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "Interfaces/HitInterface.h"
 #include "Kismet/GamePlayStatics.h"
+#include "NiagaraComponent.h"
+#include "../../../../../../../Source/Runtime/UMG/Public/Components/WidgetComponent.h"
+#include "HUD/BBPlayerHUD.h"
+#include "HUD/WeaponOverlay.h"
+#include "GameFramework/Controller.h"
+
+
 
 
 AWeapon::AWeapon()
@@ -23,6 +30,15 @@ AWeapon::AWeapon()
 
 	BoxTraceEnd = CreateDefaultSubobject<USceneComponent>(TEXT("Box Trace End"));
 	BoxTraceEnd->SetupAttachment(GetRootComponent());
+
+	sawEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Saw Effect"));
+	sawEffect->SetupAttachment(GetRootComponent());
+	sawEffect->bAutoActivate = /*true*/false;
+
+// 	equipSawOverlay = CreateDefaultSubobject<UWidgetComponent>(TEXT("EquipSaw Widget"));
+// 	equipSawOverlay->SetupAttachment(GetRootComponent());
+// 	equipSawOverlay->SetWidgetSpace(EWidgetSpace::Screen);
+// 	equipSawOverlay->SetVisibility(false);
 }
 
 void AWeapon::BeginPlay()
@@ -30,25 +46,52 @@ void AWeapon::BeginPlay()
 	Super::BeginPlay();
 
 	SawBox->OnComponentBeginOverlap.AddDynamic(this, &AWeapon::OnBoxOverlap);
+	sawEffect->Activate(true);
 }
 
 void AWeapon::Equip(USceneComponent* InParent, FName InSocketName, AActor* NewOwner, APawn* NewInstigator)
 {
+	/*sawEffect->Activate(false);*/
+	//equipSawOverlay->/*SetVisibility(false)*/DestroyComponent(true);
+	if (weaponOverlay)
+	{
+	weaponOverlay->img_Saw->SetVisibility(ESlateVisibility::Hidden);
+	}
+
 	SetOwner(NewOwner);
 	SetInstigator(NewInstigator);
 	FAttachmentTransformRules TransformRules(EAttachmentRule::SnapToTarget, true);
 	ItemMesh->AttachToComponent(InParent, TransformRules, InSocketName);
+	ItemState = EItemState::EIS_Equipped;
 	player = Cast<ABloodBornCharacter>(NewOwner);
 }
 
 void AWeapon::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	Super::OnSphereOverlap(OverlappedComponent, OtherActor, OtherComp, OtherBodyIndex, bFromSweep, SweepResult);
+	/*equipSawOverlay->SetVisibility(true);*/
+	if (weaponOverlay)
+	{
+	weaponOverlay->img_Saw->SetVisibility(ESlateVisibility::Visible);
+	}
+// 	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
+// 	{
+// 		ABBPlayerHUD* BBPlayerHUD = Cast<ABBPlayerHUD>(PlayerController->GetHUD());
+// 		if (BBPlayerHUD)
+// 		{
+// 			BBPlayerHUD->showWeaponOverlay();
+// 		}
+// 	}
 }
 
 void AWeapon::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
 	Super::OnSphereEndOverlap(OverlappedComponent, OtherActor, OtherComp, OtherBodyIndex);
+	//equipSawOverlay->SetVisibility(false);
+	if (weaponOverlay)
+	{
+	weaponOverlay->img_Saw->SetVisibility(ESlateVisibility::Hidden);
+	}
 }
 
 void AWeapon::OnBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)

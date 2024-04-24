@@ -392,6 +392,7 @@ void ABloodBornCharacter::FKeyPressed()
 		OverlappingWeapon->SetInstigator(this);
 		//CharacterState = ECharacterState::ECS_EquippedOneHandedWeapon;
 		OverlappingItem = nullptr;
+ 	 	OverlappingWeapon->sawEffect->DestroyComponent(true);
 		EquippedWeaponSaw = OverlappingWeapon;
 	}
 
@@ -404,11 +405,8 @@ void ABloodBornCharacter::FKeyPressed()
 		OverlappingGun->SetInstigator(this);
 		//CharacterState = ECharacterState::ECS_EquippedOneHandedWeapon;
 		OverlappingItem = nullptr;
+		OverlappingGun->gunEffect->DestroyComponent(true);
 		EquippedGun = OverlappingGun;
-		if (EquippedGun)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("99999999999999999999999"));
-		}
 	}
 
 	ABloodVial* OverlappingBloodVial = Cast<ABloodVial>(OverlappingItem);

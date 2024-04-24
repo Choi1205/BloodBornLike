@@ -22,6 +22,8 @@ void AItem::BeginPlay()
 {
 	Super::BeginPlay();
 
+	Avg<int32>(1, 3);
+
 	Sphere->OnComponentBeginOverlap.AddDynamic(this, &AItem::OnSphereOverlap);
 	Sphere->OnComponentEndOverlap.AddDynamic(this, &AItem::OnSphereEndOverlap);
 	
@@ -55,9 +57,26 @@ void AItem::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor*
 	}
 }
 
+float AItem::transformedSin()
+{
+	return (amplitude * 0.5f) * FMath::Sin(runningTime * timeConstant);
+}
+
+float AItem::transformedCos()
+{
+	return (amplitude * 0.5f) * FMath::Cos(runningTime * timeConstant);
+}
+
 void AItem::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	runningTime += DeltaTime;
+	
+	if (ItemState == EItemState::EIS_Hovering)
+	{
+		AddActorWorldOffset(FVector(0.f, 0.f, transformedSin()));
+		AddActorWorldRotation(FRotator(0.f, transformedCos(), 0.f));
+	}
 }
 

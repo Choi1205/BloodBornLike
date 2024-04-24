@@ -4,6 +4,7 @@
 #include "HUD/BBPlayerHUD.h"
 #include "HUD/PlayerOverlay.h"
 #include "HUD/DieOverlay.h"
+#include "HUD/WeaponOverlay.h"
 
 // void ABBPlayerHUD::BeginPlay()
 // {
@@ -53,6 +54,20 @@ void ABBPlayerHUD::ShowDieOverlay()
 			DieOverlay->PlayAnimationForward(DieOverlay->anim_died);
 			DieOverlay->PlayAnimationForward(DieOverlay->anim_diedBack);
 			DieOverlay->PlayAnimationForward(DieOverlay->anim_black);
+		}
+	}
+}
+
+void ABBPlayerHUD::showWeaponOverlay()
+{
+	UWorld* world = GetWorld();
+	if (world)
+	{
+		APlayerController* controller = world->GetFirstPlayerController();
+		if (controller && WeaponOverlayClass)
+		{
+			WeaponOverlay = CreateWidget<UWeaponOverlay>(controller, WeaponOverlayClass);
+			WeaponOverlay->AddToViewport();
 		}
 	}
 }

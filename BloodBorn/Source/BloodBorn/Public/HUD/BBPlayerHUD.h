@@ -9,6 +9,7 @@
 
 class UPlayerOverlay;
 class UDieOverlay;
+class UWeaponOverlay;
 
 UCLASS()
 class BLOODBORN_API ABBPlayerHUD : public AHUD
@@ -33,9 +34,22 @@ private:
 	UPROPERTY()
 	UDieOverlay* DieOverlay;
 
+	UPROPERTY(EditDefaultsOnly, Category = BBPlayer)
+	TSubclassOf<UWeaponOverlay> WeaponOverlayClass;
+
+	UPROPERTY()
+	UWeaponOverlay* WeaponOverlay;
+// 
+// 	UPROPERTY(EditDefaultsOnly, Category = BBPlayer)
+// 	TSubclassOf<UWeaponOverlay> GunOverlayClass;
+// 
+// 	UPROPERTY()
+// 	UWeaponOverlay* GunOverlay;
+
 public:
 	FORCEINLINE UPlayerOverlay* GetPlayerOverlay() const { return PlayerOverlay; }
 	FORCEINLINE UDieOverlay* GetDieOverlay() const { return DieOverlay; }
 
 	void ShowDieOverlay();
+	void showWeaponOverlay();
 };
