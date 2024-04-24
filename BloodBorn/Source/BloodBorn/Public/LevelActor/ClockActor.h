@@ -16,25 +16,25 @@ public:
 	AClockActor();
 
 	UPROPERTY(EditAnywhere)
-	USceneComponent* rootComp;
+	class USceneComponent* rootComp;
 
 	UPROPERTY(EditAnywhere)
-	UStaticMeshComponent* clockCase;
+	class UStaticMeshComponent* clockCase;
 
 	UPROPERTY(EditAnywhere)
-	UStaticMeshComponent* clockFront;
+	class UStaticMeshComponent* clockFront;
 	
 	UPROPERTY(EditAnywhere)
-	UStaticMeshComponent* clockInner;
+	class UStaticMeshComponent* clockInner;
 	
 	UPROPERTY(EditAnywhere)
-	UStaticMeshComponent* clockBack;
+	class UStaticMeshComponent* clockBack;
 	
 	UPROPERTY(EditAnywhere)
-	UStaticMeshComponent* clockBlad1;
+	class UStaticMeshComponent* clockBlad1;
 	
 	UPROPERTY(EditAnywhere)
-	UStaticMeshComponent* clockBlad2;
+	class UStaticMeshComponent* clockBlad2;
 
 protected:
 	// Called when the game starts or when spawned
@@ -44,15 +44,22 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	UPROPERTY(BlueprintReadWrite)
+	bool bIsRotateStart = false;
+
+	UFUNCTION(BlueprintCallable)
 	void MoveTickTok();
 
 private:
 
 	FTimerHandle tickTokHandle;
 
-	float timeCounter = 0.0f;
-	float frontRotRate = 0.0f;
-	float frontTargetRot = 15.0f;
+	float rotRate = 0.0f;
+	float targetRot = 9.0f;
+	float prevFrontRot;
+	float nextFrontRot;
+	float prevBackRot;
+	float nextBackRot;
 
 	int32 tickTokCounter = 0;
 	float tickTokRate = 0.0f;

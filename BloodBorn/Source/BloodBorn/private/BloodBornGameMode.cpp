@@ -59,7 +59,11 @@ void ABloodBornGameMode::ShowClearUI()
 void ABloodBornGameMode::RestartGame()
 {
 	UGameplayStatics::PlaySound2D(GetWorld(), OKBtn);
-	UGameplayStatics::OpenLevel(GetWorld(), FName("DemoMapDay_Copy"));
+	GetWorld()->GetFirstPlayerController()->PlayerCameraManager->StartCameraFade(0, 1, 3.0f, FColor::Black);
+	FTimerHandle restartHandle;
+	GetWorldTimerManager().SetTimer(restartHandle, FTimerDelegate::CreateLambda([&]() {
+		UGameplayStatics::OpenLevel(GetWorld(), FName("DemoMapDay_Copy"));
+		}), 3.5f, false);
 }
 
 void ABloodBornGameMode::EndGame()
