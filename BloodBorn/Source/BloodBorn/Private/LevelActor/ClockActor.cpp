@@ -64,6 +64,8 @@ void AClockActor::Tick(float DeltaTime)
 		UE_LOG(LogTemp, Warning, TEXT("%d"), tickTokCounter);
 		tickTokRate = FMath::Min(tickTokRate + DeltaTime, 1.0f);
 		clockInner->SetRelativeRotation(FRotator(0.0f, 0.0f, FMath::Lerp(prevTickTokRot, nextTickTokRot, tickTokRate)));
+		clockBlad1->SetRelativeRotation(FRotator(0.0f, 0.0f, FMath::Lerp(prevBlad1Rot, nextBlad1Rot, tickTokRate)));
+		clockBlad2->SetRelativeRotation(FRotator(0.0f, 0.0f, FMath::Lerp(prevBlad2Rot, nextBlad2Rot, tickTokRate)));
 	}
 
 	if (tickTokRate == 1.0f) {
@@ -74,16 +76,22 @@ void AClockActor::Tick(float DeltaTime)
 
 void AClockActor::MoveTickTok()
 {
+	bIsTickToking = true;
+	tickTokCounter++;
+
 	prevTickTokRot = clockInner->GetRelativeRotation().Roll;
 	nextTickTokRot = prevTickTokRot + 10.0f;
 
 	prevBlad1Rot = clockBlad1->GetRelativeRotation().Roll;
 	prevBlad2Rot = clockBlad2->GetRelativeRotation().Roll;
-
-	nextBlad1Rot;
-	nextBlad2Rot;
-	bIsTickToking = true;
-	tickTokCounter++;
+	if (tickTokCounter < 6) {
+		nextBlad1Rot = prevBlad1Rot - 10.0f;
+		nextBlad2Rot = prevBlad2Rot - 10.0f;
+	}
+	else {
+		nextBlad1Rot = prevBlad1Rot + 30.0f;
+		nextBlad2Rot = prevBlad2Rot - 30.0f;
+	}
 	if (tickTokCounter < 8) {
 		GetWorld()->GetTimerManager().SetTimer(tickTokHandle, FTimerDelegate::CreateLambda([&]() {
 			MoveTickTok();
