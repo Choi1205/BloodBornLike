@@ -42,8 +42,6 @@ AClockActor::AClockActor()
 void AClockActor::BeginPlay()
 {
 	Super::BeginPlay();
-
-	MoveTickTok();
 }
 
 // Called every frame
@@ -61,9 +59,10 @@ void AClockActor::Tick(float DeltaTime)
 	}
 
 	if (bIsTickToking) {
-		UE_LOG(LogTemp, Warning, TEXT("%d"), tickTokCounter);
 		tickTokRate = FMath::Min(tickTokRate + DeltaTime, 1.0f);
-		clockInner->SetRelativeRotation(FRotator(0.0f, 0.0f, FMath::Lerp(prevTickTokRot, nextTickTokRot, tickTokRate)));
+		if (tickTokCounter < 9) {
+			clockInner->SetRelativeRotation(FRotator(0.0f, 0.0f, FMath::Lerp(prevTickTokRot, nextTickTokRot, tickTokRate)));
+		}
 		clockBlad1->SetRelativeRotation(FRotator(0.0f, 0.0f, FMath::Lerp(prevBlad1Rot, nextBlad1Rot, tickTokRate)));
 		clockBlad2->SetRelativeRotation(FRotator(0.0f, 0.0f, FMath::Lerp(prevBlad2Rot, nextBlad2Rot, tickTokRate)));
 	}
@@ -79,23 +78,29 @@ void AClockActor::MoveTickTok()
 	bIsTickToking = true;
 	tickTokCounter++;
 
-	prevTickTokRot = clockInner->GetRelativeRotation().Roll;
-	nextTickTokRot = prevTickTokRot + 10.0f;
+	if (tickTokCounter < 9) {
+		prevTickTokRot = clockInner->GetRelativeRotation().Roll;
+		nextTickTokRot = prevTickTokRot + 10.0f;
 
-	prevBlad1Rot = clockBlad1->GetRelativeRotation().Roll;
-	prevBlad2Rot = clockBlad2->GetRelativeRotation().Roll;
-	if (tickTokCounter < 6) {
-		nextBlad1Rot = prevBlad1Rot - 10.0f;
-		nextBlad2Rot = prevBlad2Rot - 10.0f;
-	}
-	else {
-		nextBlad1Rot = prevBlad1Rot + 30.0f;
-		nextBlad2Rot = prevBlad2Rot - 30.0f;
-	}
-	if (tickTokCounter < 8) {
+		prevBlad1Rot = clockBlad1->GetRelativeRotation().Roll;
+		prevBlad2Rot = clockBlad2->GetRelativeRotation().Roll;
+		if (tickTokCounter < 6) {
+			nextBlad1Rot = prevBlad1Rot - 10.0f;
+			nextBlad2Rot = prevBlad2Rot - 10.0f;
+		}
+		else {
+			nextBlad1Rot = prevBlad1Rot + 30.0f;
+			nextBlad2Rot = prevBlad2Rot - 30.0f;
+		}
 		GetWorld()->GetTimerManager().SetTimer(tickTokHandle, FTimerDelegate::CreateLambda([&]() {
 			MoveTickTok();
 			}), 2.0f, false);
+	}
+	else {
+		prevBlad1Rot = clockBlad1->GetRelativeRotation().Roll;
+		prevBlad2Rot = clockBlad2->GetRelativeRotation().Roll;
+		nextBlad1Rot = prevBlad1Rot - 20.0f;
+		nextBlad2Rot = prevBlad2Rot + 20.0f;
 	}
 }
 
