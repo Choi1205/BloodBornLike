@@ -83,6 +83,9 @@ public:
 	class UNiagaraSystem* phase3Effect;
 
 	UPROPERTY(EditAnywhere)
+	class UNiagaraSystem* gunHitEffect;
+
+	UPROPERTY(EditAnywhere)
 	class UNiagaraSystem* HoldAttackHitEffect;
 
 	UPROPERTY(EditAnywhere)

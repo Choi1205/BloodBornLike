@@ -489,7 +489,8 @@ void ALadyMaria::GotParryAttackCPP(float damage)
 	}
 	else {
 		GotDamage(damage);
-		
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), gunHitEffect, GetActorLocation(), FRotator::ZeroRotator, FVector(3.0f));
+
 		if (mariaAI != nullptr) {
 			if (bIsCanParryed) {
 				if (AnimInstance->Montage_IsPlaying(NULL)) {
