@@ -7,6 +7,7 @@
 #include "Components/BoxComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "GameFramework/PlayerController.h"
 #include "GameFramework/Controller.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
@@ -28,6 +29,7 @@
 #include "NiagaraComponent.h"
 #include "BloodBornGameMode.h"
 #include "LevelActor/BloodBornGameInstance.h"
+#include "GameFramework/ForceFeedbackEffect.h"
 
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
@@ -173,17 +175,18 @@ void ABloodBornCharacter::GunInvisible()
 void ABloodBornCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+	pc = Cast<APlayerController>(Controller);
 
-	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
+	if (pc != nullptr)
 	{
-		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(pc->GetLocalPlayer()))
 		{
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
 
 		//if (PlayerController)  // 125번째에 가있어야 하는 게 아닌지 ..
 		//{
-		ABBPlayerHUD* BBPlayerHUD = Cast<ABBPlayerHUD>(PlayerController->GetHUD());
+		ABBPlayerHUD* BBPlayerHUD = Cast<ABBPlayerHUD>(pc->GetHUD());
 		if (BBPlayerHUD)
 		{	
 			UE_LOG(LogTemp, Warning, TEXT("HUD valid"));
@@ -858,6 +861,7 @@ void ABloodBornCharacter::HandleDamage(float DamageAmount)
 		else if (DamageAmount < 150.f)
 		{
 			PlayHitReactMontage();
+			VibController(0);
 
 			int32 RandomNumber = FMath::RandRange(0, 99);
 
@@ -872,6 +876,7 @@ void ABloodBornCharacter::HandleDamage(float DamageAmount)
 		else if (DamageAmount >= 150.f)
 		{
 			PlayHeavyHitReactMontage();
+			VibController(2);
 
 			int32 RandomNumber = FMath::RandRange(0, 99);
 
@@ -1041,11 +1046,11 @@ void ABloodBornCharacter::Die()
 	 FTimerHandle dietimer;
 	 GetWorldTimerManager().SetTimer(dietimer, FTimerDelegate::CreateLambda([&]() {
 
-		 if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
+		 if (pc != nullptr)
 		 {
 
 			 UGameplayStatics::PlaySound2D(GetWorld(), deathSound);
-			 ABBPlayerHUD* BBPlayerHUD = Cast<ABBPlayerHUD>(PlayerController->GetHUD());
+			 ABBPlayerHUD* BBPlayerHUD = Cast<ABBPlayerHUD>(pc->GetHUD());
 			 if (BBPlayerHUD)
 			 {
 				 BBPlayerHUD->ShowDieOverlay();
@@ -1121,6 +1126,7 @@ void ABloodBornCharacter::GunFire()
 			HitInterface->GotParryAttackCPP(gunDamage);
 			Attributes->UseBullet(Attributes->GetBullet());
 			PlayFireMontage();
+			VibController(2);
 		}
  	}
  	else
@@ -1331,5 +1337,28 @@ void ABloodBornCharacter::CameraZoomOutStart(float deltaTime)
 	if (cameraZoomOutTimer > cameraZoomOutAnimTime) {
 		cameraZoomOutTimer = 0.0f;
 		bIsZoomOut = false;
+	}
+}
+
+void ABloodBornCharacter::VibController(int32 vibType) {
+	FForceFeedbackParameters params;
+	if (pc != nullptr) {
+		switch (vibType) {
+		case 0:
+			pc->ClientPlayForceFeedback(weekLeft, params);
+			break;
+		case 1:
+			pc->ClientPlayForceFeedback(weekRight, params);
+			break;
+		case 2:
+			pc->ClientPlayForceFeedback(strongLeft, params);
+			break;
+		case 3:
+			pc->ClientPlayForceFeedback(strongRight, params);
+			break;
+		case 4:
+			pc->ClientPlayForceFeedback(dual, params);
+			break;
+		}
 	}
 }

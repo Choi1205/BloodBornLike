@@ -335,6 +335,20 @@ public:
 	void CameraZoomInStart(float deltaTime);
 	void CameraZoomOutStart(float deltaTime);
 
+	class APlayerController* pc;
+	UPROPERTY(EditAnywhere, Category="ForceFeedBack")
+	class UForceFeedbackEffect* weekLeft;
+	UPROPERTY(EditAnywhere, Category = "ForceFeedBack")
+	class UForceFeedbackEffect* weekRight;
+	UPROPERTY(EditAnywhere, Category = "ForceFeedBack")
+	class UForceFeedbackEffect* strongLeft;
+	UPROPERTY(EditAnywhere, Category = "ForceFeedBack")
+	class UForceFeedbackEffect* strongRight;
+	UPROPERTY(EditAnywhere, Category = "ForceFeedBack")
+	class UForceFeedbackEffect* dual;
+
+	void VibController(int32 vibType);
+
 private:
 	void SetHUDHealth();
 

@@ -191,15 +191,18 @@ float AWeapon::ApplyDamage(AActor* DamagedActor, float DamageAmount, EAttackType
 		if (player->attackType == 0)
 		{
 			player->OnSuccessfulAttack(DamageAmount, EAttackType::Normal);
+			player->VibController(1);
 		}
 		else if (player->attackType == 1)
 		{
 			player->OnSuccessfulAttack(DamageAmount, EAttackType::Heavy);
+			player->VibController(3);
 		}
 		else {
 			//내장뽑기 회복
 			//ItemMesh->SetVisibility(false);
 			player->OnSuccessfulAttack(DamageAmount, EAttackType::HoldAttack);
+			player->VibController(4);
 		}
 	}
 	float ActualDamage = UGameplayStatics::ApplyDamage(
