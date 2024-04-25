@@ -390,8 +390,6 @@ void ALadyMaria::GotDamage(float damage)
 	else if (phaseState == EPhaseState::PHASE2 && healthPoint < phase3HP) {
 		phaseState = EPhaseState::PHASE3;
 		staminaRegain = 100.0f;
-		weakAttack = 150;
-		strongAttack = 200;
 		rightSword2->SetVisibility(false);
 		rightSword3->SetVisibility(true);
 		rightDamageCollision->SetRelativeLocation(FVector(0.0f, 68.0f, 0.0f));
