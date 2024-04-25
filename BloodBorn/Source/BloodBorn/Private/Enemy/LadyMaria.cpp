@@ -21,6 +21,7 @@
 #include "Engine.h"
 #include "Enemy/LadyMariaJumpEffectActor.h"
 #include "Enemy/BloodDecalActor.h"
+#include "Enemy/EnemyHPWidget.h"
 
 
 ALadyMaria::ALadyMaria()
@@ -135,6 +136,23 @@ void ALadyMaria::BeginPlay()
 	
 	jumpEffectInstance->AttachToComponent(GetMesh(), rules, FName("Hips"));
 	jumpEffectInstance->SetActorRotation(FRotator::ZeroRotator);
+
+	/*
+	if (pauseWidget_bp != nullptr) {
+		pauseWidget = CreateWidget<UPauseWidget>(GetWorld(), pauseWidget_bp);
+		if (pauseWidget != nullptr) {
+			pauseWidget->AddToViewport();
+			pauseWidget->SetVisibility(ESlateVisibility::Hidden);
+		}
+	}
+	*/
+	if (bossWidget_bp != nullptr) {
+		bossWidget = CreateWidget<UEnemyHPWidget>(GetWorld(), bossWidget_bp);
+		if (bossWidget != nullptr) {
+			bossWidget->AddToViewport();
+			bossWidget->SetVisibility(ESlateVisibility::Visible);
+		}
+	}
 }
 
 void ALadyMaria::Tick(float DeltaTime)
@@ -320,8 +338,8 @@ void ALadyMaria::GetHit(const FVector& ImpactPoint)
 	{
 		GEngine->AddOnScreenDebugMessage(1, 5.f, FColor::Green, FString::Printf(TEXT("Theta: %f"), Theta));
 	}
-	UKismetSystemLibrary::DrawDebugArrow(this, GetActorLocation(), GetActorLocation() + Forward * 60.f, 5.f, FColor::Red, 5.f);  //Forward 노멀라이즈해서 길이 1이라 60 곱함
-	UKismetSystemLibrary::DrawDebugArrow(this, GetActorLocation(), GetActorLocation() + ToHit * 60.f, 5.f, FColor::Green, 5.f);
+	//UKismetSystemLibrary::DrawDebugArrow(this, GetActorLocation(), GetActorLocation() + Forward * 60.f, 5.f, FColor::Red, 5.f);  //Forward 노멀라이즈해서 길이 1이라 60 곱함
+	//UKismetSystemLibrary::DrawDebugArrow(this, GetActorLocation(), GetActorLocation() + ToHit * 60.f, 5.f, FColor::Green, 5.f);
 }
 
 float ALadyMaria::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
@@ -350,6 +368,8 @@ void ALadyMaria::GotDamage(float damage)
 		//HP를 데미지 만큼 깍는다
 		healthPoint = FMath::Max(healthPoint - damage, 0.0f);
 	}
+
+	bossWidget->SetHealthBar(healthPoint / maxHealthPoint, damage);
 
 	//데미지를 입으면 페이즈를 변경할 지 체크. 페이즈 변경 모션이 없어서 여기서 체크하고, 모션이 생기면 모션 노티파이로 이동?
 	if (phaseState == EPhaseState::PHASE1 && healthPoint < phase2HP) {
@@ -633,22 +653,13 @@ void ALadyMaria::MakeBloodDecal(FVector makePlace, bool bIsForPlayer)
 	ABloodDecalActor* decal = GetWorld()->SpawnActor<ABloodDecalActor>(bloodDecal, makePlace, GetActorRotation(), params);
 
 	if (bIsForPlayer) {
-		/*TArray<AActor*> attachedBlood;
+		TArray<AActor*> attachedBlood;
 		playerREF->GetAttachedActors(attachedBlood);
-		for (int32 i = 0; i < attachedBlood.Num(); i++) {
-			ABloodDecalActor* blood = Cast<ABloodDecalActor>(attachedBlood[i]);
-			if (blood != nullptr) {
-				blood->Destroy();
-			}
-			//if (attachedBlood[i]->GetName().Contains("BloodDecal")) {
-			//	attachedBlood[i]->SetLifeSpan(0.0f);
-			//	attachedBlood[i]->Destroy();
-			//	break;
-			//}
-		}*/
-		decal->ForAttachPlayer();
-		FAttachmentTransformRules rules(EAttachmentRule::SnapToTarget, true);
-		decal->AttachToComponent(playerREF->GetMesh(), rules, FName("Spine2"));
+		if (attachedBlood.Num() < 3) {
+			decal->ForAttachPlayer();
+			FAttachmentTransformRules rules(EAttachmentRule::SnapToTarget, true);
+			decal->AttachToComponent(playerREF->GetMesh(), rules, FName("Spine2"));
+		}
 	}
 	else {
 		FVector decalLoc = decal->GetActorLocation();
@@ -846,7 +857,7 @@ void ALadyMaria::ABP_BossJumpLand()
 	queryParams.AddIgnoredActor(this);
 	FVector attackPlace = GetActorLocation() + GetActorForwardVector() * 200.0f;
 	bool bResult = GetWorld()->SweepMultiByProfile(hitInfos, attackPlace, attackPlace, FQuat::Identity, FName(TEXT("Pawn")), FCollisionShape::MakeSphere(200.0f), queryParams);
-	DrawDebugSphere(GetWorld(), attackPlace, 200.0f, 32, FColor::Red, false, 5.0f, 0, 1.0f);
+	//DrawDebugSphere(GetWorld(), attackPlace, 200.0f, 32, FColor::Red, false, 5.0f, 0, 1.0f);
 	if (bResult) {
 		for (auto& hit : hitInfos) {
 			UE_LOG(LogTemp, Warning, TEXT("%s"), *hit.GetActor()->GetActorNameOrLabel());
@@ -909,6 +920,7 @@ void ALadyMaria::ABP_Boss_Dead()
 	deadCloud->Deactivate();
 	FTimerHandle destoryTimer;
 	GetWorldTimerManager().SetTimer(destoryTimer, FTimerDelegate::CreateLambda([&](){
-	Destroy();
-	}), 4.0f, false);
+		bossWidget->SetVisibility(ESlateVisibility::Hidden);
+		Destroy();
+		}), 4.0f, false);
 }

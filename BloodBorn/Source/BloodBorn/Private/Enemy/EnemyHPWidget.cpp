@@ -3,6 +3,7 @@
 
 #include "Enemy/EnemyHPWidget.h"
 #include "Components/ProgressBar.h"
+#include "Components/Slider.h"
 #include "Components/TextBlock.h"
 
 void UEnemyHPWidget::SetHealthBar(float precentValue, float damage)
@@ -12,6 +13,7 @@ void UEnemyHPWidget::SetHealthBar(float precentValue, float damage)
 	FString totaldamage = FString::FromInt(damageStack);
 
 	pb_healthBar->SetPercent(precentValue);
+	sl_healthBar->SetValue(precentValue);
 	damageText->SetText(FText::FromString(totaldamage));
 	damageText->SetVisibility(ESlateVisibility::Visible);
 

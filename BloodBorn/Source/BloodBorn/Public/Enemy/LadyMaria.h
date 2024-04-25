@@ -109,6 +109,12 @@ public:
 	UPROPERTY(EditAnywhere)
 	class UWidgetComponent* floatingWidgetComp;
 
+	UPROPERTY(EditAnywhere)
+	class UEnemyHPWidget* bossWidget;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class UEnemyHPWidget> bossWidget_bp;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float maxHealthPoint = 2000.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)

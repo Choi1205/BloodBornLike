@@ -57,7 +57,7 @@ public:
 	class UAnimMontage* EnemyHitAnimation;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	float maxHealth = 40.0f;
+	float maxHealth = 60.0f;
 
 	UPROPERTY(EditAnywhere)
 	float healthPoint = 60.0f;

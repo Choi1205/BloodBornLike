@@ -19,6 +19,9 @@ public:
 	UPROPERTY(VisibleAnywhere, meta=(BindWidget))
 	class UProgressBar* pb_healthBar;
 
+	UPROPERTY(VisibleAnywhere, meta=(BindWidget))
+	class USlider* sl_healthBar;
+
 	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
 	class UTextBlock* damageText;
 
