@@ -150,6 +150,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category = Combat)
 	UAnimMontage* HitReactMontage;
+	
+	UPROPERTY(EditDefaultsOnly, Category = Combat)
+	UAnimMontage* HeavyHitReactMontage;
 
 	UPROPERTY(EditDefaultsOnly, Category = Combat)
 	UAnimMontage* DeathMontage;
@@ -238,6 +241,8 @@ protected:
 	//void PlayStepMontage();
 
 	void PlayHitReactMontage();
+
+	void PlayHeavyHitReactMontage();
 
 	void PlayDeathMontage();
 
@@ -358,8 +363,14 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = Weapon)
 	AWeapon* EquippedWeaponSaw;
 
+	UPROPERTY(EditAnywhere, Category = Weapon)
+	TSubclassOf<class AWeapon> WeaponSaw;
+
 	UPROPERTY(VisibleAnywhere, Category = Weapon)
 	AGun* EquippedGun;
+
+	UPROPERTY(EditAnywhere, Category = Weapon)
+	TSubclassOf<class AGun> WeaponGun;
 
 	
 	UPROPERTY(VisibleAnywhere, Category = Weapon)
@@ -373,6 +384,12 @@ private:
 	
 	UPROPERTY(EditAnywhere, Category = Sounds)
 	class USoundBase* deathSound;
+		
+	UPROPERTY(EditAnywhere, Category = Sounds)
+	class USoundBase* regainSound;
+			
+	UPROPERTY(EditAnywhere, Category = Sounds)
+	class USoundBase* heavyHitSound;
 
 	//UPROPERTY(EditAnywhere, Category = Weapon)
 	//TSubclassOf<ULegacyCameraShake> CameraShake;

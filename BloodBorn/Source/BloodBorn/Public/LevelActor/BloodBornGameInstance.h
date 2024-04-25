@@ -23,4 +23,6 @@ class BLOODBORN_API UBloodBornGameInstance : public UGameInstance
 	
 public:
 	EPlatformState platformState = EPlatformState::BOTTOM;
+	bool bHadSaw = false;
+	bool bHadGun = false;
 };

@@ -5,6 +5,7 @@
 #include "UObject/ConstructorHelpers.h"
 #include "HUD/DieOverlay.h"
 #include "HUD/PauseWidget.h"
+#include "HUD/WeaponOverlay.h"
 #include "Kismet/GameplayStatics.h"
 
 void ABloodBornGameMode::BeginPlay()
@@ -70,4 +71,40 @@ void ABloodBornGameMode::EndGame()
 {
 	UGameplayStatics::PlaySound2D(GetWorld(), OKBtn);
 	GetWorld()->GetFirstPlayerController()->ConsoleCommand("Quit");
+}
+
+void ABloodBornGameMode::ShowWeaponUI(bool bIsSaw)
+{	
+	if (weaponOverlay)
+	{
+		if(weaponOverlayUI != nullptr){
+			weaponOverlayUI->SetVisibility(ESlateVisibility::Hidden);
+		}
+		weaponOverlayUI = CreateWidget<UWeaponOverlay>(GetWorld(), weaponOverlay);
+		if (weaponOverlayUI)
+		{
+			weaponOverlayUI->AddToViewport();
+
+			weaponOverlayUI->img_Saw->SetVisibility(ESlateVisibility::Hidden);
+			weaponOverlayUI->img_Gun->SetVisibility(ESlateVisibility::Hidden);
+
+			if (bIsSaw)
+			{
+				weaponOverlayUI->img_Saw->SetVisibility(ESlateVisibility::Visible);
+
+			}
+			else
+			{
+				weaponOverlayUI->img_Gun->SetVisibility(ESlateVisibility::Visible);
+			}
+		}
+	}
+}
+
+void ABloodBornGameMode::HideWeaponUI()
+{
+	if (weaponOverlayUI)
+	{
+		weaponOverlayUI->SetVisibility(ESlateVisibility::Hidden);
+	}
 }

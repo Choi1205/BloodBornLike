@@ -88,7 +88,7 @@ void UPlayerAnimInstance::AnimNotify_EnableInvincible()
 void UPlayerAnimInstance::AnimNotify_DisableInvincible()
 {
 	PlayerCharacter->bIsInvincible = false;
-	PlayerCharacter->GetCharacterMovement()->MaxWalkSpeed = 600.0f;
+	PlayerCharacter->GetCharacterMovement()->MaxWalkSpeed = 500.0f;
 	PlayerCharacter->GetCharacterMovement()->MaxAcceleration = 2048.0f;
 }
 
@@ -127,7 +127,7 @@ void UPlayerAnimInstance::AnimNotify_HoldAttackFinish()
 
 void UPlayerAnimInstance::AnimNotify_RaiseArm()
 {
-	Montage_SetPlayRate(PlayerCharacter->FireMontage, 6.0f);
+	Montage_SetPlayRate(PlayerCharacter->FireMontage, 3.0f);
 }
 
 void UPlayerAnimInstance::AnimNotify_ReturnArm()

@@ -23,7 +23,13 @@ public:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class UDieOverlay> clearOverlay;
 
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class UWeaponOverlay> weaponOverlay;
+
 	class UPauseWidget* pauseWidget;
+
+	UPROPERTY()
+	class UWeaponOverlay* weaponOverlayUI;
 
 	UPROPERTY(EditAnywhere)
 	class USoundBase* openMenu;
@@ -39,6 +45,8 @@ public:
 	void ShowClearUI();
 	void RestartGame();
 	void EndGame();
+	void ShowWeaponUI(bool bIsSaw);
+	void HideWeaponUI();
 };
 
 

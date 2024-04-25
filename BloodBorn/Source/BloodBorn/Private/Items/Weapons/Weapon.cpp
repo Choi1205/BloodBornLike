@@ -13,6 +13,9 @@
 #include "HUD/BBPlayerHUD.h"
 #include "HUD/WeaponOverlay.h"
 #include "GameFramework/Controller.h"
+#include "BloodBornGameMode.h"
+#include "LevelActor/BloodBornGameInstance.h"
+
 
 
 
@@ -51,47 +54,31 @@ void AWeapon::BeginPlay()
 
 void AWeapon::Equip(USceneComponent* InParent, FName InSocketName, AActor* NewOwner, APawn* NewInstigator)
 {
-	/*sawEffect->Activate(false);*/
-	//equipSawOverlay->/*SetVisibility(false)*/DestroyComponent(true);
-	if (weaponOverlay)
-	{
-	weaponOverlay->img_Saw->SetVisibility(ESlateVisibility::Hidden);
-	}
-
 	SetOwner(NewOwner);
 	SetInstigator(NewInstigator);
 	FAttachmentTransformRules TransformRules(EAttachmentRule::SnapToTarget, true);
 	ItemMesh->AttachToComponent(InParent, TransformRules, InSocketName);
 	ItemState = EItemState::EIS_Equipped;
+	Sphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	player = Cast<ABloodBornCharacter>(NewOwner);
+
+	/*UBloodBornGameInstance* gi = */Cast<UBloodBornGameInstance>(GetGameInstance())->bHadSaw = true;
+	
 }
 
 void AWeapon::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	Super::OnSphereOverlap(OverlappedComponent, OtherActor, OtherComp, OtherBodyIndex, bFromSweep, SweepResult);
-	/*equipSawOverlay->SetVisibility(true);*/
-	if (weaponOverlay)
-	{
-	weaponOverlay->img_Saw->SetVisibility(ESlateVisibility::Visible);
-	}
-// 	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
-// 	{
-// 		ABBPlayerHUD* BBPlayerHUD = Cast<ABBPlayerHUD>(PlayerController->GetHUD());
-// 		if (BBPlayerHUD)
-// 		{
-// 			BBPlayerHUD->showWeaponOverlay();
-// 		}
-// 	}
+	ABloodBornGameMode* gameMode = Cast<ABloodBornGameMode>(GetWorld()->GetAuthGameMode());
+	gameMode->ShowWeaponUI(true);
 }
 
 void AWeapon::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
 	Super::OnSphereEndOverlap(OverlappedComponent, OtherActor, OtherComp, OtherBodyIndex);
-	//equipSawOverlay->SetVisibility(false);
-	if (weaponOverlay)
-	{
-	weaponOverlay->img_Saw->SetVisibility(ESlateVisibility::Hidden);
-	}
+
+	ABloodBornGameMode* gameMode = Cast<ABloodBornGameMode>(GetWorld()->GetAuthGameMode());
+	gameMode->HideWeaponUI();
 }
 
 void AWeapon::OnBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)

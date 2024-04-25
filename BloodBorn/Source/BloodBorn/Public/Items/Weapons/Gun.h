@@ -28,13 +28,13 @@ public:
 
 	class ABloodBornCharacter* player;
 
+	class AItem* item;
+
 	UPROPERTY(EditAnywhere)
 	class UNiagaraComponent* gunEffect;
-
+	
 	UPROPERTY(EditAnywhere)
-	class UWidgetComponent* equipGunOverlay;
-
-	class UWeaponOverlay* weaponOverlay;
+	class UNiagaraComponent* fireEffect;
 
 
 };

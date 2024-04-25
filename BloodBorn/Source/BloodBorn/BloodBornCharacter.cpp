@@ -27,6 +27,7 @@
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
 #include "BloodBornGameMode.h"
+#include "LevelActor/BloodBornGameInstance.h"
 
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
@@ -50,7 +51,7 @@ ABloodBornCharacter::ABloodBornCharacter()
 
 	GetCharacterMovement()->JumpZVelocity = 700.f;
 	GetCharacterMovement()->AirControl = 0.35f;
-	GetCharacterMovement()->MaxWalkSpeed = 600.f;
+	GetCharacterMovement()->MaxWalkSpeed = 500.f;
 	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 	GetCharacterMovement()->BrakingDecelerationFalling = 1500.0f;
@@ -77,8 +78,8 @@ ABloodBornCharacter::ABloodBornCharacter()
 
 	Attributes = CreateDefaultSubobject<UAttributeComponent>(TEXT("Attributes"));
 
-	LastHitTime = -5.f;
-	RallyWindowDuration = 20.0f;
+	LastHitTime = -10000000.f;
+	RallyWindowDuration = 5.0f;
 	// LastDamageReceived = 0.0f;
 
 	regainHealEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("RegainHeal Effect"));
@@ -200,6 +201,41 @@ void ABloodBornCharacter::BeginPlay()
 				UE_LOG(LogTemp, Warning, TEXT("hpbar valid"));
 			}
 			DieOverlay = BBPlayerHUD->GetDieOverlay();
+		}
+	}
+	UBloodBornGameInstance* gi = Cast<UBloodBornGameInstance>(GetGameInstance());
+	if (gi->bHadSaw == true)
+	{
+		FActorSpawnParameters params;
+		params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		AWeapon* OverlappingWeapon = Cast<AWeapon>(GetWorld()->SpawnActor<AWeapon>(WeaponSaw, FVector::ZeroVector, FRotator::ZeroRotator, params));
+		if (OverlappingWeapon)
+		{
+			OverlappingWeapon->Equip(GetMesh(), FName("RightHandSocket"), this, this);
+			OverlappingWeapon->SetOwner(this);
+			//GetOwner()
+			OverlappingWeapon->SetInstigator(this);
+			//CharacterState = ECharacterState::ECS_EquippedOneHandedWeapon;
+			OverlappingItem = nullptr;
+			OverlappingWeapon->sawEffect->DestroyComponent(true);
+			EquippedWeaponSaw = OverlappingWeapon;
+		}
+	}
+	if (gi->bHadGun == true)
+	{	
+		FActorSpawnParameters params;
+		params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		AGun* OverlappingGun = Cast<AGun>(GetWorld()->SpawnActor<AGun>(WeaponGun, FVector::ZeroVector, FRotator::ZeroRotator, params));
+		if (OverlappingGun)
+		{
+			OverlappingGun->Equip(GetMesh(), FName("LeftHandSocket"), this, this);
+			OverlappingGun->SetOwner(this);
+			//GetOwner()
+			OverlappingGun->SetInstigator(this);
+			//CharacterState = ECharacterState::ECS_EquippedOneHandedWeapon;
+			OverlappingItem = nullptr;
+			OverlappingGun->gunEffect->DestroyComponent(true);
+			EquippedGun = OverlappingGun;
 		}
 	}
 }
@@ -767,7 +803,7 @@ void ABloodBornCharacter::PlayHoldAttackMontage()
 
 void ABloodBornCharacter::AttackEnd()
 {
-	GetCharacterMovement()->MaxWalkSpeed = 600.0f;
+	GetCharacterMovement()->MaxWalkSpeed = 500.0f;
  	//if (CharacterState != ECharacterState::ECS_LockOn)
  	//{
 		ActionState = EActionState::EAS_Unoccupied;
@@ -816,8 +852,11 @@ void ABloodBornCharacter::HandleDamage(float DamageAmount)
 		{
 			Die();
 			ActionState = EActionState::EAS_Dead;
+			Attributes->ResetRegainableHealth();
+			return;
 		}
-		else{
+		else if (DamageAmount < 150.f)
+		{
 			PlayHitReactMontage();
 
 			int32 RandomNumber = FMath::RandRange(0, 99);
@@ -829,11 +868,23 @@ void ABloodBornCharacter::HandleDamage(float DamageAmount)
 				UGameplayStatics::PlaySound2D(GetWorld(), hitSound2); // 10%의 확률로 hitSound2 재생
 			}
 
-			GetCharacterMovement()->MaxWalkSpeed = 600.0f;  // 이건 왜 있는거지 
-			UE_LOG(LogTemp, Warning, TEXT("Player Hit! : %f"), DamageAmount);
-			ActionState = EActionState::EAS_HitReaction;
-			LastHitTime = GetWorld()->GetTimeSeconds();  // 마지막 공격을 받은 시간 업데이트
 		}
+		else if (DamageAmount >= 150.f)
+		{
+			PlayHeavyHitReactMontage();
+
+			int32 RandomNumber = FMath::RandRange(0, 99);
+
+			if (RandomNumber < 40) {
+				UGameplayStatics::PlaySound2D(GetWorld(), heavyHitSound);
+			}
+			UE_LOG(LogTemp, Warning, TEXT("HEAVY DAMAGE"));	
+		}
+
+		GetCharacterMovement()->MaxWalkSpeed = 500.0f;  // 이건 왜 있는거지 
+		UE_LOG(LogTemp, Warning, TEXT("Player Hit! : %f"), DamageAmount);
+		ActionState = EActionState::EAS_HitReaction;
+		LastHitTime = GetWorld()->GetTimeSeconds();  // 마지막 공격을 받은 시간 업데이트
 	}
 }
 
@@ -854,9 +905,10 @@ void ABloodBornCharacter::UseBloodVial()
  				ActionState = EActionState::EAS_Heal;
 //  				if (ActionState == EActionState::EAS_Heal)
 //  				{
-				GetCharacterMovement()->MaxWalkSpeed = 150.f;
+				GetCharacterMovement()->MaxWalkSpeed = 100.f;
 				GetCharacterMovement()->MaxAcceleration = 512.f;
 				PlayBloodVialMontage();
+
 // 				}
  			}
 // 			else
@@ -955,6 +1007,12 @@ void ABloodBornCharacter::PlayHitReactMontage()
 	/*FollowCamera->FieldOfView = 70;*/
 }
 
+void ABloodBornCharacter::PlayHeavyHitReactMontage()
+{
+	PlayMontageSection(HeavyHitReactMontage, FName("HeavyHitReact"));
+	UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->StartCameraShake(UBBLegacyCameraShake::StaticClass(), 0.1f);
+}
+
 void ABloodBornCharacter::Die()
 {
 	 PlayDeathMontage();
@@ -999,7 +1057,7 @@ void ABloodBornCharacter::Die()
 
 	 FTimerHandle OpenLevelTimer;
 	 GetWorldTimerManager().SetTimer(OpenLevelTimer, FTimerDelegate::CreateLambda([&]() {
-		 UGameplayStatics::OpenLevel(GetWorld(), FName("76TestLV"));
+		 UGameplayStatics::OpenLevel(GetWorld(), FName("DemoMapDay_Copy"));
 		 }
 	 ), 8.f, false);
 }
@@ -1079,6 +1137,7 @@ void ABloodBornCharacter::PlayFireMontage()
 	{
 		PlayerOverlay->SetBullet(Attributes->GetBullet());
 	}
+	EquippedGun->fireEffect->Activate(true);
 }
 
 void ABloodBornCharacter::MakeBullets()
@@ -1093,7 +1152,7 @@ void ABloodBornCharacter::MakeBullets()
 
 				//  				if (ActionState == EActionState::EAS_Heal)
 				//  				{
-				GetCharacterMovement()->MaxWalkSpeed = 150.f;
+				GetCharacterMovement()->MaxWalkSpeed = 100.f;
 				GetCharacterMovement()->MaxAcceleration = 512.f;
 				PlayMakeBulletMontage();
 				// 				}
@@ -1138,7 +1197,7 @@ void ABloodBornCharacter::Decline()
 			GetWorldTimerManager().SetTimer(bullettimer, FTimerDelegate::CreateLambda([&]() {
 				/*instanceEffect = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), finishBulletEffect, GetActorLocation(), FRotator::ZeroRotator, FVector(0.7f));*/
 				finishBulletEffect->Activate(true);
-			}), 0.2f, false);
+			}), 0.05f, false);
 		}
 		else
 		{
@@ -1197,6 +1256,7 @@ void ABloodBornCharacter::OnSuccessfulAttack(float Damage, EAttackType AttackTyp
 		// 회복 나이아가라
 /*			instanceEffect = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), regainHealEffect, GetActorLocation(), FRotator::ZeroRotator, FVector(0.5f));*/
 		regainHealEffect->Activate(true);
+		UGameplayStatics::PlaySound2D(GetWorld(), regainSound);
 		SetHUDHealth();
 		if (PlayerOverlay && Attributes)
 		{

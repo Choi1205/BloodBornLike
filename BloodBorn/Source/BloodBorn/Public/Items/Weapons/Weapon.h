@@ -34,11 +34,6 @@ public:
 	UPROPERTY(EditAnywhere)
 	class UNiagaraComponent* sawEffect;
 
-	UPROPERTY(EditAnywhere)
-	class UWidgetComponent* equipSawOverlay;
-
-	class UWeaponOverlay* weaponOverlay;
-
 protected:
 	virtual void BeginPlay() override;
 
