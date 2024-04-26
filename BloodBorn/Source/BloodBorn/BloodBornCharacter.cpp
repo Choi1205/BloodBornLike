@@ -432,6 +432,7 @@ void ABloodBornCharacter::FKeyPressed()
 		//CharacterState = ECharacterState::ECS_EquippedOneHandedWeapon;
 		OverlappingItem = nullptr;
  	 	OverlappingWeapon->sawEffect->DestroyComponent(true);
+		UGameplayStatics::PlaySound2D(GetWorld(), equipSound);
 		EquippedWeaponSaw = OverlappingWeapon;
 	}
 
@@ -445,6 +446,7 @@ void ABloodBornCharacter::FKeyPressed()
 		//CharacterState = ECharacterState::ECS_EquippedOneHandedWeapon;
 		OverlappingItem = nullptr;
 		OverlappingGun->gunEffect->DestroyComponent(true);
+		UGameplayStatics::PlaySound2D(GetWorld(), equipSound);
 		EquippedGun = OverlappingGun;
 	}
 

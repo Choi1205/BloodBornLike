@@ -405,6 +405,9 @@ private:
 	UPROPERTY(EditAnywhere, Category = Sounds)
 	class USoundBase* heavyHitSound;
 
+	UPROPERTY(EditAnywhere, Category = Sounds)
+	class USoundBase* equipSound;
+
 	//UPROPERTY(EditAnywhere, Category = Weapon)
 	//TSubclassOf<ULegacyCameraShake> CameraShake;
 
