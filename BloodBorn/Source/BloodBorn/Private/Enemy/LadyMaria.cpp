@@ -221,14 +221,20 @@ void ALadyMaria::Tick(float DeltaTime)
 				}
 				else if (mariaAI->attackState == EAttackState::JUMPATTACK) {
 					temp += DeltaTime;
-					FVector moveLoc = FMath::Lerp(GetActorLocation(), movePlace, 1 /(moveDeltaTime / temp));
+					FVector moveLoc = FMath::Lerp(GetActorLocation(), movePlace, temp/ moveDeltaTime);
 					UE_LOG(LogTemp, Warning, TEXT("%f"), 1 / moveDeltaTime);
 					SetActorLocation(moveLoc);
 				}
 				else if (mariaAI->attackState == EAttackState::ASSULT) {
 					temp += DeltaTime;
-					FVector moveLoc = FMath::Lerp(GetActorLocation(), movePlace, 1 /(assultDeltaTime / temp));
-					SetActorLocation(moveLoc, true);
+					if (assultMoving) {
+						FVector moveLoc = FMath::Lerp(GetActorLocation(), movePlace, temp / assultMovingTime);
+						SetActorLocation(moveLoc, true);
+					}
+					else {
+						FVector moveLoc = FMath::Lerp(GetActorLocation(), movePlace, temp / assultAttackTime);
+						SetActorLocation(moveLoc, true);
+					}
 				}
 				else {
 					SetActorLocation(GetActorLocation() + GetActorForwardVector() * DeltaTime * 400, true);
@@ -908,6 +914,8 @@ void ALadyMaria::ABP_AssultDodgeEnd()
 {
 	movePlace = playerREF->GetActorLocation() - playerREF->GetActorForwardVector() * 100.0f;
 	bIsCanDealDamage = true;
+	temp = 0.0f;
+	assultMoving = false;
 	EffectOn();
 }
 

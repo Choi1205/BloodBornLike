@@ -155,7 +155,8 @@ private:
 	FVector movePlace;
 
 	const float moveDeltaTime = 0.276996f;
-	const float assultDeltaTime = 0.490706f;
+	const float assultMovingTime = 0.166141f;
+	const float assultAttackTime = 0.324565f;
 
 	float temp = 0.0f;
 
@@ -193,6 +194,8 @@ public:
 
 	UPROPERTY(BlueprintReadWrite)
 	bool bIsMovingWhileAttack = false;
+
+	bool assultMoving = true;
 
 	UPROPERTY(BlueprintReadOnly)
 	class ABloodBornCharacter* playerREF = nullptr;

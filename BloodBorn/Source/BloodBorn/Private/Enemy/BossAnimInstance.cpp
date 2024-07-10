@@ -132,6 +132,7 @@ void UBossAnimInstance::AnimNotify_Boss_MovingAttackEnd()
 {
 	mariaREF->bIsMovingWhileAttack = false;
 	mariaREF->bIsCanDealDamage = false;
+	mariaREF->assultMoving = true;
 	if (mariaREF->phaseState != EPhaseState::PHASE1 && mariaAIREF->attackState == EAttackState::STRONGSLASH) {
 		mariaREF->MakeBloodDecal(mariaREF->GetActorLocation(), false);
 	}
