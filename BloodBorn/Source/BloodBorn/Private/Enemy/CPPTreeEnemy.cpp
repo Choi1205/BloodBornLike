@@ -1,5 +1,5 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-
+//비헤이비어 트리를 CPP파일로 구현한 에너미
 
 #include "Enemy/CPPTreeEnemy.h"
 #include "BloodBorn/BloodBornCharacter.h"
@@ -38,12 +38,12 @@ ACPPTreeEnemy::ACPPTreeEnemy()
 	Attributes = CreateDefaultSubobject< UAttributeComponent>(TEXT("Attributes"));
 
 	GetCharacterMovement()->MaxWalkSpeed = 100.0f;
-
+	//락온 아이콘용 UI
 	floatingLightComp = CreateDefaultSubobject<UWidgetComponent>(TEXT("floatingWidgetComp"));
 	floatingLightComp->SetupAttachment(GetMesh(), FName("spine_01"));
 	floatingLightComp->SetWidgetSpace(EWidgetSpace::Screen);
 	floatingLightComp->SetVisibility(false);
-
+	//데미지 표시용 UI
 	floatingHPComp = CreateDefaultSubobject<UWidgetComponent>(TEXT("floatingHPComp"));
 	floatingHPComp->SetupAttachment(GetMesh(), FName("headSocket"));
 	floatingHPComp->SetWidgetSpace(EWidgetSpace::Screen);
@@ -100,23 +100,17 @@ void ACPPTreeEnemy::OnDealDamageOverlapBegin(class UPrimitiveComponent* Overlapp
 	}
 }
 
+//맞은 방향 계산. 방향에 맞춘 히트리액션용.
 void ACPPTreeEnemy::GetHit(const FVector& ImpactPoint)
 {
 	UE_LOG(LogTemp, Warning, TEXT("ImpactPoint"));
 
-	// 여긴 걍 Dot 관련 지금은 적 애니메이션도 없고 나중에 필요할지 아닐지도 모르겠음
-	// 흠 지금은 애니메이션이 없어서 Theta 각도가 다 0인건가 
 	const FVector Forward = GetActorForwardVector();
-	// Lower Impact Point to the Enemy's Actor Location Z
 	const FVector ImpactLowered(ImpactPoint.X, ImpactPoint.Y, GetActorLocation().Z);
 	const FVector ToHit = (ImpactLowered - GetActorLocation().GetSafeNormal());
 
-	// Forward * ToHit = | Forward | | ToHit | * cos(theta), | Forward | | ToHit | : normalized벡터
-	// | Forward | = 1,  | ToHit | = 1, 그러므로 Forward * ToHit = cos(theta)
 	const double CosTheta = FVector::DotProduct(Forward, ToHit);
-	// Take the inverse cosine (arc-cosine) of cos(theta) to get theta
 	double Theta = FMath::Acos(CosTheta);
-	// convert from radians to degrees
 	Theta = FMath::RadiansToDegrees(Theta);
 
 	if (GEngine)
@@ -145,10 +139,12 @@ float ACPPTreeEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEv
 	return DamageAmount;
 }
 
+//패리공격을 받을때 처리
 void ACPPTreeEnemy::GotParryAttackCPP(float damage)
 {
+	//우선 체력 감소
 	GotDamage(damage);
-
+	//다음에 패리했는지 체크
 	if (BTAIController != nullptr) {
 		if (CanParryed) {
 			if (AnimInstance->Montage_IsPlaying(NULL)) {
@@ -168,7 +164,7 @@ bool ACPPTreeEnemy::GetInStun()
 {
 	return BTAIController->GetBlackboardComponent()->GetValueAsBool(FName("InStun"));
 }
-
+//스턴중에 잡기공격을 받으면 100%죽을 체력으로 만들어져 있으므로, 2대 맞을일이 없어서 항상 true 리턴
 bool ACPPTreeEnemy::GetHoldAttackOK()
 {
 	return true;
@@ -179,6 +175,7 @@ float ACPPTreeEnemy::GetHealth()
 	return healthPoint;
 }
 
+//록온되면 UI표시
 void ACPPTreeEnemy::Lockon(bool value)
 {
 	bIsLockedOn = value;
@@ -186,6 +183,7 @@ void ACPPTreeEnemy::Lockon(bool value)
 	floatingHPComp->SetVisibility(value);
 }
 
+//공격 후 견제하듯이 이동
 void ACPPTreeEnemy::AfterAttackMoving(float DeltaTime)
 {
 	if (healthPoint > 0) {
@@ -209,6 +207,7 @@ void ACPPTreeEnemy::AfterAttackMoving(float DeltaTime)
 	}
 }
 
+//데미지 처리
 void ACPPTreeEnemy::GotDamage(float damage)
 {
 	healthPoint = FMath::Max(healthPoint - damage, 0.0f);
@@ -277,6 +276,7 @@ void ACPPTreeEnemy::GotDamage(float damage)
 	}
 }
 
+//죽는 애니메이션 후 바닥에 시체가 남는다.
 void ACPPTreeEnemy::DyingAnimEnd()
 {
 	AnimInstance->Montage_Pause();

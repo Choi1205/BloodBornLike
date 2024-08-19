@@ -1,5 +1,5 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-
+//에너미 원거리 공격 공용 탄환
 
 #include "Enemy/BulletActor.h"
 #include "BloodBorn/BloodBornCharacter.h"
@@ -35,13 +35,14 @@ void ABulletActor::BeginPlay()
 	Super::BeginPlay();
 
 	bulletBody->OnComponentBeginOverlap.AddDynamic(this, &ABulletActor::CallHit);
-	
+
+	//3초뒤 파괴
 	SetLifeSpan(3.0f);
 
 	particleComp->Activate(true);
 }
 
-// Called every frame
+// 1초당 speed값 만큼 날아간다
 void ABulletActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -62,7 +63,6 @@ void ABulletActor::SetFirePower(float bulletDamage)
 
 void ABulletActor::CallHit(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	GetParentActor();
 	PlayerREF = Cast<ABloodBornCharacter>(OtherActor);
 
 	if (PlayerREF) {

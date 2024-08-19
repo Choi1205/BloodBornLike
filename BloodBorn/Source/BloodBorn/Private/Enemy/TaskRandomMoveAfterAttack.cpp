@@ -1,5 +1,5 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-
+// 비헤이비어 트리에서 플레이어를 공격 후 행동하는 테스크
 
 #include "Enemy/TaskRandomMoveAfterAttack.h"
 #include "Kismet/GameplayStatics.h"

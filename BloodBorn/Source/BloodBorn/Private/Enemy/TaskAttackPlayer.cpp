@@ -1,5 +1,5 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-
+//비헤이비어 트리를 이용한 플레이어 공격 행동 테스크
 
 #include "Enemy/TaskAttackPlayer.h"
 #include "AIcontroller.h"
@@ -33,7 +33,7 @@ EBTNodeResult::Type UTaskAttackPlayer::ExecuteTask(UBehaviorTreeComponent& Owner
 			AnimInstance->Montage_Play(Enemy->EnemyAttackAnimation2);
 		}
 
-		//랜덤한 시간동안 플레이어 주변을 어물거리는 시간
+		//랜덤한 시간동안 플레이어 주변에서 견제하는 행동을 하는 시간
 		float randomTime = FMath::FRandRange(2.0f, 4.0f);
 		//랜덤 시간을 블랙보드에 입력
 		OwnerComp.GetBlackboardComponent()->SetValueAsFloat(FName("RandomTime"), randomTime);

@@ -1,5 +1,5 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-
+//보스가 점프공격을 할 때 회전하면서 피 이펙트를 뿌리는 액터.
 
 #include "Enemy/LadyMariaJumpEffectActor.h"
 #include <../../../../../../../Source/Runtime/Engine/Classes/GameFramework/RotatingMovementComponent.h>
@@ -64,11 +64,11 @@ ALadyMariaJumpEffectActor::ALadyMariaJumpEffectActor()
 }
 
 // Called when the game starts or when spawned
-void ALadyMariaJumpEffectActor::BeginPlay()
-{
-	Super::BeginPlay();
-	
-}
+//void ALadyMariaJumpEffectActor::BeginPlay()
+//{
+//	Super::BeginPlay();
+//	
+//}
 
 // Called every frame
 void ALadyMariaJumpEffectActor::Tick(float DeltaTime)

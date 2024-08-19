@@ -1,5 +1,5 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-
+//비헤이비어 트리를 사용하는 일반몬스터의 AI
 
 #include "Enemy/BTAIController.h"
 #include "NavigationSystem.h"
@@ -36,8 +36,12 @@ void ABTAIController::RandomPatrol() {
 
 		MoveToLocation(RandomLocation);//위에서 입력된 RandomLocation으로 이동한다.
 	}
+	else {
+		NavArea = FNavigationSystem::GetCurrent<UNavigationSystemV1>(this);
+	}
 }
 
+//플레이어 발견시
 void ABTAIController::OnSeePawn(APawn* PlayerPawn)
 {
 	Player = Cast<ABloodBornCharacter>(PlayerPawn);
@@ -50,16 +54,20 @@ void ABTAIController::OnSeePawn(APawn* PlayerPawn)
 	}
 }
 
+//소리를 들었을 때
 void ABTAIController::OnHearNoise(APawn* PlayerPawn, const FVector& Location, float Volume)
 {
+	//플레이어를 발견한 상태가 아니면
 	if (!GetBlackboardComponent()->GetValueAsBool(FName("CanSeePlayer"))) {
 		ACharacter* enemyChar = Cast<ACharacter>(GetPawn());
 		FRotator toward = (Location - enemyChar->GetActorLocation()).Rotation();
 		toward.Pitch = 0;
+		//플레이어 방향으로 돌아선다.
 		enemyChar->SetActorRotation(toward);
 	}
 }
 
+//플레이어 발견/놓침 토글
 void ABTAIController::SetCanSeePlayer(bool SeePlayer, UObject* isPlayer)
 {
 	if (SeePlayer) {
@@ -74,6 +82,7 @@ void ABTAIController::SetCanSeePlayer(bool SeePlayer, UObject* isPlayer)
 	}
 }
 
+//플레이어를 놓치더라도 일정시간 플레이어를 추적한다.
 void ABTAIController::RunRetriggerableTimer()
 {
 	if (PawnSensing->IsActive()) {

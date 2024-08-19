@@ -1,5 +1,5 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-
+//보스 캐릭터가 대시 이동할때 발생하는 연기 이펙트 액터
 
 #include "Enemy/SmokeFXActor.h"
 #include "NiagaraComponent.h"
@@ -8,7 +8,7 @@
 ASmokeFXActor::ASmokeFXActor()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = false;
+	//PrimaryActorTick.bCanEverTick = false;
 
 	rootComp = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
 	SetRootComponent(rootComp);
@@ -21,18 +21,18 @@ ASmokeFXActor::ASmokeFXActor()
 }
 
 // Called when the game starts or when spawned
-void ASmokeFXActor::BeginPlay()
-{
-	Super::BeginPlay();
-	
-}
+//void ASmokeFXActor::BeginPlay()
+//{
+//	Super::BeginPlay();
+//	
+//}
 
 // Called every frame
-void ASmokeFXActor::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-}
+//void ASmokeFXActor::Tick(float DeltaTime)
+//{
+//	Super::Tick(DeltaTime);
+//
+//}
 
 void ASmokeFXActor::PlayFX()
 {

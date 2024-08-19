@@ -1,5 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-
+//랜덤 이동 기능을 뺀 일반 적 AI
+//매복용으로 사용
 
 #include "Enemy/BTStayAIController.h"
 #include "NavigationSystem.h"

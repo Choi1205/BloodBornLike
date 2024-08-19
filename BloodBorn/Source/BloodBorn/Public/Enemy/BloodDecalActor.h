@@ -19,7 +19,7 @@ protected:
 
 public:
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditDefaultsOnly)
 	TArray<class UMaterialInterface*> bloodArray;
 
 	void ForAttachPlayer();

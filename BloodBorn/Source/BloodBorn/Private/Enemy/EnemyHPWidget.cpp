@@ -1,4 +1,5 @@
 // Fill out your copyright notice in the Description page of Project Settings.
+//일반 에너미의 머리 위 HP바 UI
 
 
 #include "Enemy/EnemyHPWidget.h"
@@ -6,6 +7,7 @@
 #include "Components/Slider.h"
 #include "Components/TextBlock.h"
 
+//데미지를 받으면 표시. 현재 체력비율과 받은 데미지량이 표시됨. 데미지량은 5초 안에 데미지를 더 입으면 누적되서 표시됨.
 void UEnemyHPWidget::SetHealthBar(float precentValue, float damage)
 {
 	damageStack += (int32)damage;

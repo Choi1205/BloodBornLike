@@ -1,5 +1,5 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-
+//원거리 공격을 하는 에너미. 원작에서도 이동하지 않으므로 이동하지않고 총만 쏘는 메너미로 만듬. 
 
 #include "Enemy/LongRangeEnemy.h"
 #include "Kismet/KismetSystemLibrary.h"
@@ -71,7 +71,7 @@ void ALongRangeEnemy::Tick(float DeltaTime)
 			AimmingTime += DeltaTime;
 		}
 
-		//애님블루프린트에서 SetFireGun을 초기화할 방법을 찾을 수 없어, 적당한 시점에 초기화 실시.
+		//일정 시간 후 조준 상태 애니메이션으로 전환
 		if (SetFireGun && AimmingTime > 1.0f) {
 			SetFireGun = false;
 		}
@@ -97,7 +97,7 @@ void ALongRangeEnemy::Tick(float DeltaTime)
 				SetCanSeePlayer(false, nullptr);
 			}
 		}
-
+		//플레이어에게 맞고 경직처리
 		if (takeHit) {
 			hitTimer += DeltaTime;
 			if (hitTimer > 2.0f) {
@@ -108,13 +108,6 @@ void ALongRangeEnemy::Tick(float DeltaTime)
 		}
 
 	}
-}
-
-// Called to bind functionality to input
-void ALongRangeEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
 }
 
 void ALongRangeEnemy::OnSeePawn(APawn* PlayerPawn)

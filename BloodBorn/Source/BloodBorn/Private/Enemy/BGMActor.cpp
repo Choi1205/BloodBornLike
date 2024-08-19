@@ -32,10 +32,12 @@ void ABGMActor::Tick(float DeltaTime)
 
 	if (startTime > 0.0f) {
 		startTime -= DeltaTime;
+		//재생 명령을 1번만 실행함.
 		if (startTime <= 0.0f) {
 			audioComp->Play();
 		}
 	}
+	//보스 클리어 후 3초에 걸쳐서 소리를 줄임
 	if (bIsdead) {
 		volume -= DeltaTime * 0.3f;
 		audioComp->SetVolumeMultiplier(volume);

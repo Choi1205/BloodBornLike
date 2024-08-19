@@ -1,4 +1,5 @@
 // Fill out your copyright notice in the Description page of Project Settings.
+//비헤이비어 트리를 CPP를 이용해 만든 에너미에서 순찰기능을 뺀 에너미. 매복용으로 사용
 
 
 #include "Enemy/CPPTreeStayEnemy.h"
@@ -104,19 +105,12 @@ void ACPPTreeStayEnemy::GetHit(const FVector& ImpactPoint)
 {
 	UE_LOG(LogTemp, Warning, TEXT("ImpactPoint"));
 
-	// 여긴 걍 Dot 관련 지금은 적 애니메이션도 없고 나중에 필요할지 아닐지도 모르겠음
-	// 흠 지금은 애니메이션이 없어서 Theta 각도가 다 0인건가 
 	const FVector Forward = GetActorForwardVector();
-	// Lower Impact Point to the Enemy's Actor Location Z
 	const FVector ImpactLowered(ImpactPoint.X, ImpactPoint.Y, GetActorLocation().Z);
 	const FVector ToHit = (ImpactLowered - GetActorLocation().GetSafeNormal());
 
-	// Forward * ToHit = | Forward | | ToHit | * cos(theta), | Forward | | ToHit | : normalized벡터
-	// | Forward | = 1,  | ToHit | = 1, 그러므로 Forward * ToHit = cos(theta)
 	const double CosTheta = FVector::DotProduct(Forward, ToHit);
-	// Take the inverse cosine (arc-cosine) of cos(theta) to get theta
 	double Theta = FMath::Acos(CosTheta);
-	// convert from radians to degrees
 	Theta = FMath::RadiansToDegrees(Theta);
 
 	if (GEngine)
